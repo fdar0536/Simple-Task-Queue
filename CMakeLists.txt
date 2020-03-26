@@ -40,7 +40,7 @@ include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(
-    TaskQueueManager WIN32
+    SimpleTaskQueue WIN32
     main.cpp
     main.qrc
     mainwindow.cpp
@@ -54,4 +54,4 @@ add_executable(
     inputdialog.ui
 )
 
-target_link_libraries(TaskQueueManager PRIVATE Qt5::Widgets)
+target_link_libraries(SimpleTaskQueue PRIVATE Qt5::Widgets)
