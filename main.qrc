@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>STQ.ico</file>
+    </qresource>
+</RCC>
