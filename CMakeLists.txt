@@ -31,7 +31,7 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(STQ_VERSION r5)
+set(STQ_VERSION r6)
 set(STQ_NAME SimpleTaskQueue)
 
 configure_file(config.h.in config.h @ONLY)
