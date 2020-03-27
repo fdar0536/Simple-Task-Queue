@@ -108,21 +108,12 @@ TaskTab::~TaskTab()
 // private slots
 void TaskTab::on_workDirBrowseBtn_clicked()
 {
-#ifdef Q_OS_WIN32
     QString res(QFileDialog::getExistingDirectory(this,
                                                   "Open working dir",
-                                                QDir::currentPath(),
+                                                m_ui->workDirPath->text(),
                                                 QFileDialog::ShowDirsOnly |
                                                 QFileDialog::DontResolveSymlinks)
                 );
-#else
-    QString res(QFileDialog::getExistingDirectory(this,
-                                                  "Open working dir",
-                                                QDir::homePath(),
-                                                QFileDialog::ShowDirsOnly |
-                                                QFileDialog::DontResolveSymlinks)
-                );
-#endif
 
     if (!res.isEmpty())
     {
