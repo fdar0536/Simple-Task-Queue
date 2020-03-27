@@ -106,11 +106,6 @@ TaskTab::~TaskTab()
 }
 
 // private slots
-void TaskTab::on_renameBtn_clicked()
-{
-    m_inputDialog->open();
-}
-
 void TaskTab::on_workDirBrowseBtn_clicked()
 {
 #ifdef Q_OS_WIN32
@@ -350,14 +345,9 @@ void TaskTab::handle_process_stdout()
 void TaskTab::onInputAccepted()
 {
     QString tmpString(m_inputDialog->getText());
-    onInputRejected();
-    emit renameRequried(this, tmpString);
-}
-
-void TaskTab::onInputRejected()
-{
     m_inputDialog->close();
     m_inputDialog->reset();
+    emit renameRequried(this, tmpString);
 }
 
 // private member functions
@@ -384,10 +374,10 @@ void TaskTab::connectHook()
             this,
             SLOT(onInputAccepted()));
 
-    connect(m_inputDialog,
-            SIGNAL(rejected()),
-            this,
-            SLOT(onInputRejected()));
+    connect(m_ui->renameBtn,
+            SIGNAL(clicked()),
+            m_inputDialog,
+            SLOT(open()));
 }
 
 QTableWidgetItem *TaskTab::getTableWidgetItem(const QString &input)

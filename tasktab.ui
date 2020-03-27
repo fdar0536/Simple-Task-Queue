@@ -376,6 +376,11 @@
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
           <widget class="QTextEdit" name="console">
+           <property name="font">
+            <font>
+             <pointsize>12</pointsize>
+            </font>
+           </property>
            <property name="undoRedoEnabled">
             <bool>false</bool>
            </property>

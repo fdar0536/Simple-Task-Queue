@@ -51,16 +51,12 @@ public:
 
 private slots:
 
-    void on_actionAdd_triggered();
-
     void on_actionAbout_Qt_triggered();
 
     void programExit();
 
     // InputDialog
     void onInputAccepted();
-
-    void onInputRejected();
 
     // TaskTab
     void on_taskTab_tabCloseRequested(int index);

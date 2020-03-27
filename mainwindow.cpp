@@ -124,11 +124,6 @@ MainWindow::~MainWindow()
 
 // private slots
 // actions
-void MainWindow::on_actionAdd_triggered()
-{
-    m_inputDialog->open();
-}
-
 void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this);
@@ -171,11 +166,6 @@ void MainWindow::onInputAccepted()
                              toBeInserted,
                              title);
 
-    onInputRejected();
-}
-
-void MainWindow::onInputRejected()
-{
     m_inputDialog->close();
     m_inputDialog->reset();
 }
@@ -229,17 +219,16 @@ void MainWindow::connectHook()
             SIGNAL(triggered()),
             this,
             SLOT(programExit()));
+    connect(m_ui->actionAdd,
+            SIGNAL(triggered()),
+            m_inputDialog,
+            SLOT(open()));
 
     // InputDialog
     connect(m_inputDialog,
             SIGNAL(accepted()),
             this,
             SLOT(onInputAccepted()));
-
-    connect(m_inputDialog,
-            SIGNAL(rejected()),
-            this,
-            SLOT(onInputRejected()));
 
     //trayIcon
     if (QSystemTrayIcon::isSystemTrayAvailable())

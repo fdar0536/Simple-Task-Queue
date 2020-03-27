@@ -23,17 +23,94 @@
 
 #include <iostream>
 
+#ifdef _WIN32
+#include "windows.h"
+#else
+#include "unistd.h"
+#endif
+
 #include "QApplication"
+#include "QMessageBox"
+#include "QDir"
+#include "QFileInfo"
+#include "QFile"
 
 #include "mainwindow.hpp"
+
+bool isAdmin()
+{
+#ifdef _WIN32
+    PSID sid;
+    SID_IDENTIFIER_AUTHORITY auth = SECURITY_NT_AUTHORITY;
+    if (!AllocateAndInitializeSid(&auth,
+                                  2,
+                                  SECURITY_BUILTIN_DOMAIN_RID,
+                                  DOMAIN_ALIAS_RID_ADMINS,
+                                  0, 0, 0, 0, 0, 0,
+                                  &sid))
+    {
+        return true;
+    }
+
+    BOOL res;
+    if (!CheckTokenMembership(nullptr, sid, &res))
+    {
+        return true;
+    }
+
+    FreeSid(sid);
+    return res;
+#else
+    return (geteuid() == 0);
+#endif
+}
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    if (isAdmin())
+    {
+#ifdef _WIN32
+        QMessageBox::critical(nullptr,
+                              QCoreApplication::tr("Fatal error"),
+                              QCoreApplication::tr("Administrator CANNOT run is program!"));
+#else
+        QMessageBox::critical(nullptr,
+                              QCoreApplication::tr("Fatal error"),
+                              QCoreApplication::tr("Super user CANNOT run is program"));
+#endif
+        return 1;
+    }
+
+    QString lockFilePath(QDir::tempPath() + "/STQ.lock");
+    QFile file(lockFilePath);
+    if (file.exists())
+    {
+        QMessageBox::information(nullptr,
+                                 QCoreApplication::tr("Hint"),
+                                 QCoreApplication::tr("This program is already running."));
+        return 0;
+    }
+
+    if (!file.open(QIODevice::Append))
+    {
+        QMessageBox::critical(nullptr,
+                              QCoreApplication::tr("Fatal error"),
+                              QCoreApplication::tr("Fail to open lock file."));
+        return 1;
+    }
+
+    file.write("lock\n");
+    file.flush();
+    file.close();
+
     MainWindow *w(MainWindow::create());
     if (!w)
     {
-        std::cerr << "Fail to create main window!" << std::endl;
+        QMessageBox::critical(nullptr,
+                              QCoreApplication::tr("Fatal error"),
+                              QCoreApplication::tr("Fail to create main window!"));
+        file.remove();
         return 1;
     }
 
@@ -41,5 +118,6 @@ int main(int argc, char *argv[])
 
     const int res = a.exec();
     delete w;
+    file.remove();
     return res;
 }

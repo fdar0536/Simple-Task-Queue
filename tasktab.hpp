@@ -58,8 +58,6 @@ signals:
 
 private slots:
 
-    void on_renameBtn_clicked();
-
     void on_workDirBrowseBtn_clicked();
 
     void on_pname_textChanged(const QString);
@@ -86,8 +84,6 @@ private slots:
 
     // InputDialog
     void onInputAccepted();
-
-    void onInputRejected();
 
 private:
 

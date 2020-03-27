@@ -52,6 +52,8 @@ private slots:
 
     void on_inputText_returnPressed();
 
+    void on_selectBtn_rejected();
+
 private:
 
     explicit InputDialog(QWidget *parent = nullptr) :

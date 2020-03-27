@@ -77,6 +77,12 @@ void InputDialog::on_inputText_returnPressed()
     emit accepted();
 }
 
+void InputDialog::on_selectBtn_rejected()
+{
+    close();
+    reset();
+}
+
 // private member functions
 void InputDialog::connectHook()
 {
@@ -85,9 +91,4 @@ void InputDialog::connectHook()
             SIGNAL(accepted()),
             this,
             SIGNAL(accepted()));
-
-    connect(m_ui->selectBtn,
-            SIGNAL(rejected()),
-            this,
-            SIGNAL(rejected()));
 }

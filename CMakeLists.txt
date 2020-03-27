@@ -55,3 +55,7 @@ add_executable(
 )
 
 target_link_libraries(SimpleTaskQueue PRIVATE Qt5::Widgets)
+install(
+    TARGETS SimpleTaskQueue
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
