@@ -410,6 +410,8 @@ void TaskTab::writeConsole(const QByteArray &data)
         m_ui->console->insertPlainText(input);
     }
 
+    m_ui->console->ensureCursorVisible();
+
     m_prevData = data;
 }
 
