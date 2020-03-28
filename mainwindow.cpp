@@ -162,9 +162,12 @@ void MainWindow::onInputAccepted()
             SLOT(onTabRenameRequried(TaskTab *, QString &)));
 
     QString title(m_inputDialog->getText());
-    m_ui->taskTab->insertTab(m_ui->taskTab->count(),
+    int insertPos(m_ui->taskTab->count());
+    m_ui->taskTab->insertTab(insertPos,
                              toBeInserted,
                              title);
+
+    m_ui->taskTab->setCurrentIndex(insertPos);
 
     m_inputDialog->close();
     m_inputDialog->reset();
