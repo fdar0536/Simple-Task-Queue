@@ -256,5 +256,12 @@ void MainWindow::connectHook()
 void MainWindow::closeEvent(QCloseEvent *e)
 {
     e->ignore();
-    this->hide();
+    if (QSystemTrayIcon::isSystemTrayAvailable())
+    {
+        this->hide();
+    }
+    else
+    {
+        programExit();
+    }
 }
