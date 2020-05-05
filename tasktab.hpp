@@ -23,9 +23,6 @@
 
 #pragma once
 
-#include <memory>
-#include <map>
-
 #include "QWidget"
 #include "QProcess"
 #include "QTableWidgetItem"

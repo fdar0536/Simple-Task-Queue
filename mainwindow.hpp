@@ -23,8 +23,6 @@
 
 #pragma once
 
-#include <map>
-
 #include "QMainWindow"
 #include "QSystemTrayIcon"
 #include "QMenu"
