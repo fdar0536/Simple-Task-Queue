@@ -201,7 +201,7 @@ void TaskTab::on_TriggleStartBtn_clicked()
                                                   QString::SkipEmptyParts));
     m_mainProcess->start(processName, args);
 #ifndef Q_OS_WIN32
-    setpgid(static_cast<int>(m_mainProcess->pid()), 0);
+    setpgid(static_cast<int>(m_mainProcess->processId()), 0);
 #endif
     m_ui->TaskQueueTable->item(0, 3)->setText("Running");
     m_ui->TaskQueueTable->item(0, 4)->setText("0");
