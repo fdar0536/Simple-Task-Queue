@@ -198,7 +198,7 @@ void TaskTab::on_TriggleStartBtn_clicked()
     }
 
     QStringList args(m_ui->TaskQueueTable->item(0, 2)->text().split("\n",
-                                                  QString::SkipEmptyParts));
+                                                  Qt::SkipEmptyParts));
     m_mainProcess->start(processName, args);
 #ifndef Q_OS_WIN32
     setpgid(static_cast<int>(m_mainProcess->processId()), 0);
