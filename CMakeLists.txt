@@ -36,6 +36,7 @@ set(STQ_NAME SimpleTaskQueue)
 
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
+include(GNUInstallDirs)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
