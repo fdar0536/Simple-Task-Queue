@@ -73,11 +73,11 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
         QMessageBox::critical(nullptr,
                               QCoreApplication::tr("Fatal error"),
-                              QCoreApplication::tr("Administrator CANNOT run is program!"));
+                              QCoreApplication::tr("Administrator CANNOT run this program!"));
 #else
         QMessageBox::critical(nullptr,
                               QCoreApplication::tr("Fatal error"),
-                              QCoreApplication::tr("Super user CANNOT run is program"));
+                              QCoreApplication::tr("Super user CANNOT run this program"));
 #endif
         return 1;
     }
