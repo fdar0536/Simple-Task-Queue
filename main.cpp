@@ -125,7 +125,8 @@ int main(int argc, char *argv[])
      * QTableWidgetItem *TaskTab::getTableWidgetItem(const QString &input)
      *
      * If that function fails to allocate memory, it will throw std::bad_alloc.
-     * If use std::nothrow, this program may not work functionally,
+     * If use std::nothrow in that function,
+     * this program may not work functionally,
      * so let it throw exception and stop this program.
     */
     catch(std::bad_alloc &)
