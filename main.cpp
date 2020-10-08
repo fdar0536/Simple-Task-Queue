@@ -114,9 +114,28 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    w->show();
+    int res(0);
+    try
+    {
+        w->show();
+        res = a.exec();
+    }
+    /*
+     * in function
+     * QTableWidgetItem *TaskTab::getTableWidgetItem(const QString &input)
+     *
+     * If that function fails to allocate memory, it will throw std::bad_alloc.
+     * If use std::nothrow, this program may not work functionally,
+     * so let it throw exception and stop this program.
+    */
+    catch(std::bad_alloc &)
+    {
+        res = 1;
+        QMessageBox::critical(nullptr,
+                              QCoreApplication::tr("Fatal error"),
+                              QCoreApplication::tr("Fail to allocate memory!"));
+    }
 
-    const int res = a.exec();
     delete w;
     file.remove();
     return res;
