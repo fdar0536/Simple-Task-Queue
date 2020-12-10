@@ -29,7 +29,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(STQ_VERSION r11)
 set(STQ_NAME SimpleTaskQueue)
@@ -38,7 +38,7 @@ configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(
     SimpleTaskQueue WIN32
@@ -55,7 +55,7 @@ add_executable(
     inputdialog.ui
 )
 
-target_link_libraries(SimpleTaskQueue PRIVATE Qt5::Widgets)
+target_link_libraries(SimpleTaskQueue PRIVATE Qt6::Widgets)
 install(
     TARGETS SimpleTaskQueue
     DESTINATION ${CMAKE_INSTALL_BINDIR}
