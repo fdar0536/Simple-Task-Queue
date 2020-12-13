@@ -7,8 +7,8 @@ As its name, and just for reference.
 
 ## Dependency
 
-- C++11
-- [Qt](https://www.qt.io) 5.12 or later
+- C++17
+- [Qt](https://www.qt.io) 6.0 or later
 
 ## Licence
 
