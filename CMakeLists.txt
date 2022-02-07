@@ -38,7 +38,23 @@ configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)
 
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+option(BUILD_SERVER "build server" ON)
+option(BUILD_CLIENT "build client" ON)
+
+if ((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
+    set(BUILD_CLIENT ON)
+endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
+
+find_package(gRPC REQUIRED)
+find_package(Protobuf REQUIRED)
+
+if (BUILD_SERVER)
+    add_subdirectory(server)
+endif(BUILD_SERVER)
+
+if (BUILD_CLIENT)
+    find_package(Qt6 COMPONENTS Widgets REQUIRED)
+endif(BUILD_CLIENT)
 
 add_executable(
     SimpleTaskQueue WIN32
