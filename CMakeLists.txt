@@ -48,31 +48,39 @@ endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 find_package(gRPC REQUIRED)
 find_package(Protobuf REQUIRED)
 
-if (BUILD_SERVER)
-    add_subdirectory(server)
-endif(BUILD_SERVER)
-
 if (BUILD_CLIENT)
     find_package(Qt6 COMPONENTS Widgets REQUIRED)
 endif(BUILD_CLIENT)
 
-add_executable(
-    SimpleTaskQueue WIN32
-    main.cpp
-    main.qrc
-    mainwindow.cpp
-    mainwindow.hpp
-    mainwindow.ui
-    tasktab.cpp
-    tasktab.hpp
-    tasktab.ui
-    inputdialog.cpp
-    inputdialog.hpp
-    inputdialog.ui
+add_library(global STATIC
+
+    global.cpp
+    global.hpp
+    logger.cpp
+    logger.hpp
 )
 
-target_link_libraries(SimpleTaskQueue PRIVATE Qt6::Widgets)
-install(
-    TARGETS SimpleTaskQueue
-    DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+if (BUILD_SERVER)
+    add_subdirectory(server)
+endif(BUILD_SERVER)
+
+# add_executable(
+#     SimpleTaskQueue WIN32
+#     main.cpp
+#     main.qrc
+#     mainwindow.cpp
+#     mainwindow.hpp
+#     mainwindow.ui
+#     tasktab.cpp
+#     tasktab.hpp
+#     tasktab.ui
+#     inputdialog.cpp
+#     inputdialog.hpp
+#     inputdialog.ui
+# )
+#
+# target_link_libraries(SimpleTaskQueue PRIVATE Qt6::Widgets)
+# install(
+#     TARGETS SimpleTaskQueue
+#     DESTINATION ${CMAKE_INSTALL_BINDIR}
+# )
