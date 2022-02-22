@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(SimpleTaskQueue LANGUAGES CXX)
+project(SimpleTaskQueue LANGUAGES C CXX)
 
 if (UNIX)
     add_compile_options(-Wall -Werror -Wextra)
@@ -34,6 +34,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(STQ_VERSION r12)
 set(STQ_NAME SimpleTaskQueue)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)
@@ -45,19 +47,43 @@ if ((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
     set(BUILD_CLIENT ON)
 endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 
-find_package(gRPC REQUIRED)
 find_package(Protobuf REQUIRED)
+find_package(gRPC REQUIRED)
+
+if (BUILD_SERVER)
+    find_package(nlohmann_json 3.10.5 REQUIRED)
+    find_package(OpenSSL 1.1.1 REQUIRED)
+endif(BUILD_SERVER)
 
 if (BUILD_CLIENT)
     find_package(Qt6 COMPONENTS Widgets REQUIRED)
 endif(BUILD_CLIENT)
 
-add_library(global STATIC
+set(PROTOS
+    ${CMAKE_CURRENT_SOURCE_DIR}/protos/access.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protos/queue.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protos/types.proto
+)
 
-    global.cpp
-    global.hpp
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_CURRENT_BINARY_DIR} ${PROTOS})
+grpc_generate_cpp(GRPC_SRCS GRPC_HDRS ${CMAKE_CURRENT_BINARY_DIR} ${PROTOS})
+
+add_library(logger STATIC
     logger.cpp
     logger.hpp
+)
+
+add_library(grpc_common STATIC
+    ${PROTO_HDRS}
+    ${PROTO_SRCS}
+    ${GRPC_HDRS}
+    ${GRPC_SRCS}
+)
+
+target_link_libraries(grpc_common
+    PRIVATE
+    protobuf::libprotobuf
+    gRPC::grpc++
 )
 
 if (BUILD_SERVER)

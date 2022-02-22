@@ -1,3 +1,5 @@
+
+
 set(PROCESS_SRC
     model/process/abstractprocess.cpp
     model/process/abstractprocess.hpp
@@ -8,19 +10,37 @@ if (WIN32)
         model/process/winprocess.cpp
         model/process/winprocess.hpp
     )
+
+    if (MINGW)
+       set(GET_OPT_SRC "")
+    else()
+        set(GET_OPT_SRC
+            win32-code/getopt.c
+            win32-code/getopt.h
+            win32-code/getopt_long.c
+        )
+    endif(MINGW)
 else()
     LIST(APPEND PROCESS_SRC
         model/process/nixprocess.cpp
         model/process/nixprocess.hpp
     )
+
+    set(GET_OPT_SRC "")
 endif(WIN32)
 
 set(SERVER_SRC
     ${PROCESS_SRC}
+    ${GET_OPT_SRC}
+
     model/stqqueue.cpp
     model/stqqueue.hpp
     model/stqtask.hpp
+    model/totp.cpp
+    model/totp.hpp
 
+    global.cpp
+    global.hpp
     main.cpp
 )
 
@@ -28,9 +48,10 @@ add_executable(STQServer
     ${SERVER_SRC}
 )
 
-add_dependencies(STQServer global)
+add_dependencies(STQServer logger grpc_common)
 
 target_link_libraries(STQServer
     gRPC::grpc++
-    global
+    logger
+    grpc_common
 )

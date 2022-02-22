@@ -23,11 +23,24 @@
 
 #pragma once
 
-#include "logger.hpp"
+#include <string>
+#include <vector>
+
+#include "../logger.hpp"
 
 namespace Global
 {
 
 extern Logger logger;
+
+extern std::string userName;
+
+extern uint8_t password[32]; // sha256 hash
+
+extern std::vector<uint8_t> otpKey;
+
+extern std::string fileSavePath;
+
+uint8_t init(const char *);
 
 } // end namespace Global

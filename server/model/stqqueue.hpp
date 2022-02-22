@@ -30,7 +30,12 @@
 
 #include <cinttypes>
 
-#include "process/abstractprocess.hpp"
+#ifdef _WIN32
+#include "process/winprocess.hpp"
+#else
+#include "process/nixprocess.hpp"
+#endif
+
 #include "stqtask.hpp"
 
 class STQQueue
@@ -41,23 +46,65 @@ public:
 
     ~STQQueue();
 
-    std::vector<uint32_t> listPanding();
+    static uint8_t init(STQQueue *, const std::string &);
 
-    std::vector<uint32_t> listFinished();
+    uint8_t listPanding(std::vector<uint32_t> *);
+
+    uint8_t listFinished(std::vector<uint32_t> *);
+
+    uint8_t pandingDetails(uint32_t, STQTask *);
+
+    uint8_t finishedDetails(uint32_t, STQTask *);
+
+    uint8_t currentTask(STQTask *);
+
+    uint8_t addTask(STQTask *);
+
+    uint8_t removeTask(uint32_t);
+
+    void start();
+
+    void stop();
 
 private:
+
+    std::string m_name;
 
     std::deque<STQTask> m_panding;
 
     std::deque<STQTask> m_finished;
 
-    uint32_t m_id;
+    uint32_t m_id = 0;
 
-    std::mutex m_mutex;
+    std::mutex m_queueMutex;
 
     std::thread m_thread;
 
-    char m_out[4096];
+    std::mutex m_outMutex;
+
+    char m_out[4096] = {};
 
     std::fstream m_file;
+
+    std::mutex m_currentTaskMutex;
+
+    STQTask *m_currentTask = nullptr;
+
+    std::condition_variable m_condition;
+
+    AbstractProcess *m_process;
+
+    std::string m_errLog;
+
+    bool m_terminate = false;
+
+    bool m_stopped = false;
+
+    uint8_t listID(std::deque<STQTask>&, std::vector<uint32_t>*);
+
+    uint8_t taskDetails(std::deque<STQTask>&, uint32_t, STQTask*);
+
+    void mainLoop();
+
+    void toFinishedQueue(STQTask *);
 };

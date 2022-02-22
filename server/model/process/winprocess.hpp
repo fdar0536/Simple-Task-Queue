@@ -63,7 +63,7 @@ private:
 
     PROCESS_INFORMATION m_procInfo;
 
-    void writeLastError();
+    void writeLastError(const char *file, int line);
 
     void resetImpl();
 

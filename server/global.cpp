@@ -21,11 +21,33 @@
  * SOFTWARE.
  */
 
+#include <mutex>
+
 #include "global.hpp"
 
 namespace Global
 {
 
+static std::mutex mutex;
+
 Logger logger;
+
+std::string userName;
+
+uint8_t password[32]; // sha256 hash
+
+std::vector<uint8_t> otpKey;
+
+std::string fileSavePath;
+
+static uint8_t currentToken[32]; // sha256 hash
+
+static int64_t lastTokenUpdate; // unix time stamp
+
+uint8_t init(const char *configFile)
+{
+
+    return 0;
+}
 
 } // end namespace Global

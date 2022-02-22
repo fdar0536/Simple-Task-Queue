@@ -57,5 +57,5 @@ public:
 
 protected:
 
-    char m_error[4096] = {};
+    std::string m_error;
 };

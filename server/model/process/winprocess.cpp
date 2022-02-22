@@ -26,14 +26,16 @@
 #include "winprocess.hpp"
 #include "tlhelp32.h"
 
-#include "../global.hpp"
+#include "global.hpp"
 
 WinProcess::WinProcess() :
     m_childStdInRead(NULL),
     m_childStdInWrite(NULL),
     m_childStdOutRead(NULL),
     m_childStdOutWrite(NULL)
-{}
+{
+    m_error.reserve(4096);
+}
 
 WinProcess::~WinProcess()
 {
@@ -56,8 +58,13 @@ uint8_t WinProcess::start(const char *pathToProcess,
 {
     if (!pathToProcess || !workDir)
     {
-        sprintf(m_error, "%s:%d %s", __FILE__, __LINE__, "Invalid input.");
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error += __FILE__;
+        m_error += ":";
+        m_error += std::to_string(__LINE__);
+        m_error += " Invalid input.";
+
+        Global::logger.write(Logger::Error, m_error.c_str());
         reset();
         return 1;
     }
@@ -69,28 +76,28 @@ uint8_t WinProcess::start(const char *pathToProcess,
 
     if (!CreatePipe(&m_childStdOutRead, &m_childStdOutWrite, &saAttr, 0))
     {
-        writeLastError();
+        writeLastError(__FILE__, __LINE__);
         reset();
         return 1;
     }
 
     if (!SetHandleInformation(m_childStdOutRead, HANDLE_FLAG_INHERIT, 0))
     {
-        writeLastError();
+        writeLastError(__FILE__, __LINE__);
         reset();
         return 1;
     }
 
     if (!CreatePipe(&m_childStdInRead, &m_childStdInWrite, &saAttr, 0))
     {
-        writeLastError();
+        writeLastError(__FILE__, __LINE__);
         reset();
         return 1;
     }
 
     if (!SetHandleInformation(m_childStdInWrite, HANDLE_FLAG_INHERIT, 0))
     {
-        writeLastError();
+        writeLastError(__FILE__, __LINE__);
         reset();
         return 1;
     }
@@ -113,11 +120,13 @@ uint8_t WinProcess::start(const char *pathToProcess,
         cmdPtr = new (std::nothrow) char[cmdLine.size() + 1]();
         if (!cmdPtr)
         {
-            sprintf(m_error, "%s:%d %s",
-                    __FILE__,
-                    __LINE__,
-                    "Fail to allocate memory for command line.");
-            Global::logger.write(Logger::Error, m_error);
+            m_error.clear();
+            m_error += __FILE__;
+            m_error += ":";
+            m_error += std::to_string(__LINE__);
+            m_error += " Fail to allocate memory for command line.";
+
+            Global::logger.write(Logger::Error, m_error.c_str());
             reset();
             return 1;
         }
@@ -167,7 +176,7 @@ uint8_t WinProcess::start(const char *pathToProcess,
 
     if (!res)
     {
-        writeLastError();
+        writeLastError(__FILE__, __LINE__);
         reset();
         return 1;
     }
@@ -211,7 +220,7 @@ uint8_t WinProcess::readStdOut(char *buffer, size_t *bufferLen)
                 continue;
             }
 
-            writeLastError();
+            writeLastError(__FILE__, __LINE__);
             return 1;
         }
 
@@ -249,13 +258,19 @@ AbstractProcess::ExitState WinProcess::exitCode(int *code)
 }
 
 // private member functions
-void WinProcess::writeLastError()
+void WinProcess::writeLastError(const char *file, int line)
 {
+    if (!file)
+    {
+        m_error.clear();
+        return;
+    }
+
     LPSTR msgBuf = nullptr;
     DWORD errID = GetLastError();
     if (!errID)
     {
-        m_error[0] = '\0';
+        m_error.clear();
         return;
     }
 
@@ -268,21 +283,15 @@ void WinProcess::writeLastError()
                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                 (LPSTR)&msgBuf, 0, NULL);
 
-    if (errSize > 4095)
-    {
-        memcpy(m_error, msgBuf, 4095);
-        m_error[4095] = '\0';
-    }
-    else
-    {
-        memcpy(m_error, msgBuf, errSize);
-        m_error[errSize] = '\0';
-    }
+    m_error.clear();
+    m_error += file;
+    m_error += ":";
+    m_error += std::to_string(line);
+    m_error += " ";
+    m_error += std::string(msgBuf, errSize);
 
     LocalFree(msgBuf);
-    char buf[8192];
-    sprintf(buf, "%s:%d %s", __FILE__, __LINE__, m_error);
-    Global::logger.write(Logger::Error, buf);
+    Global::logger.write(Logger::Error, m_error.c_str());
 }
 
 void WinProcess::resetImpl()

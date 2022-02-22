@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package stq;
+
+import "types.proto";
+
+service Queue {
+  rpc CreateQueue(QueueReq) returns (ExitRes);
+  rpc RenameQueue(RenameQueueReq) returns (ExitRes);
+  rpc DeleteQueue(QueueReq) returns (ExitRes);
+  rpc ListQueue(Inquiry) returns (ListQueueRes);
+}
+
+message QueueReq {
+  string token = 1;
+  string name = 2;
+}
+
+message RenameQueueReq {
+  string token = 1;
+  string oldname = 2;
+  string newName = 3;
+}
+
+message ListQueueRes {
+  StateCode stateCode = 1;
+  repeated string list = 2;
+}

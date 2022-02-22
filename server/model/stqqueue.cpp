@@ -21,13 +21,290 @@
  * SOFTWARE.
  */
 
+#include <new>
+
+#include "../global.hpp"
 #include "stqqueue.hpp"
 
 STQQueue::STQQueue() :
-    m_id(0)
-{}
+    m_id(0),
+    m_process(nullptr),
+    m_terminate(false),
+    m_stopped(false)
+{
+}
 
 STQQueue::~STQQueue()
-{}
+{
+    if (!m_stopped)
+    {
+        stop();
+    }
 
+    if (m_process) delete m_process;
+}
 
+uint8_t STQQueue::init(STQQueue *in, const std::string &name)
+{
+    if (!in) return 1;
+
+#ifdef _WIN32
+    in->m_process = new (std::nothrow) WinProcess();
+#else
+    in->m_process = new (std::nothrow) NixProcess();
+#endif
+
+    if (!in->m_process)
+    {
+        in->m_errLog.clear();
+        in->m_errLog += __FILE__;
+        in->m_errLog += ":";
+        in->m_errLog += __LINE__;
+        in->m_errLog += " Fail to allocate memory.";
+        Global::logger.write(Logger::Error, in->m_errLog.c_str());
+        return 1;
+    }
+
+    if (in->m_process->init(in->m_process))
+    {
+        in->m_errLog.clear();
+        in->m_errLog += __FILE__;
+        in->m_errLog += ":";
+        in->m_errLog += __LINE__;
+        in->m_errLog += " Fail to initialize process object.";
+        Global::logger.write(Logger::Error, in->m_errLog.c_str());
+
+        delete in->m_process;
+        in->m_process = nullptr;
+        return 1;
+    }
+
+    in->m_name = name;
+    return 0;
+}
+
+uint8_t STQQueue::listPanding(std::vector<uint32_t> *out)
+{
+    return listID(m_panding, out);
+}
+
+uint8_t STQQueue::listFinished(std::vector<uint32_t> *out)
+{
+    return listID(m_finished, out);
+}
+
+uint8_t STQQueue::pandingDetails(uint32_t id, STQTask *out)
+{
+    return taskDetails(m_panding, id, out);
+}
+
+uint8_t STQQueue::finishedDetails(uint32_t id, STQTask *out)
+{
+    return taskDetails(m_finished, id, out);
+}
+
+uint8_t STQQueue::currentTask(STQTask *out)
+{
+    if (!out) return 1;
+
+    std::unique_lock<std::mutex> lock(m_currentTaskMutex);
+    if (!m_currentTask) return 1;
+
+    memcpy(out, m_currentTask, sizeof(STQTask));
+    return 0;
+}
+
+uint8_t STQQueue::addTask(STQTask *in)
+{
+    if (!in) return 1;
+
+    {
+        std::unique_lock<std::mutex> lock(m_queueMutex);
+        (*in).id = m_id;
+        ++m_id;
+        m_panding.push_back(*in);
+    }
+
+    m_condition.notify_one();
+    return 0;
+}
+
+uint8_t STQQueue::removeTask(uint32_t id)
+{
+    uint8_t ret(1);
+    {
+        std::unique_lock<std::mutex> lock(m_queueMutex);
+        for (auto it = m_panding.begin(); it != m_panding.end(); ++it)
+        {
+            if (it->id == id)
+            {
+                m_panding.erase(it);
+                ret = 0;
+                break;
+            }
+        }
+    }
+
+    m_condition.notify_one();
+    return ret;
+}
+
+void STQQueue::start()
+{
+
+}
+
+void stop();
+
+// private member functions
+uint8_t STQQueue::listID(std::deque<STQTask> &queue, std::vector<uint32_t> *out)
+{
+    if (!out) return 1;
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+    (*out).clear();
+
+    if (queue.empty())
+    {
+        return 0;
+    }
+
+    (*out).reserve(queue.size());
+    for (auto it = queue.begin(); it != queue.end(); ++it)
+    {
+        (*out).push_back(it->id);
+    }
+
+    return 0;
+}
+
+uint8_t STQQueue::taskDetails(std::deque<STQTask> &queue, uint32_t id, STQTask *out)
+{
+    if (!out) return 1;
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+
+    STQTask *task(nullptr);
+    for (auto it = queue.begin(); it != queue.end(); ++it)
+    {
+        if (it->id == id)
+        {
+            task = &(*it);
+            memcpy(out, task, sizeof(STQTask));
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+void STQQueue::mainLoop()
+{
+    if (!m_process)
+    {
+        m_stopped = true;
+        return;
+    }
+
+    STQTask task;
+    {
+        std::unique_lock<std::mutex> lock(m_currentTaskMutex);
+        m_currentTask = nullptr;
+    }
+
+    std::string errorLog;
+    errorLog.reserve(4096);
+    size_t bufSize(4096);
+    std::string fileName;
+
+    while (1)
+    {
+        {
+            std::unique_lock<std::mutex> lock(m_queueMutex);
+            m_condition.wait(lock, [this]()
+            {
+                return !m_panding.empty() || m_terminate;
+            });
+
+            if (m_terminate)
+            {
+                m_terminate = false;
+                break;
+            }
+
+            task = m_panding.front();
+            m_panding.pop_front();
+        }
+
+        {
+            std::unique_lock<std::mutex> lock(m_currentTaskMutex);
+            m_currentTask = &task;
+        }
+
+        if (m_process->start(task.execName.c_str(), task.workDir.c_str(), task.args))
+        {
+            // failed
+            errorLog.clear();
+            errorLog += __FILE__;
+            errorLog += ":";
+            errorLog += __LINE__;
+            errorLog += " Fail to start process. Task details:\n";
+            
+            // print task details
+            errorLog += "name: ";
+            errorLog += task.execName;
+            errorLog += "\n";
+
+            errorLog += "working dir: ";
+            errorLog += task.workDir;
+            errorLog += "\n";
+
+            errorLog += "args: ";
+            if (task.args.size())
+            {
+                for (auto it = task.args.begin(); it != task.args.end(); ++it)
+                {
+                    errorLog += (*it);
+                    errorLog += " ";
+                }
+            }
+
+            Global::logger.write(Logger::Error, errorLog.c_str());
+            task.isSuccess = false;
+            toFinishedQueue(&task);
+            continue;
+        }
+
+        fileName = m_name + "-" + std::to_string(task.id) + ".log";
+        while (m_process->isRunning())
+        {
+            {
+                std::unique_lock<std::mutex> lock(m_outMutex);
+                if (m_process->readStdOut(m_out, &bufSize))
+                {
+                    bufSize = 4096;
+                    errorLog.clear();
+                    errorLog += __FILE__;
+                    errorLog += ":";
+                    errorLog += __LINE__;
+                    errorLog += " Fail to read child process' stdout.";
+                    Global::logger.write(Logger::Error, errorLog.c_str());
+                    continue;
+                }
+            }
+        }
+    } // end while(1)
+}
+
+void STQQueue::toFinishedQueue(STQTask *in)
+{
+    {
+        std::unique_lock<std::mutex> lock(m_currentTaskMutex);
+        m_currentTask = nullptr;
+    }
+
+    if (!in) return;
+
+    {
+        std::unique_lock<std::mutex> lock(m_queueMutex);
+        m_finished.push_back(*in);
+    }
+}

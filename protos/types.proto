@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+option csharp_namespace = "STQdotnet";
+
+package stq;
+
+enum StateCode {
+  OK = 0;
+  FAILED = 1;
+}
+
+message ExitRes {
+  StateCode stateCode = 1;
+  string reason = 2;
+}
+
+message Inquiry {
+  string token = 1;
+}
+
+// for task
+message AddTaskReq {
+  string token = 1;
+  string queueName = 2;
+  string workDir = 3;
+  string programName = 4;
+  repeated string args = 5;
+}
+
+message TaskIDReq {
+  string token = 1;
+  string queueName = 2;
+  uint32 id = 3;
+}
+
+message ListTaskRes {
+  StateCode stateCode = 1;
+  repeated uint32 list = 2;
+}
+
+message TaskStateRes {
+  StateCode stateCode = 1;
+  string workDir = 2;
+  string programName = 3;
+  repeated string args = 4;
+}
+
+message CurrentTaskOutputRes {
+  StateCode stateCode = 1;
+  string output = 2;
+}
+
+message TaskExitStateRes {
+  StateCode stateCode = 1;
+  string workDir = 2;
+  string programName = 3;
+  repeated string args = 4;
+  int32 exitCode = 5;
+}
+
+message File {
+  bytes content = 1;
+}
+
+message FileRes {
+  StateCode stateCode = 1;
+  string path = 2;
+}

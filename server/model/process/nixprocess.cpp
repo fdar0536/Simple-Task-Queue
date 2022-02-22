@@ -29,7 +29,7 @@
 
 #include "nixprocess.hpp"
 
-#include "../global.hpp"
+#include "global.hpp"
 
 NixProcess::NixProcess() :
     m_pid(0)

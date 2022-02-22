@@ -37,9 +37,17 @@ typedef struct STQTsak
 {
     uint32_t id;
 
+    std::string execName;
+
+    std::string workDir;
+
     std::vector<std::string> args;
 
     std::string postScript;
 
     STQPriority priority;
+
+    int exitCode;
+
+    bool isSuccess;
 } STQTask;
