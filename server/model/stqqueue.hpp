@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <condition_variable>
 #include <fstream>
 #include <deque>
 #include <mutex>

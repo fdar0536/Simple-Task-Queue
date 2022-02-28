@@ -155,6 +155,7 @@ void STQQueue::start()
 {
     if (!m_stopped) return;
 
+    m_stopped = false;
     m_thread = std::thread([this]()
     {
         mainLoop();
@@ -162,7 +163,16 @@ void STQQueue::start()
 }
 
 void STQQueue::stop()
-{}
+{
+    {
+        std::unique_lock<std::mutex> lock(m_queueMutex);
+        m_terminate = true;
+    }
+
+    m_condition.notify_all();
+    m_thread.join();
+    m_stopped = true;
+}
 
 // private member functions
 uint8_t STQQueue::listID(std::deque<STQTask> &queue, std::vector<uint32_t> *out)
