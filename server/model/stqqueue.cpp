@@ -23,6 +23,8 @@
 
 #include <new>
 
+#include <cstring>
+
 #include "../global.hpp"
 #include "stqqueue.hpp"
 

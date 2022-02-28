@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <cinttypes>
+#include <cstring>
 
 #ifdef _WIN32
 #ifdef __MINGW32__
@@ -11,6 +12,8 @@
 #else
 #include "getopt.h"
 #endif // _WIN32
+
+#include "global.hpp"
 
 void printHelp(char **argv)
 {
@@ -29,6 +32,7 @@ int main(int argc, char **argv)
     };
 
     int c;
+    char configFile[4096] = {};
     while ((c = getopt_long(argc, argv, "hc:", opts, NULL)) != -1)
     {
         switch (c)
@@ -40,7 +44,16 @@ int main(int argc, char **argv)
         }
         case 'c':
         {
+            size_t len = strlen(optarg);
+            if (len > 4095)
+            {
+                printHelp(argv);
+                return 1;
+            }
 
+            memcpy(configFile, optarg, len);
+            configFile[len] = '\0';
+            break;
         }
         default:
         {
@@ -50,5 +63,10 @@ int main(int argc, char **argv)
         } // end switch(c)
     }
 
-	return 0;
+    if (Global::init(configFile))
+    {
+        return 1;
+    }
+
+    return 0;
 }
