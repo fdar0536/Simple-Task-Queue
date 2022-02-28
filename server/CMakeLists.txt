@@ -31,8 +31,6 @@ set(SERVER_SRC
     ${PROCESS_SRC}
     ${GET_OPT_SRC}
 
-    model/stringutils.cpp
-    model/stringutils.hpp
     model/stqqueue.cpp
     model/stqqueue.hpp
     model/stqtask.hpp
