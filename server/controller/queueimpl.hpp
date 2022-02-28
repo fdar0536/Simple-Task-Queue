@@ -21,29 +21,27 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include "queue.grpc.pb.h"
 
-#include <string>
-#include <vector>
-
-#include "../logger.hpp"
-#include "model/stqqueuelist.hpp"
-
-namespace Global
+class QueueImpl: public stq::Queue::Service
 {
+public:
 
-extern Logger logger;
+    ::grpc::Status CreateQueue(::grpc::ServerContext* context,
+                               const ::stq::QueueReq* request,
+                               ::stq::ExitRes* response) override;
 
-extern std::string fileSavePath;
+    ::grpc::Status RenameQueue(::grpc::ServerContext* context,
+                               const ::stq::RenameQueueReq* request,
+                               ::stq::ExitRes* response) override;
 
-extern std::string outFilePath;
+    ::grpc::Status DeleteQueue(::grpc::ServerContext* context,
+                               const ::stq::QueueReq* request,
+                               ::stq::ExitRes* response) override;
 
-extern std::string ip;
+    ::grpc::Status ListQueue(::grpc::ServerContext* context,
+                             const ::stq::Inquiry* request,
+                             ::stq::ListQueueRes* response) override;
 
-extern int port;
-
-extern STQQueueList queueList;
-
-uint8_t init(const char *);
-
-} // end namespace Global
+private:
+};

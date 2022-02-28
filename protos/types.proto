@@ -19,15 +19,15 @@ message Inquiry {
 
 // for task
 message AddTaskReq {
-  string queueName = 2;
-  string workDir = 3;
-  string programName = 4;
-  repeated string args = 5;
+  string queueName = 1;
+  string workDir = 2;
+  string programName = 3;
+  repeated string args = 4;
 }
 
 message TaskIDReq {
-  string queueName = 2;
-  uint32 id = 3;
+  string queueName = 1;
+  uint32 id = 2;
 }
 
 message ListTaskRes {

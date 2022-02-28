@@ -23,27 +23,28 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
+#include <memory>
+#include <mutex>
+#include <unordered_map>
 
-#include "../logger.hpp"
-#include "model/stqqueuelist.hpp"
+#include "stqqueue.hpp"
 
-namespace Global
+class STQQueueList
 {
 
-extern Logger logger;
+public:
 
-extern std::string fileSavePath;
+    uint8_t createQueue(const std::string &);
 
-extern std::string outFilePath;
+    uint8_t renameQueue(const std::string &, const std::string &);
 
-extern std::string ip;
+    uint8_t deleteQueue(const std::string &);
 
-extern int port;
+    std::vector<std::string> listQueue();
 
-extern STQQueueList queueList;
+private:
 
-uint8_t init(const char *);
+    std::mutex m_queueMutex;
 
-} // end namespace Global
+    std::unordered_map<std::string, std::shared_ptr<STQQueue>> m_queueList;
+};

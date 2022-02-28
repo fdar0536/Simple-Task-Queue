@@ -31,11 +31,17 @@ set(SERVER_SRC
     ${PROCESS_SRC}
     ${GET_OPT_SRC}
 
+    controller/queueimpl.cpp
+    controller/queueimpl.hpp
+
     model/stqqueue.cpp
     model/stqqueue.hpp
+    model/stqqueuelist.cpp
+    model/stqqueuelist.hpp
     model/stqtask.cpp
     model/stqtask.hpp
 
+    common.hpp
     global.cpp
     global.hpp
     main.cpp
@@ -51,6 +57,7 @@ target_include_directories(STQServer PRIVATE ${CPPCODEC_INCLUDE_DIR})
 
 target_link_libraries(STQServer
     gRPC::grpc++
+    absl::synchronization
     logger
     grpc_common
     nlohmann_json::nlohmann_json

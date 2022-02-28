@@ -53,6 +53,7 @@ find_package(GRPC REQUIRED)
 if (BUILD_SERVER)
     find_package(nlohmann_json 3.10.5 REQUIRED)
     find_package(OpenSSL 1.1.1 REQUIRED)
+    find_package(absl REQUIRED)
 endif(BUILD_SERVER)
 
 if (BUILD_CLIENT)

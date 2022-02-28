@@ -23,27 +23,4 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-
-#include "../logger.hpp"
-#include "model/stqqueuelist.hpp"
-
-namespace Global
-{
-
-extern Logger logger;
-
-extern std::string fileSavePath;
-
-extern std::string outFilePath;
-
-extern std::string ip;
-
-extern int port;
-
-extern STQQueueList queueList;
-
-uint8_t init(const char *);
-
-} // end namespace Global
+#define UNUSED(x) static_cast<void>(x)

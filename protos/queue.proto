@@ -12,12 +12,12 @@ service Queue {
 }
 
 message QueueReq {
-  string name = 2;
+  string name = 1;
 }
 
 message RenameQueueReq {
-  string oldname = 2;
-  string newName = 3;
+  string oldname = 1;
+  string newName = 2;
 }
 
 message ListQueueRes {

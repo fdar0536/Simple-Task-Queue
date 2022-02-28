@@ -43,6 +43,8 @@ std::string ip;
 
 int port;
 
+STQQueueList queueList;
+
 template<class T>
 static uint8_t getConfigItem(T &dst, json &config, const char *entry)
 {
@@ -69,10 +71,10 @@ static uint8_t verifyPath(std::string &path)
 
     std::string filePath = path + "testFile";
     FILE *f;
-    f = fopen(filePath.c_str(), "rw");
+    f = fopen(filePath.c_str(), "w+");
     if (!f)
     {
-        std::cerr << filePath << " CANNOT open.";
+        std::cerr << filePath << " CANNOT open." << std::endl;
         return 1;
     }
 
@@ -81,7 +83,7 @@ static uint8_t verifyPath(std::string &path)
     fclose(f);
     if (remove(filePath.c_str()))
     {
-        std::cerr << filePath << " CANNOT remove.";
+        std::cerr << filePath << " CANNOT remove." << std::endl;
         return 1;
     }
 
@@ -114,16 +116,6 @@ uint8_t init(const char *configFile)
     }
 
     if (verifyPath(fileSavePath))
-    {
-        return 1;
-    }
-
-    if (getConfigItem(outFilePath, j, "output file path"))
-    {
-        return 1;
-    }
-
-    if (verifyPath(outFilePath))
     {
         return 1;
     }
