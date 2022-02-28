@@ -45,7 +45,7 @@ uint8_t NixProcess::init(AbstractProcess *in)
     if (!in) return 1;
 
     NixProcess *process = reinterpret_cast<NixProcess *>(in);
-    memset(process->m_fd, 0, 2);
+    memset(process->m_fd, 0, 2 * sizeof(int));
     return 0;
 }
 
@@ -283,7 +283,7 @@ void NixProcess::resetImpl()
     stopImpl();
     close(m_fd[0]);
     close(m_fd[1]);
-    memset(m_fd, 0, 2);
+    memset(m_fd, 0, 2 * sizeof(int));
     m_pid = 0;
 }
 

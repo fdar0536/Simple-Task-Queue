@@ -33,6 +33,7 @@ set(SERVER_SRC
 
     model/stqqueue.cpp
     model/stqqueue.hpp
+    model/stqtask.cpp
     model/stqtask.hpp
 
     global.cpp

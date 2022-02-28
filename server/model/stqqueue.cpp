@@ -112,7 +112,7 @@ uint8_t STQQueue::currentTask(STQTask *out)
     std::unique_lock<std::mutex> lock(m_currentTaskMutex);
     if (!m_currentTask) return 1;
 
-    memcpy(out, m_currentTask, sizeof(STQTask));
+    (*out) = *m_currentTask;
     return 0;
 }
 
@@ -206,7 +206,7 @@ uint8_t STQQueue::taskDetails(std::deque<STQTask> &queue, uint32_t id, STQTask *
         if (it->id == id)
         {
             task = &(*it);
-            memcpy(out, task, sizeof(STQTask));
+            (*out) = *task;
             return 0;
         }
     }
@@ -292,7 +292,7 @@ void STQQueue::mainLoop()
         }
 
         fileName = m_name + "-" + std::to_string(task.id) + ".log";
-        fileName = Global::outputFilePath + fileName;
+        fileName = Global::outFilePath + fileName;
         FILE *f;
         while (m_process->isRunning())
         {

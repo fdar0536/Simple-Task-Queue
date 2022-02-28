@@ -35,7 +35,7 @@ extern Logger logger;
 
 extern std::string fileSavePath;
 
-extern std::string outputFilePath;
+extern std::string outFilePath;
 
 extern std::string ip;
 

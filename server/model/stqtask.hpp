@@ -50,4 +50,6 @@ typedef struct STQTsak
     int exitCode;
 
     bool isSuccess;
+
+    STQTsak& operator=(const STQTsak &);
 } STQTask;

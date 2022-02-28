@@ -25,10 +25,8 @@
 #include <mutex>
 
 #include "nlohmann/json.hpp"
-#include "cppcodec/base32_rfc4648.hpp"
 
 #include "global.hpp"
-#include "model/stringutils.hpp"
 
 using json = nlohmann::json;
 
