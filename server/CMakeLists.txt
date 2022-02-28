@@ -34,8 +34,6 @@ set(SERVER_SRC
     model/stqqueue.cpp
     model/stqqueue.hpp
     model/stqtask.hpp
-    model/totp.cpp
-    model/totp.hpp
 
     global.cpp
     global.hpp
