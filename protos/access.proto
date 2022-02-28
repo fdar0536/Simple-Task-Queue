@@ -5,12 +5,8 @@ package stq;
 import "types.proto";
 
 // for login
+/*
 service Access {
-  
-  rpc Login(LoginReq) returns (LoginRes);
-  rpc Logout(Inquiry) returns (ExitRes);
-
-  /*
   // for task
   // panding list
   rpc AddTask(AddTaskReq) returns (ExitRes);
@@ -31,16 +27,5 @@ service Access {
   // for file
   rpc UploadHook(stream File) returns (FileRes);
   rpc DownloadLog(TaskIDReq) returns (stream File);
-  */
 }
-
-message LoginReq {
-  string userName = 1;
-  string password = 2;
-  string otp = 3;
-}
-
-message LoginRes {
-  StateCode stateCode = 1;
-  string token = 2;
-}
+*/

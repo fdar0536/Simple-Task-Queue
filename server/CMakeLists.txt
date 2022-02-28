@@ -1,5 +1,3 @@
-
-
 set(PROCESS_SRC
     model/process/abstractprocess.cpp
     model/process/abstractprocess.hpp
@@ -33,6 +31,8 @@ set(SERVER_SRC
     ${PROCESS_SRC}
     ${GET_OPT_SRC}
 
+    model/stringutils.cpp
+    model/stringutils.hpp
     model/stqqueue.cpp
     model/stqqueue.hpp
     model/stqtask.hpp
@@ -50,8 +50,11 @@ add_executable(STQServer
 
 add_dependencies(STQServer logger grpc_common)
 
+target_include_directories(STQServer PRIVATE ${CPPCODEC_INCLUDE_DIR})
+
 target_link_libraries(STQServer
     gRPC::grpc++
     logger
     grpc_common
+    nlohmann_json::nlohmann_json
 )

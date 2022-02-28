@@ -53,6 +53,11 @@ Logger::Level Logger::getLevel() const
     return m_logLevel;
 }
 
+void Logger::setSavePath(std::string &path)
+{
+    m_savePath = path;
+}
+
 void Logger::write(Level level,
                        const char *in,
                        bool haveToWriteOut,
@@ -94,7 +99,7 @@ void Logger::write(Level level,
         sprintf(label, "%s Error: %s\n", m_log, in);
         break;
     }
-    default: // off就直接不寫log
+    default:
     {
         break;
     }
@@ -108,7 +113,7 @@ void Logger::write(Level level,
     if (haveToWriteFile)
     {
         checkFile(current);
-        m_out = fopen(m_lastFileName, "a");
+        m_out = fopen(m_lastFileName.c_str(), "a");
         if (!m_out)
         {
             printTimeStamp(current);
@@ -137,11 +142,13 @@ void Logger::updateFileName(time_t in)
 {
     struct tm *tm = localtime(&in);
     if (!tm) return;
-    sprintf(m_lastFileName,
+    char tmpString[16];
+    sprintf(tmpString,
             "%d%02d%02d.log",
             tm->tm_year + 1900,
             tm->tm_mon + 1,
             tm->tm_mday);
+    m_lastFileName = m_savePath + tmpString;
 }
 
 void Logger::printTimeStamp(time_t in)

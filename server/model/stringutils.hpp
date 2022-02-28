@@ -23,53 +23,16 @@
 
 #pragma once
 
-#include <fstream>
-#include <mutex>
 #include <string>
 
-#include <ctime>
+#include <cinttypes>
+#include <cstddef>
 
-class Logger
+namespace StringUtils
 {
 
-public:
+uint8_t compress(const unsigned char *, size_t, unsigned char *, size_t);
 
-    typedef enum Level
-    {
-        Verbose, Debug, Info, Warning, Error, Off
-    } Level;
+uint8_t decompress(const unsigned char *, size_t, unsigned char *, size_t);
 
-    Logger(Level = Level::Info);
-
-    ~Logger();
-
-    void setLevel(Level);
-
-    Level getLevel() const;
-
-    void setSavePath(std::string &path);
-
-    void write(Level, const char *, bool = true, bool = true);
-
-private:
-
-    Level m_logLevel;
-
-    FILE *m_out;
-
-    std::mutex m_mutex;
-
-    time_t m_lastUpdate;
-
-    std::string m_savePath;
-
-    std::string m_lastFileName;
-
-    char m_log[32];
-
-    void checkFile(time_t);
-
-    void updateFileName(time_t);
-
-    void printTimeStamp(time_t);
-};
+} // end namespace StringUtils

@@ -15,12 +15,10 @@ message ExitRes {
 }
 
 message Inquiry {
-  string token = 1;
 }
 
 // for task
 message AddTaskReq {
-  string token = 1;
   string queueName = 2;
   string workDir = 3;
   string programName = 4;
@@ -28,7 +26,6 @@ message AddTaskReq {
 }
 
 message TaskIDReq {
-  string token = 1;
   string queueName = 2;
   uint32 id = 3;
 }

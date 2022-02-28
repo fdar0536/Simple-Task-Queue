@@ -48,7 +48,7 @@ if ((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 
 find_package(Protobuf REQUIRED)
-find_package(gRPC REQUIRED)
+find_package(GRPC REQUIRED)
 
 if (BUILD_SERVER)
     find_package(nlohmann_json 3.10.5 REQUIRED)
@@ -60,7 +60,6 @@ if (BUILD_CLIENT)
 endif(BUILD_CLIENT)
 
 set(PROTOS
-    ${CMAKE_CURRENT_SOURCE_DIR}/protos/access.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/queue.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/types.proto
 )

@@ -151,10 +151,16 @@ uint8_t STQQueue::removeTask(uint32_t id)
 
 void STQQueue::start()
 {
+    if (!m_stopped) return;
 
+    m_thread = std::thread([this]()
+    {
+        mainLoop();
+    });
 }
 
-void stop();
+void STQQueue::stop()
+{}
 
 // private member functions
 uint8_t STQQueue::listID(std::deque<STQTask> &queue, std::vector<uint32_t> *out)
@@ -245,9 +251,9 @@ void STQQueue::mainLoop()
             errorLog.clear();
             errorLog += __FILE__;
             errorLog += ":";
-            errorLog += __LINE__;
+            errorLog += std::to_string(__LINE__);
             errorLog += " Fail to start process. Task details:\n";
-            
+
             // print task details
             errorLog += "name: ";
             errorLog += task.execName;
@@ -274,6 +280,8 @@ void STQQueue::mainLoop()
         }
 
         fileName = m_name + "-" + std::to_string(task.id) + ".log";
+        fileName = Global::outputFilePath + fileName;
+        FILE *f;
         while (m_process->isRunning())
         {
             {
@@ -284,13 +292,32 @@ void STQQueue::mainLoop()
                     errorLog.clear();
                     errorLog += __FILE__;
                     errorLog += ":";
-                    errorLog += __LINE__;
+                    errorLog += std::to_string(__LINE__);
                     errorLog += " Fail to read child process' stdout.";
                     Global::logger.write(Logger::Error, errorLog.c_str());
                     continue;
                 }
+
+                f = fopen(fileName.c_str(), "a");
+                if (!f)
+                {
+                    bufSize = 4096;
+                    errorLog.clear();
+                    errorLog += __FILE__;
+                    errorLog += ":";
+                    errorLog += std::to_string(__LINE__);
+                    errorLog += " Fail to open log file.";
+                    Global::logger.write(Logger::Error, errorLog.c_str());
+                    continue;
+                }
+
+                fwrite(m_out, 1, bufSize, f);
+                fclose(f);
+                f = nullptr;
             }
-        }
+        } // end while (m_process->isRunning())
+
+        toFinishedQueue(&task);
     } // end while(1)
 }
 
