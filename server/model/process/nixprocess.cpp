@@ -70,8 +70,12 @@ uint8_t NixProcess::start(const char *name,
     if (m_pid == -1)
     {
         // parent process
-        sprintf(m_error, "%s:%d %s: %s", __FILE__, __LINE__, "fork", strerror(errno));
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " fork: ";
+        m_error += strerror(errno);
+
+        Global::logger.write(Logger::Error, m_error.c_str());
         return 1;
     }
 
@@ -84,8 +88,11 @@ uint8_t NixProcess::start(const char *name,
             exit(1);
         }
 
-        sprintf(m_error, "%s:%d %s: %s", __FILE__, __LINE__, "pipe", strerror(errno));
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " pipe: ";
+        m_error += strerror(errno);
+        Global::logger.write(Logger::Error, m_error.c_str());
         return 1;
     }
 
@@ -169,8 +176,11 @@ uint8_t NixProcess::start(const char *name,
     close(m_fd[1]);
     if (setpgid(m_pid, 0) == -1)
     {
-        sprintf(m_error, "%s:%d %s: %s", __FILE__, __LINE__, "setpgid", strerror(errno));
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " setpgid: ";
+        m_error += strerror(errno);
+        Global::logger.write(Logger::Error, m_error.c_str());
         kill(m_pid, SIGKILL);
         return 1;
     }
@@ -187,15 +197,19 @@ uint8_t NixProcess::readStdOut(char *buf, size_t *bufSize)
 {
     if (!buf || !bufSize)
     {
-        sprintf(m_error, "%s:%d %s", __FILE__, __LINE__, "Invalid input.");
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " Invalid input.";
+        Global::logger.write(Logger::Error, m_error.c_str());
         return 1;
     }
 
     if (!(*bufSize))
     {
-        sprintf(m_error, "%s:%d %s", __FILE__, __LINE__, "Invalid buffer size.");
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " Invalid buffer size.";
+        Global::logger.write(Logger::Error, m_error.c_str());
         return 1;
     }
 
@@ -208,8 +222,12 @@ uint8_t NixProcess::readStdOut(char *buf, size_t *bufSize)
             if (errno == EINTR) continue;
             else
             {
-                sprintf(m_error, "%s:%d %s: %s", __FILE__, __LINE__, "read", strerror(errno));
-                Global::logger.write(Logger::Error, m_error);
+                m_error.clear();
+                m_error = __FILE__":" + std::to_string(__LINE__);
+                m_error += " read: ";
+                m_error += strerror(errno);
+                Global::logger.write(Logger::Error, m_error.c_str());
+
                 *bufSize = 0;
                 buf[0] = '\0';
                 return 1;
@@ -237,8 +255,11 @@ AbstractProcess::ExitState NixProcess::exitCode(int *code)
     int status = 0;
     if (waitpid(m_pid, &status, WNOHANG) == -1)
     {
-        sprintf(m_error, "%s:%d %s: %s", __FILE__, __LINE__, "waitpid", strerror(errno));
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " waitpid: ";
+        m_error += strerror(errno);
+        Global::logger.write(Logger::Error, m_error.c_str());
         return AbstractProcess::ExitState::Failed;
     }
 
@@ -270,8 +291,11 @@ uint8_t NixProcess::stopImpl()
 {
     if (kill(m_pid * -1, SIGKILL) == -1)
     {
-        sprintf(m_error, "%s:%d %s: %s", __FILE__, __LINE__, "kill", strerror(errno));
-        Global::logger.write(Logger::Error, m_error);
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " kill: ";
+        m_error += strerror(errno);
+        Global::logger.write(Logger::Error, m_error.c_str());
         return 1;
     }
 
