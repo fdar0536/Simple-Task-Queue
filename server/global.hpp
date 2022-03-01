@@ -40,7 +40,7 @@ extern std::string outFilePath;
 
 extern std::string ip;
 
-extern int port;
+extern std::string port;
 
 extern STQQueueList queueList;
 

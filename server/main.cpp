@@ -13,13 +13,37 @@
 #include "getopt.h"
 #endif // _WIN32
 
+// grpc
+#include "grpcpp/server.h"
+#include "grpcpp/server_builder.h"
+
 #include "global.hpp"
+
+// controllers
+#include "controller/queueimpl.hpp"
 
 void printHelp(char **argv)
 {
     std::cout << argv[0] << " usage:" << std::endl;
     std::cout << "-h, --help: Print this message and exit." << std::endl;
     std::cout << "-c, --config <config file>: Path to config file." << std::endl;
+}
+
+void runServer()
+{
+    grpc::ServerBuilder builder;
+    int actualPort(0);
+    builder.AddListeningPort(Global::ip + ":" + Global::port,
+                             grpc::InsecureServerCredentials(),
+                             &actualPort);
+
+    QueueImpl queueImpl;
+    builder.RegisterService(&queueImpl);
+
+    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    std::cout << "Server listening on ";
+    std::cout << Global::ip << ":" << actualPort << std::endl;
+    server->Wait();
 }
 
 int main(int argc, char **argv)
@@ -68,5 +92,6 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    runServer();
     return 0;
 }

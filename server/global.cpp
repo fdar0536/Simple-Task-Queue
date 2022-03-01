@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <mutex>
+#include <regex>
 
 #include "nlohmann/json.hpp"
 
@@ -41,7 +42,7 @@ std::string outFilePath;
 
 std::string ip;
 
-int port;
+std::string port;
 
 STQQueueList queueList;
 
@@ -148,8 +149,33 @@ uint8_t init(const char *configFile)
         return 1;
     }
 
+    std::regex ipRegex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
+                       "{3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+
+    if (!std::regex_match(ip, ipRegex))
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Invalid ip address." << std::endl;
+        return 1;
+    }
+
     if (getConfigItem(port, j, "port"))
     {
+        return 1;
+    }
+
+    int actualPort(0);
+    if (sscanf(port.c_str(), "%d", &actualPort) != 1)
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Invalid port." << std::endl;
+        return 1;
+    }
+
+    if (actualPort < 0 || actualPort > 65535)
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Invalid port." << std::endl;
         return 1;
     }
 
