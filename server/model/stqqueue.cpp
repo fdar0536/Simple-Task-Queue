@@ -32,7 +32,7 @@ STQQueue::STQQueue() :
     m_id(0),
     m_process(nullptr),
     m_terminate(false),
-    m_stopped(false)
+    m_stopped(true)
 {
 }
 
@@ -164,6 +164,8 @@ void STQQueue::start()
 
 void STQQueue::stop()
 {
+    if (m_stopped) return;
+
     {
         std::unique_lock<std::mutex> lock(m_queueMutex);
         m_terminate = true;

@@ -3,5 +3,5 @@
     "output file path": "/tmp",
     "log path": "/tmp",
     "ip": "0.0.0.0",
-    "port": 12345
+    "port": "12345"
 }

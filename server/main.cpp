@@ -14,6 +14,7 @@
 #endif // _WIN32
 
 // grpc
+#include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include "grpcpp/server.h"
 #include "grpcpp/server_builder.h"
 
@@ -26,11 +27,17 @@ void printHelp(char **argv)
 {
     std::cout << argv[0] << " usage:" << std::endl;
     std::cout << "-h, --help: Print this message and exit." << std::endl;
+    std::cout << "-d, --debug: Start server with debug mode." << std::endl;
     std::cout << "-c, --config <config file>: Path to config file." << std::endl;
 }
 
-void runServer()
+void runServer(bool debug)
 {
+    if (debug)
+    {
+        grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+    }
+
     grpc::ServerBuilder builder;
     int actualPort(0);
     builder.AddListeningPort(Global::ip + ":" + Global::port,
@@ -42,7 +49,16 @@ void runServer()
 
     std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
     std::cout << "Server listening on ";
-    std::cout << Global::ip << ":" << actualPort << std::endl;
+    std::cout << Global::ip << ":" << actualPort;
+    if (debug)
+    {
+        std::cout << " with debug mode." << std::endl;
+    }
+    else
+    {
+        std::cout << std::endl;
+    }
+
     server->Wait();
 }
 
@@ -51,13 +67,15 @@ int main(int argc, char **argv)
     struct option opts[] =
     {
         {"help",   no_argument,       NULL, 'h'},
+        {"debug",  no_argument,       NULL, 'd'},
         {"config", required_argument, NULL, 'c'},
         {0, 0, 0, 0}
     };
 
     int c;
     char configFile[4096] = {};
-    while ((c = getopt_long(argc, argv, "hc:", opts, NULL)) != -1)
+    bool debug(false);
+    while ((c = getopt_long(argc, argv, "hdc:", opts, NULL)) != -1)
     {
         switch (c)
         {
@@ -65,6 +83,11 @@ int main(int argc, char **argv)
         {
             printHelp(argv);
             return 0;
+        }
+        case 'd':
+        {
+            debug = true;
+            break;
         }
         case 'c':
         {
@@ -92,6 +115,6 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    runServer();
+    runServer(debug);
     return 0;
 }

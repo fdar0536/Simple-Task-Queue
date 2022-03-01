@@ -99,7 +99,7 @@ private:
 
     bool m_terminate = false;
 
-    bool m_stopped = false;
+    bool m_stopped = true;
 
     uint8_t listID(std::deque<STQTask>&, std::vector<uint32_t>*);
 
