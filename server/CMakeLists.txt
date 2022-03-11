@@ -56,6 +56,7 @@ add_dependencies(STQServer logger grpc_common)
 target_include_directories(STQServer PRIVATE ${CPPCODEC_INCLUDE_DIR})
 
 target_link_libraries(STQServer
+    gRPC::grpc
     gRPC::grpc++
     gRPC::grpc++_reflection
     absl::synchronization

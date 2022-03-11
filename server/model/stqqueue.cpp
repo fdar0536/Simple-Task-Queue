@@ -85,45 +85,50 @@ uint8_t STQQueue::init(STQQueue *in, const std::string &name)
     return 0;
 }
 
-void STQQueue::listPanding(std::vector<uint32_t> &out)
+uint8_t STQQueue::listPanding(std::vector<uint32_t> *out)
 {
-    listID(m_panding, out);
+    return listID(m_panding, out);
 }
 
-void STQQueue::listFinished(std::vector<uint32_t> &out)
+uint8_t STQQueue::listFinished(std::vector<uint32_t> *out)
 {
-    listID(m_finished, out);
+    return listID(m_finished, out);
 }
 
-uint8_t STQQueue::pandingDetails(uint32_t id, STQTask &out)
+uint8_t STQQueue::pandingDetails(uint32_t id, STQTask *out)
 {
     return taskDetails(m_panding, id, out);
 }
 
-uint8_t STQQueue::finishedDetails(uint32_t id, STQTask &out)
+uint8_t STQQueue::finishedDetails(uint32_t id, STQTask *out)
 {
     return taskDetails(m_finished, id, out);
 }
 
-uint8_t STQQueue::currentTask(STQTask &out)
+uint8_t STQQueue::currentTask(STQTask *out)
 {
+    if (!out) return 1;
+
     std::unique_lock<std::mutex> lock(m_currentTaskMutex);
     if (!m_currentTask) return 1;
 
-    out = *m_currentTask;
+    (*out) = *m_currentTask;
     return 0;
 }
 
-void STQQueue::addTask(STQTask &in)
+uint8_t STQQueue::addTask(STQTask *in)
 {
+    if (!in) return 1;
+
     {
         std::unique_lock<std::mutex> lock(m_queueMutex);
-        in.id = m_id;
+        (*in).id = m_id;
         ++m_id;
-        m_panding.push_back(in);
+        m_panding.push_back(*in);
     }
 
     m_condition.notify_one();
+    return 0;
 }
 
 uint8_t STQQueue::removeTask(uint32_t id)
@@ -172,25 +177,29 @@ void STQQueue::stop()
 }
 
 // private member functions
-void STQQueue::listID(std::deque<STQTask> &queue, std::vector<uint32_t> &out)
+uint8_t STQQueue::listID(std::deque<STQTask> &queue, std::vector<uint32_t> *out)
 {
+    if (!out) return 1;
     std::unique_lock<std::mutex> lock(m_queueMutex);
-    out.clear();
+    (*out).clear();
 
     if (queue.empty())
     {
-        return;
+        return 0;
     }
 
-    out.reserve(queue.size());
+    (*out).reserve(queue.size());
     for (auto it = queue.begin(); it != queue.end(); ++it)
     {
-        out.push_back(it->id);
+        (*out).push_back(it->id);
     }
+
+    return 0;
 }
 
-uint8_t STQQueue::taskDetails(std::deque<STQTask> &queue, uint32_t id, STQTask &out)
+uint8_t STQQueue::taskDetails(std::deque<STQTask> &queue, uint32_t id, STQTask *out)
 {
+    if (!out) return 1;
     std::unique_lock<std::mutex> lock(m_queueMutex);
 
     STQTask *task(nullptr);
@@ -199,7 +208,7 @@ uint8_t STQQueue::taskDetails(std::deque<STQTask> &queue, uint32_t id, STQTask &
         if (it->id == id)
         {
             task = &(*it);
-            out = *task;
+            (*out) = *task;
             return 0;
         }
     }
@@ -280,7 +289,7 @@ void STQQueue::mainLoop()
 
             Global::logger.write(Logger::Error, errorLog.c_str());
             task.isSuccess = false;
-            toFinishedQueue(task);
+            toFinishedQueue(&task);
             continue;
         }
 
@@ -322,19 +331,21 @@ void STQQueue::mainLoop()
             }
         } // end while (m_process->isRunning())
 
-        toFinishedQueue(task);
+        toFinishedQueue(&task);
     } // end while(1)
 }
 
-void STQQueue::toFinishedQueue(STQTask &in)
+void STQQueue::toFinishedQueue(STQTask *in)
 {
     {
         std::unique_lock<std::mutex> lock(m_currentTaskMutex);
         m_currentTask = nullptr;
     }
 
+    if (!in) return;
+
     {
         std::unique_lock<std::mutex> lock(m_queueMutex);
-        m_finished.push_back(in);
+        m_finished.push_back(*in);
     }
 }

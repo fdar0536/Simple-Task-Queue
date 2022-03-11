@@ -49,17 +49,17 @@ public:
 
     static uint8_t init(STQQueue *, const std::string &);
 
-    void listPanding(std::vector<uint32_t> &);
+    uint8_t listPanding(std::vector<uint32_t> *);
 
-    void listFinished(std::vector<uint32_t> &);
+    uint8_t listFinished(std::vector<uint32_t> *);
 
-    uint8_t pandingDetails(uint32_t, STQTask &);
+    uint8_t pandingDetails(uint32_t, STQTask *);
 
-    uint8_t finishedDetails(uint32_t, STQTask &);
+    uint8_t finishedDetails(uint32_t, STQTask *);
 
-    uint8_t currentTask(STQTask &);
+    uint8_t currentTask(STQTask *);
 
-    void addTask(STQTask &);
+    uint8_t addTask(STQTask *);
 
     uint8_t removeTask(uint32_t);
 
@@ -101,11 +101,11 @@ private:
 
     bool m_stopped = true;
 
-    void listID(std::deque<STQTask> &, std::vector<uint32_t> &);
+    uint8_t listID(std::deque<STQTask>&, std::vector<uint32_t>*);
 
-    uint8_t taskDetails(std::deque<STQTask> &, uint32_t, STQTask &);
+    uint8_t taskDetails(std::deque<STQTask>&, uint32_t, STQTask*);
 
     void mainLoop();
 
-    void toFinishedQueue(STQTask &);
+    void toFinishedQueue(STQTask *);
 };

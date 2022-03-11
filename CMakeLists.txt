@@ -50,6 +50,9 @@ endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 find_package(Protobuf REQUIRED)
 find_package(GRPC REQUIRED)
 
+set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
+include(cmake/protoc.cmake)
+
 if (BUILD_SERVER)
     find_package(nlohmann_json 3.10.5 REQUIRED)
     find_package(OpenSSL 1.1.1 REQUIRED)

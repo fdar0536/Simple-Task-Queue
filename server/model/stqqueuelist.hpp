@@ -42,8 +42,6 @@ public:
 
     std::vector<std::string> listQueue();
 
-    std::shared_ptr<STQQueue> getQueue(std::string &name);
-
 private:
 
     std::mutex m_queueMutex;
