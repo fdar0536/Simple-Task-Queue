@@ -27,6 +27,8 @@
 #include <mutex>
 #include <unordered_map>
 
+#include "queue.pb.h"
+
 #include "stqqueue.hpp"
 
 class STQQueueList
@@ -40,7 +42,10 @@ public:
 
     uint8_t deleteQueue(const std::string &);
 
-    std::vector<std::string> listQueue();
+    uint8_t listQueue(::stq::ListQueueRes *response,
+                      int startIndex,
+                      int limit,
+                      char *errMsg);
 
 private:
 

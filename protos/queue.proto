@@ -5,10 +5,10 @@ package stq;
 import "types.proto";
 
 service Queue {
-  rpc CreateQueue(QueueReq) returns (ExitRes);
-  rpc RenameQueue(RenameQueueReq) returns (ExitRes);
-  rpc DeleteQueue(QueueReq) returns (ExitRes);
-  rpc ListQueue(Inquiry) returns (ListQueueRes);
+  rpc CreateQueue(QueueReq) returns (Empty);
+  rpc RenameQueue(RenameQueueReq) returns (Empty);
+  rpc DeleteQueue(QueueReq) returns (Empty);
+  rpc ListQueue(ListQueueReq) returns (ListQueueRes);
 }
 
 message QueueReq {
@@ -18,6 +18,11 @@ message QueueReq {
 message RenameQueueReq {
   string oldname = 1;
   string newName = 2;
+}
+
+message ListQueueReq {
+  int32 startIndex = 1;
+  int32 limit = 2;
 }
 
 message ListQueueRes {

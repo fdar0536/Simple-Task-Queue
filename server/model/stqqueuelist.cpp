@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+#include "../common.hpp"
 #include "stqqueuelist.hpp"
 
 uint8_t STQQueueList::createQueue(const std::string &name)
@@ -44,7 +45,7 @@ uint8_t STQQueueList::renameQueue(const std::string &oldName,
     std::string tmpString;
     if (!m_queueList.empty())
     {
-        auto it = m_queueList.find(oldName);
+        auto it(m_queueList.find(oldName));
         if (it != m_queueList.end())
         {
             auto queue = it->second;
@@ -63,7 +64,7 @@ uint8_t STQQueueList::deleteQueue(const std::string &name)
     std::string tmpString;
     if (!m_queueList.empty())
     {
-        auto it = m_queueList.find(name);
+        auto it(m_queueList.find(name));
         if (it != m_queueList.end())
         {
             m_queueList.erase(it);
@@ -74,26 +75,42 @@ uint8_t STQQueueList::deleteQueue(const std::string &name)
     return 1;
 }
 
-std::vector<std::string> STQQueueList::listQueue()
+uint8_t STQQueueList::listQueue(::stq::ListQueueRes *res,
+                                int startIndex,
+                                int limit,
+                                char *errMsg)
 {
+    if (!res || !limit || startIndex < 0)
+    {
+        PRINT_ERROR_BUF(errMsg, "Invalid input.");
+        return 1;
+    }
+
     std::unique_lock<std::mutex> lock(m_queueMutex);
-    std::vector<std::string> ret;
-    if (m_queueList.size() > 0)
+    if (m_queueList.empty())
     {
-        ret.reserve(m_queueList.size());
+        PRINT_ERROR_BUF(errMsg, "Queue list is EMPTY.");
+        return 2;
     }
 
-    std::string tmpString;
-    if (!m_queueList.empty())
+    size_t start(static_cast<size_t>(startIndex));
+    if (start >= m_queueList.size())
     {
-        for (auto it = m_queueList.begin();
-             it != m_queueList.end();
-             ++it)
-        {
-            tmpString = it->first;
-            ret.push_back(tmpString);
-        }
+        PRINT_ERROR_BUF(errMsg, "Invalid input.");
+        return 1;
     }
 
-    return ret;
+    auto startIt(m_queueList.begin());
+    for (size_t i = 0; i < start; ++i, ++startIt);
+    auto endIt(startIt);
+    size_t end(start + limit);
+    for (size_t i = start; i < end && endIt != m_queueList.end(); ++i, ++endIt);
+
+    for (auto it = startIt; it != endIt; ++it)
+    {
+        res->add_list(it->first);
+    }
+
+    if (endIt != m_queueList.end()) res->add_list(endIt->first);
+    return 0;
 }

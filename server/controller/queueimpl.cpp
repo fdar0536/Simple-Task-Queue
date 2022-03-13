@@ -28,102 +28,95 @@
 
 ::grpc::Status QueueImpl::CreateQueue(::grpc::ServerContext* context,
                            const ::stq::QueueReq* req,
-                           ::stq::ExitRes* res)
+                           ::stq::Empty* res)
 {
     UNUSED(context);
+    UNUSED(res);
     if (req->name() == "")
     {
-        res->set_statecode(::stq::StateCode::FAILED);
-        res->set_reason("Name is empty");
-        goto exit;
+        return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                              "Input is empty string");
     }
 
     if (Global::queueList.createQueue(req->name()))
     {
-        res->set_statecode(::stq::StateCode::FAILED);
-        res->set_reason("");
-        goto exit;
+        return ::grpc::Status(::grpc::StatusCode::ALREADY_EXISTS,
+                              req->name() + " is already exist");
     }
 
-    res->set_statecode(::stq::StateCode::OK);
-    res->set_reason("");
-
-exit:
     return ::grpc::Status::OK;
 }
 
 ::grpc::Status QueueImpl::RenameQueue(::grpc::ServerContext* context,
                            const ::stq::RenameQueueReq* req,
-                           ::stq::ExitRes* res)
+                           ::stq::Empty* res)
 {
     UNUSED(context);
+    UNUSED(res);
     if (req->oldname() == "" || req->newname() == "")
     {
-        res->set_statecode(::stq::StateCode::FAILED);
-        res->set_reason("Name is empty");
-        goto exit;
+        return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                              "oldName or newName is empty string");
     }
 
     if (Global::queueList.renameQueue(req->oldname(), req->newname()))
     {
-        res->set_statecode(::stq::StateCode::FAILED);
-        res->set_reason("");
-        goto exit;
+        return ::grpc::Status(::grpc::StatusCode::NOT_FOUND,
+                              req->oldname() + " is not exist.");
     }
 
-    res->set_statecode(::stq::StateCode::OK);
-    res->set_reason("");
-
-exit:
     return ::grpc::Status::OK;
 }
 
 ::grpc::Status QueueImpl::DeleteQueue(::grpc::ServerContext* context,
                            const ::stq::QueueReq* req,
-                           ::stq::ExitRes* res)
+                           ::stq::Empty* res)
 {
     UNUSED(context);
+    UNUSED(res);
     if (req->name() == "")
     {
-        res->set_statecode(::stq::StateCode::FAILED);
-        res->set_reason("Name is empty");
-        goto exit;
+        return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                              "Input is empty string");
     }
 
     if (Global::queueList.deleteQueue(req->name()))
     {
-        res->set_statecode(::stq::StateCode::FAILED);
-        res->set_reason("");
-        goto exit;
+        return ::grpc::Status(::grpc::StatusCode::NOT_FOUND,
+                              req->name() + " is not exist.");
     }
 
-    res->set_statecode(::stq::StateCode::OK);
-    res->set_reason("");
-
-exit:
     return ::grpc::Status::OK;
 }
 
 ::grpc::Status QueueImpl::ListQueue(::grpc::ServerContext* context,
-                         const ::stq::Inquiry* req,
+                         const ::stq::ListQueueReq* req,
                          ::stq::ListQueueRes* res)
 {
     UNUSED(context);
-    UNUSED(req);
-
-    auto list = Global::queueList.listQueue();
-    if (list.empty())
+    char buf[2048];
+    switch (Global::queueList.listQueue(res,
+                                        req->startindex(),
+                                        req->limit(), buf))
     {
-        res->set_statecode(::stq::StateCode::FAILED);
-        goto exit;
-    }
-
-    for (auto it = list.begin(); it != list.end(); ++it)
+    case 0:
     {
-        res->add_list(*it);
+        return ::grpc::Status::OK;
     }
-
-    res->set_statecode(::stq::StateCode::OK);
-exit:
-    return ::grpc::Status::OK;
+    case 1:
+    {
+        return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT,
+                              buf);
+    }
+    case 2:
+    {
+        return ::grpc::Status(::grpc::StatusCode::NOT_FOUND,
+                              buf);
+    }
+    default:
+    {
+        return ::grpc::Status(::grpc::StatusCode::ABORTED,
+                              buf);
+    }
+    } // end switch
 }

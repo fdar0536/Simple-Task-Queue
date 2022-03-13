@@ -9,12 +9,7 @@ enum StateCode {
   FAILED = 1;
 }
 
-message ExitRes {
-  StateCode stateCode = 1;
-  string reason = 2;
-}
-
-message Inquiry {
+message Empty {
 }
 
 // for task

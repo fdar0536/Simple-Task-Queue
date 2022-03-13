@@ -24,3 +24,9 @@
 #pragma once
 
 #define UNUSED(x) static_cast<void>(x)
+
+#define PRINT_ERROR_BUF(buf, msg) \
+    if (buf) \
+    { \
+        sprintf(buf, "%s", msg); \
+    }

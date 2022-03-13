@@ -29,18 +29,18 @@ public:
 
     ::grpc::Status CreateQueue(::grpc::ServerContext* context,
                                const ::stq::QueueReq* request,
-                               ::stq::ExitRes* response) override;
+                               ::stq::Empty* response) override;
 
     ::grpc::Status RenameQueue(::grpc::ServerContext* context,
                                const ::stq::RenameQueueReq* request,
-                               ::stq::ExitRes* response) override;
+                               ::stq::Empty* response) override;
 
     ::grpc::Status DeleteQueue(::grpc::ServerContext* context,
                                const ::stq::QueueReq* request,
-                               ::stq::ExitRes* response) override;
+                               ::stq::Empty* response) override;
 
     ::grpc::Status ListQueue(::grpc::ServerContext* context,
-                             const ::stq::Inquiry* request,
+                             const ::stq::ListQueueReq* request,
                              ::stq::ListQueueRes* response) override;
 
 private:
