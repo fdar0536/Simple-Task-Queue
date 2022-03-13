@@ -48,7 +48,7 @@ if ((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 
 find_package(Protobuf REQUIRED)
-find_package(GRPC REQUIRED)
+find_package(gRPC REQUIRED)
 
 set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
 include(cmake/protoc.cmake)
