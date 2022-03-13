@@ -29,13 +29,7 @@ uint8_t STQQueueList::createQueue(const std::string &name)
     std::string tmpString;
     if (!m_queueList.empty())
     {
-        for (auto it = m_queueList.begin();
-             it != m_queueList.end();
-             ++it)
-        {
-            tmpString = it->first;
-            if (tmpString == name) return 1;
-        }
+        if (m_queueList.find(name) != m_queueList.end()) return 1;
     }
 
     auto toBeInserted = std::make_shared<STQQueue>();
@@ -50,18 +44,13 @@ uint8_t STQQueueList::renameQueue(const std::string &oldName,
     std::string tmpString;
     if (!m_queueList.empty())
     {
-        for (auto it = m_queueList.begin();
-             it != m_queueList.end();
-             ++it)
+        auto it = m_queueList.find(oldName);
+        if (it != m_queueList.end())
         {
-            tmpString = it->first;
-            if (tmpString == oldName)
-            {
-                auto queue = it->second;
-                m_queueList.erase(it);
-                m_queueList[newName] = queue;
-                return 0;
-            }
+            auto queue = it->second;
+            m_queueList.erase(it);
+            m_queueList[newName] = queue;
+            return 0;
         }
     }
 
@@ -74,16 +63,11 @@ uint8_t STQQueueList::deleteQueue(const std::string &name)
     std::string tmpString;
     if (!m_queueList.empty())
     {
-        for (auto it = m_queueList.begin();
-             it != m_queueList.end();
-             ++it)
+        auto it = m_queueList.find(name);
+        if (it != m_queueList.end())
         {
-            tmpString = it->first;
-            if (tmpString == name)
-            {
-                m_queueList.erase(it);
-                return 0;
-            }
+            m_queueList.erase(it);
+            return 0;
         }
     }
 

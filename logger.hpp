@@ -65,7 +65,7 @@ private:
 
     std::string m_lastFileName;
 
-    char m_log[32];
+    char m_log[128];
 
     void checkFile(time_t);
 

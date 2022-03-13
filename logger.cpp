@@ -142,7 +142,7 @@ void Logger::updateFileName(time_t in)
 {
     struct tm *tm = localtime(&in);
     if (!tm) return;
-    char tmpString[16];
+    char tmpString[128];
     sprintf(tmpString,
             "%d%02d%02d.log",
             tm->tm_year + 1900,
