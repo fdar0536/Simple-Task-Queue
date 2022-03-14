@@ -4,17 +4,19 @@
 #include <cstring>
 
 #ifdef _WIN32
+#include "windows.h"
 #ifdef __MINGW32__
 #include "getopt.h"
 #else
 #include "win32-code/getopt.h"
 #endif // __MINGW32__
 #else
+#include "unistd.h"
 #include "getopt.h"
 #endif // _WIN32
 
 // grpc
-#include <grpcpp/ext/proto_server_reflection_plugin.h>
+#include "grpcpp/ext/proto_server_reflection_plugin.h"
 #include "grpcpp/server.h"
 #include "grpcpp/server_builder.h"
 
@@ -23,7 +25,7 @@
 // controllers
 #include "controller/queueimpl.hpp"
 
-void printHelp(char **argv)
+static void printHelp(char **argv)
 {
     std::cout << argv[0] << " usage:" << std::endl;
     std::cout << "-h, --help: Print this message and exit." << std::endl;
@@ -31,7 +33,7 @@ void printHelp(char **argv)
     std::cout << "-c, --config <config file>: Path to config file." << std::endl;
 }
 
-void runServer(bool debug)
+static void runServer(bool debug)
 {
     if (debug)
     {
@@ -62,8 +64,46 @@ void runServer(bool debug)
     server->Wait();
 }
 
+static bool isAdmin()
+{
+#ifdef _WIN32
+    PSID sid;
+    SID_IDENTIFIER_AUTHORITY auth = SECURITY_NT_AUTHORITY;
+    if (!AllocateAndInitializeSid(&auth,
+                                  2,
+                                  SECURITY_BUILTIN_DOMAIN_RID,
+                                  DOMAIN_ALIAS_RID_ADMINS,
+                                  0, 0, 0, 0, 0, 0,
+                                  &sid))
+    {
+        return true;
+    }
+
+    BOOL res;
+    if (!CheckTokenMembership(nullptr, sid, &res))
+    {
+        return true;
+    }
+
+    FreeSid(sid);
+    return res;
+#else
+    return (geteuid() == 0);
+#endif
+}
+
 int main(int argc, char **argv)
 {
+    if (isAdmin())
+    {
+#ifdef _WIN32
+        std::cerr << "Refuse to run as administrator." << std::endl;
+#else
+        std::cerr << "Refuse to run as super user." << std::endl;
+#endif
+        return 1;
+    }
+
     struct option opts[] =
     {
         {"help",   no_argument,       NULL, 'h'},
