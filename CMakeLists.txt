@@ -43,9 +43,41 @@ include(GNUInstallDirs)
 option(BUILD_SERVER "build server" ON)
 option(BUILD_CLIENT "build client" ON)
 
+if (ANDROID)
+    set(BUILD_SERVER OFF)
+endif(ANDROID)
+
 if ((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
     set(BUILD_CLIENT ON)
 endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
+
+if (ANDROID)
+    include(ExternalProject)
+    ExternalProject_Add(Protobuf
+        GIT_REPOSITORY https://github.com/protocolbuffers/protobuf.git
+        GIT_TAG "Protocol Buffers v3.19.4"
+        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/protobuf
+
+        CMAKE_ARGS
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+        -DANDROID_ABI=${ANDROID_ABI}
+        -DANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}
+        -DBUILD_SHARED_LIBS=ON
+    )
+
+    ExternalProject_Add(gRPC
+        GIT_REPOSITORY https://github.com/grpc/grpc.git
+        GIT_TAG "Release v1.44.0"
+        PREFIX ${CMAKE_CURRENT_BINARY_DIR}/grpc
+
+        CMAKE_ARGS
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+        -DANDROID_ABI=${ANDROID_ABI}
+        -DANDROID_NATIVE_API_LEVEL=${ANDROID_NATIVE_API_LEVEL}
+        -DBUILD_SHARED_LIBS=ON
+    )
+else()
+endif(ANDROID)
 
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
@@ -92,6 +124,10 @@ target_link_libraries(grpc_common
 if (BUILD_SERVER)
     add_subdirectory(server)
 endif(BUILD_SERVER)
+
+if (BUILD_CLIENT)
+    add_subdirectory(client)
+endif(BUILD_CLIENT)
 
 # add_executable(
 #     SimpleTaskQueue WIN32
