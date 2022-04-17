@@ -1,5 +1,7 @@
 #include <new>
 
+#include "QMessageBox"
+
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 
@@ -40,3 +42,9 @@ void MainWindow::on_actionLog_triggered()
 {
     m_logger->open();
 }
+
+void MainWindow::on_actionAbout_Qt_triggered()
+{
+    QMessageBox::aboutQt(this);
+}
+
