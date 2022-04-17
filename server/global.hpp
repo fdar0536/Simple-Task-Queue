@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <future>
 #include <string>
 #include <vector>
 
@@ -43,6 +44,8 @@ extern std::string ip;
 extern std::string port;
 
 extern STQQueueList queueList;
+
+extern std::promise<void> exit_requested;
 
 uint8_t init(const char *);
 

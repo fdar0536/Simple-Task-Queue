@@ -6,6 +6,7 @@ import "types.proto";
 
 service Access {
   rpc Echo(Empty) returns (EchoRes);
+  rpc Stop(Empty) returns (EchoRes);
 }
 
 message EchoRes {

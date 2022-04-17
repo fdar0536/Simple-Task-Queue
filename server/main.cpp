@@ -65,7 +65,16 @@ static void runServer(bool debug)
         std::cout << std::endl;
     }
 
-    server->Wait();
+    auto serveFn = [&]()
+    {
+        server->Wait();
+    };
+
+    std::thread serving_thread(serveFn);
+    auto f = Global::exit_requested.get_future();
+    f.wait();
+    server->Shutdown();
+    serving_thread.join();
 }
 
 static bool isAdmin()

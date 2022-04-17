@@ -59,9 +59,9 @@ void Logger::setSavePath(std::string &path)
 }
 
 void Logger::write(Level level,
-                       const char *in,
-                       bool haveToWriteOut,
-                       bool haveToWriteFile)
+                   const char *in,
+                   bool haveToWriteOut,
+                   bool haveToWriteFile)
 {
     if (!in || m_logLevel == Level::Off || level < m_logLevel) return;
     if (!haveToWriteOut && !haveToWriteFile) return;

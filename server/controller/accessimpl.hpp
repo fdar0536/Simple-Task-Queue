@@ -9,5 +9,9 @@ public:
     ::grpc::Status Echo(::grpc::ServerContext* context,
                         const ::stq::Empty* request,
                         ::stq::EchoRes* response) override;
+
+    ::grpc::Status Stop(::grpc::ServerContext* context,
+                        const ::stq::Empty* request,
+                        ::stq::EchoRes* response) override;
 };
 

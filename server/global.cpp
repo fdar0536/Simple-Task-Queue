@@ -46,6 +46,8 @@ std::string port;
 
 STQQueueList queueList;
 
+std::promise<void> exit_requested;
+
 template<class T>
 static uint8_t getConfigItem(T &dst, json &config, const char *entry)
 {
