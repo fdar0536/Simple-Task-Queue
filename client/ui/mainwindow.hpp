@@ -2,6 +2,8 @@
 
 #include "QMainWindow"
 
+#include "logger.hpp"
+
 namespace Ui
 {
 class MainWindow;
@@ -18,7 +20,14 @@ public:
 
     ~MainWindow();
 
+private slots:
+
+    void on_actionLog_triggered();
+
 private:
+
     Ui::MainWindow *m_ui;
+
+    Logger *m_logger;
 };
 
