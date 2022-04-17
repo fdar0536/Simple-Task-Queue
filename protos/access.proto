@@ -4,6 +4,13 @@ package stq;
 
 import "types.proto";
 
+service Access {
+  rpc Echo(Empty) returns (EchoRes);
+}
+
+message EchoRes {
+}
+
 // for login
 /*
 service Access {

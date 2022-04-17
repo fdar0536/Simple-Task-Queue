@@ -23,6 +23,7 @@
 #include "global.hpp"
 
 // controllers
+#include "controller/accessimpl.hpp"
 #include "controller/queueimpl.hpp"
 
 static void printHelp(char **argv)
@@ -45,6 +46,9 @@ static void runServer(bool debug)
     builder.AddListeningPort(Global::ip + ":" + Global::port,
                              grpc::InsecureServerCredentials(),
                              &actualPort);
+
+    AccessImpl accessImpl;
+    builder.RegisterService(&accessImpl);
 
     QueueImpl queueImpl;
     builder.RegisterService(&queueImpl);

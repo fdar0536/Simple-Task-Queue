@@ -31,6 +31,8 @@ set(SERVER_SRC
     ${PROCESS_SRC}
     ${GET_OPT_SRC}
 
+    controller/accessimpl.cpp
+    controller/accessimpl.hpp
     controller/queueimpl.cpp
     controller/queueimpl.hpp
 
