@@ -4,15 +4,15 @@
 #include "QFileDialog"
 #include "QMessageBox"
 
-#include "logger.hpp"
-#include "ui_logger.h"
+#include "LoggerDialog.hpp"
+#include "ui_LoggerDialog.h"
 
-Logger *Logger::create(QWidget *parent)
+LoggerDialog *LoggerDialog::create(QWidget *parent)
 {
-    Logger *ret = new (std::nothrow) Logger(parent);
+    LoggerDialog *ret = new (std::nothrow) LoggerDialog(parent);
     if (!ret) return nullptr;
 
-    ret->m_ui = new (std::nothrow) Ui::Logger;
+    ret->m_ui = new (std::nothrow) Ui::LoggerDialog;
     if (!ret->m_ui)
     {
         delete ret;
@@ -23,17 +23,17 @@ Logger *Logger::create(QWidget *parent)
     return ret;
 }
 
-Logger::~Logger()
+LoggerDialog::~LoggerDialog()
 {
     if (m_ui) delete m_ui;
 }
 
-void Logger::write(Level level, QString &msg)
+void LoggerDialog::write(Level level, QString &msg)
 {
     write(level, msg.toLocal8Bit().constData());
 }
 
-void Logger::write(Level level, const char *in)
+void LoggerDialog::write(Level level, const char *in)
 {
     if (!in || m_logLevel == Level::Off || level < m_logLevel) return;
 
@@ -79,7 +79,7 @@ void Logger::write(Level level, const char *in)
 }
 
 // private slots
-void Logger::on_saveBtn_clicked()
+void LoggerDialog::on_saveBtn_clicked()
 {
 #ifdef Q_OS_WINDOWS
     QString res = QFileDialog::getSaveFileName(this,
@@ -109,20 +109,20 @@ void Logger::on_saveBtn_clicked()
     fclose(f);
 }
 
-void Logger::on_clearBtn_clicked()
+void LoggerDialog::on_clearBtn_clicked()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_ui->log->clear();
 }
 
 // private member functions
-Logger::Logger(QWidget *parent) :
+LoggerDialog::LoggerDialog(QWidget *parent) :
     QDialog(parent),
     m_ui(nullptr),
     m_logLevel(Info)
 {}
 
-void Logger::printTimeStamp(time_t in)
+void LoggerDialog::printTimeStamp(time_t in)
 {
     struct tm *tm = localtime(&in);
     if (!tm) return;

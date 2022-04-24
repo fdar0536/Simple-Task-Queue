@@ -2,7 +2,7 @@
 
 #include "QMainWindow"
 
-#include "logger.hpp"
+#include "loggerdialog.hpp"
 
 namespace Ui
 {
@@ -30,6 +30,6 @@ private:
 
     Ui::MainWindow *m_ui;
 
-    Logger *m_logger;
+    LoggerDialog *m_logger;
 };
 

@@ -6,10 +6,10 @@
 
 namespace Ui
 {
-class Logger;
+class LoggerDialog;
 }
 
-class Logger : public QDialog
+class LoggerDialog : public QDialog
 {
     Q_OBJECT
 
@@ -20,9 +20,9 @@ public:
         Verbose, Debug, Info, Warning, Error, Off
     } Level;
 
-    static Logger *create(QWidget *parent = nullptr);
+    static LoggerDialog *create(QWidget *parent = nullptr);
 
-    ~Logger();
+    ~LoggerDialog();
 
     void write(Level, QString &);
 
@@ -36,11 +36,11 @@ private slots:
 
 private:
 
-    Logger(QWidget *parent = nullptr);
+    LoggerDialog(QWidget *parent = nullptr);
 
     void printTimeStamp(time_t);
 
-    Ui::Logger *m_ui;
+    Ui::LoggerDialog *m_ui;
 
     Level m_logLevel;
 

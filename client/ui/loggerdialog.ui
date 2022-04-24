@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Logger</class>
- <widget class="QDialog" name="Logger">
+ <class>LoggerDialog</class>
+ <widget class="QDialog" name="LoggerDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

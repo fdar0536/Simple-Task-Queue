@@ -28,7 +28,7 @@ uint8_t MainWindow::init(MainWindow *w)
 
     w->m_ui->setupUi(w);
 
-    w->m_logger = Logger::create(w);
+    w->m_logger = LoggerDialog::create(w);
     if (!w->m_logger)
     {
         return 1;
@@ -47,4 +47,3 @@ void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this);
 }
-
