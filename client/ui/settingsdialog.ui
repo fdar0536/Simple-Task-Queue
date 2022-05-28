@@ -136,6 +136,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>hosts</tabstop>
+  <tabstop>ip</tabstop>
+  <tabstop>port</tabstop>
+  <tabstop>connectBtn</tabstop>
+  <tabstop>saveBtn</tabstop>
+  <tabstop>deleteBtn</tabstop>
+  <tabstop>exitBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

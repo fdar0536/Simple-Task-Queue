@@ -10,6 +10,7 @@
 #include "settingsdialog.hpp"
 #include "ui_settingsdialog.h"
 
+// public member functions
 SettingsDialog *SettingsDialog::create(QWidget *parent)
 {
     SettingsDialog *ret(new (std::nothrow) SettingsDialog(parent));
@@ -31,6 +32,13 @@ SettingsDialog *SettingsDialog::create(QWidget *parent)
 
     ret->m_regex = new (std::nothrow) QRegularExpressionValidator(re, ret);
     if (!ret->m_regex)
+    {
+        delete ret;
+        return nullptr;
+    }
+
+    ret->m_saveConfigDialog = SaveConfigDialog::create(&ret->m_config, ret);
+    if (!ret->m_saveConfigDialog)
     {
         delete ret;
         return nullptr;
@@ -63,6 +71,13 @@ SettingsDialog *SettingsDialog::create(QWidget *parent)
         ret->m_ui->hosts->setCurrentIndex(-1);
     }
 
+    ret->connect(
+        ret->m_saveConfigDialog,
+        &SaveConfigDialog::accepted,
+        ret,
+        &SettingsDialog::onSaveAccepted
+    );
+
     return ret;
 }
 
@@ -71,6 +86,12 @@ SettingsDialog::~SettingsDialog()
     saveConfigFile();
     if (m_ui) delete m_ui;
     if (m_regex) delete m_regex;
+    if (m_saveConfigDialog) delete m_saveConfigDialog;
+}
+
+void SettingsDialog::reject()
+{
+    on_exitBtn_clicked(true);
 }
 
 // private slots
@@ -90,11 +111,36 @@ void SettingsDialog::on_port_valueChanged(int)
     verifyIP();
 }
 
+void SettingsDialog::on_saveBtn_clicked(bool)
+{
+    m_saveConfigDialog->open();
+}
+
+void SettingsDialog::on_exitBtn_clicked(bool)
+{
+
+}
+
+void SettingsDialog::onSaveAccepted()
+{
+    QString key(m_saveConfigDialog->getName());
+    m_saveConfigDialog->reset();
+
+    SettingsData data;
+    data.ip = m_ui->ip->text();
+    data.port = static_cast<uint16_t>(m_ui->port->value());
+    m_config[key] = data;
+    
+    m_ui->hosts->insertItem(m_ui->hosts->count() + 1, key);
+    m_ui->hosts->setCurrentIndex(m_ui->hosts->count() - 1);
+}
+
 // private member functions
 SettingsDialog::SettingsDialog(QWidget *parent):
     QDialog(parent),
     m_ui(nullptr),
-    m_regex(nullptr)
+    m_regex(nullptr),
+    m_saveConfigDialog(nullptr)
 {}
 
 uint8_t SettingsDialog::initConfigFile()

@@ -5,7 +5,7 @@
 #include "QJsonObject"
 #include "QRegularExpressionValidator"
 
-#include "settingsdata.hpp"
+#include "saveconfigdialog.hpp"
 
 namespace Ui
 {
@@ -22,6 +22,8 @@ public:
 
     ~SettingsDialog();
 
+    void reject() override;
+
 private slots:
 
     void on_hosts_currentIndexChanged(int);
@@ -29,6 +31,12 @@ private slots:
     void on_ip_textChanged(const QString &);
 
     void on_port_valueChanged(int);
+
+    void on_saveBtn_clicked(bool);
+
+    void on_exitBtn_clicked(bool);
+
+    void onSaveAccepted();
 
 private:
 
@@ -41,6 +49,8 @@ private:
     QHash<QString, SettingsData> m_config;
 
     QRegularExpressionValidator *m_regex;
+
+    SaveConfigDialog *m_saveConfigDialog;
 
     uint8_t initConfigFile();
 
