@@ -6,6 +6,9 @@ add_executable(STQClient WIN32
     ui/mainwindow.cpp
     ui/mainwindow.hpp
     ui/mainwindow.ui
+    ui/saveconfigdialog.cpp
+    ui/saveconfigdialog.hpp
+    ui/saveconfigdialog.ui
     ui/settingsdata.hpp
     ui/settingsdialog.cpp
     ui/settingsdialog.hpp

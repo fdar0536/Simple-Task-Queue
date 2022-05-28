@@ -57,7 +57,7 @@
    <item row="5" column="2" colspan="2">
     <widget class="QLabel" name="status">
      <property name="text">
-      <string>Panding</string>
+      <string>Pending</string>
      </property>
     </widget>
    </item>
