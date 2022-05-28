@@ -26,6 +26,10 @@ private slots:
 
     void on_hosts_currentIndexChanged(int);
 
+    void on_ip_textChanged(const QString &);
+
+    void on_port_valueChanged(int);
+
 private:
 
     SettingsDialog(QWidget *parent = nullptr);
@@ -43,4 +47,6 @@ private:
     void saveConfigFile();
 
     void setupData(SettingsData *);
+
+    void verifyIP();
 };

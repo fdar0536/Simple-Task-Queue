@@ -23,7 +23,7 @@ SettingsDialog *SettingsDialog::create(QWidget *parent)
     }
 
     ret->m_ui->setupUi(ret);
-    ret->setFixedSize(675, 185);
+    ret->setFixedSize(375, 25);
 
     QRegularExpression re("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
                           "{3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
@@ -54,6 +54,9 @@ SettingsDialog *SettingsDialog::create(QWidget *parent)
 
         ret->m_ui->hosts->setCurrentIndex(0);
         ret->setupData(&ret->m_config.begin().value());
+        ret->m_ui->connectBtn->setEnabled(true);
+        ret->m_ui->saveBtn->setEnabled(true);
+        ret->m_ui->deleteBtn->setEnabled(true);
     }
     else
     {
@@ -71,10 +74,20 @@ SettingsDialog::~SettingsDialog()
 }
 
 // private slots
-void SettingsDialog::on_hosts_currentIndexChanged(int index)
+void SettingsDialog::on_hosts_currentIndexChanged(int)
 {
-    Q_UNUSED(index);
+    if (m_config.empty()) return;
     setupData(&m_config[m_ui->hosts->currentText()]);
+}
+
+void SettingsDialog::on_ip_textChanged(const QString &)
+{
+    verifyIP();
+}
+
+void SettingsDialog::on_port_valueChanged(int)
+{
+    verifyIP();
 }
 
 // private member functions
@@ -185,35 +198,6 @@ uint8_t SettingsDialog::initConfigFile()
         }
 
         data.port = static_cast<uint16_t>(pos);
-
-        if (!obj["configFile"].isString())
-        {
-            std::cerr << __FILE__ << ":" << __LINE__;
-            std::cerr << " Invalid config file." << std::endl;
-            m_config.clear();
-            return 0;
-        }
-
-        tmpString = obj["configFile"].toString();
-        if (tmpString.isEmpty())
-        {
-            std::cerr << __FILE__ << ":" << __LINE__;
-            std::cerr << " Invalid config file." << std::endl;
-            m_config.clear();
-            return 0;
-        }
-
-        data.configFile = tmpString;
-
-        if (!obj["isLocalHost"].isDouble())
-        {
-            std::cerr << __FILE__ << ":" << __LINE__;
-            std::cerr << " Invalid config file." << std::endl;
-            m_config.clear();
-            return 0;
-        }
-
-        data.isLocalHost = static_cast<uint16_t>(obj["isLocalHost"].toInt());
         m_config[key] = data;
     }
 
@@ -242,8 +226,6 @@ void SettingsDialog::saveConfigFile()
         item.insert("alias", it.key());
         item.insert("ip", it.value().ip);
         item.insert("port", it.value().port);
-        item.insert("configFile", it.value().configFile);
-        item.insert("isLocalHost", it.value().isLocalHost);
         arr.append(item);
     }
 
@@ -259,6 +241,14 @@ void SettingsDialog::setupData(SettingsData *data)
 
     m_ui->ip->setText(data->ip);
     m_ui->port->setValue(data->port);
-    m_ui->configPath->setText(data->configFile);
-    m_ui->localHost->setChecked(data->isLocalHost);
+}
+
+void SettingsDialog::verifyIP()
+{
+    int pos(0);
+    QString ip(m_ui->ip->text());
+    bool isValid(m_regex->validate(ip,
+                                   pos) == QValidator::Acceptable);
+    m_ui->connectBtn->setEnabled(isValid);
+    m_ui->saveBtn->setEnabled(isValid);
 }

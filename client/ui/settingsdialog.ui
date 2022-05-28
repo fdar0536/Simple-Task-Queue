@@ -6,19 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>671</width>
-    <height>183</height>
+    <width>432</width>
+    <height>150</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="2" colspan="8">
+   <item row="1" column="2" colspan="6">
     <widget class="QLineEdit" name="ip"/>
    </item>
-   <item row="5" column="7">
+   <item row="4" column="5">
     <widget class="QPushButton" name="saveBtn">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="text">
       <string>Save</string>
      </property>
@@ -31,20 +34,47 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QCheckBox" name="localHost">
+   <item row="5" column="4" colspan="4">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Local host?</string>
+      <string>Host</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="9">
-    <widget class="QPushButton" name="configPathBtn">
+   <item row="5" column="2" colspan="2">
+    <widget class="QLabel" name="status">
+     <property name="text">
+      <string>Panding</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="6">
+    <widget class="QPushButton" name="deleteBtn">
      <property name="enabled">
       <bool>false</bool>
      </property>
      <property name="text">
-      <string>...</string>
+      <string>Delete</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2" colspan="6">
+    <widget class="QComboBox" name="hosts">
+     <property name="editable">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -60,35 +90,39 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="9">
+   <item row="4" column="7">
     <widget class="QPushButton" name="exitBtn">
      <property name="text">
       <string>Exit</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="3" colspan="2">
-    <widget class="QPushButton" name="stopBtn">
+   <item row="2" column="2" colspan="6">
+    <widget class="QSpinBox" name="port">
+     <property name="maximum">
+      <number>65535</number>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="4">
+    <widget class="QPushButton" name="connectBtn">
      <property name="enabled">
       <bool>false</bool>
      </property>
      <property name="text">
-      <string>Stop</string>
+      <string>Connect</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
-    <widget class="QPushButton" name="startBtn">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
+   <item row="5" column="1">
+    <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>Start</string>
+      <string>Status:</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="6" colspan="4">
-    <spacer name="horizontalSpacer">
+   <item row="4" column="1" colspan="3">
+    <spacer name="horizontalSpacer_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -99,82 +133,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="5" column="5">
-    <widget class="QPushButton" name="testBtn">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="text">
-      <string>Test</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Host</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="2" colspan="4">
-    <widget class="QLabel" name="status">
-     <property name="text">
-      <string>Panding</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="8">
-    <widget class="QPushButton" name="deleteBtn">
-     <property name="text">
-      <string>delete</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2" colspan="8">
-    <widget class="QComboBox" name="hosts">
-     <property name="editable">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Config File</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="6">
-    <widget class="QPushButton" name="connectBtn">
-     <property name="text">
-      <string>Connect</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QLabel" name="label_6">
-     <property name="text">
-      <string>Status:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2" colspan="8">
-    <widget class="QSpinBox" name="port">
-     <property name="maximum">
-      <number>65535</number>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2" colspan="7">
-    <widget class="QLineEdit" name="configPath">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
