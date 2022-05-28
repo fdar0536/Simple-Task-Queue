@@ -4,6 +4,8 @@
 
 #include "loggerdialog.hpp"
 
+#include "settingsdialog.hpp"
+
 namespace Ui
 {
 class MainWindow;
@@ -22,6 +24,8 @@ public:
 
 private slots:
 
+    void on_actionSettings_triggered();
+
     void on_actionLog_triggered();
 
     void on_actionAbout_Qt_triggered();
@@ -31,5 +35,7 @@ private:
     Ui::MainWindow *m_ui;
 
     LoggerDialog *m_logger;
+
+    SettingsDialog *m_settingsDialog;
 };
 

@@ -9,13 +9,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(nullptr),
     m_logger(nullptr)
-{
-}
+{}
 
 MainWindow::~MainWindow()
 {
     if (m_ui) delete m_ui;
     if (m_logger) delete m_logger;
+    if (m_settingsDialog) delete m_settingsDialog;
 }
 
 // public member functions
@@ -34,10 +34,21 @@ uint8_t MainWindow::init(MainWindow *w)
         return 1;
     }
 
+    w->m_settingsDialog = SettingsDialog::create(w);
+    if (!w->m_settingsDialog)
+    {
+        return 1;
+    }
+
     return 0;
 }
 
 // private slots
+void MainWindow::on_actionSettings_triggered()
+{
+    m_settingsDialog->open();
+}
+
 void MainWindow::on_actionLog_triggered()
 {
     m_logger->open();

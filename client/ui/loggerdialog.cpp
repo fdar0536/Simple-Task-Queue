@@ -4,8 +4,8 @@
 #include "QFileDialog"
 #include "QMessageBox"
 
-#include "LoggerDialog.hpp"
-#include "ui_LoggerDialog.h"
+#include "loggerdialog.hpp"
+#include "ui_loggerdialog.h"
 
 LoggerDialog *LoggerDialog::create(QWidget *parent)
 {

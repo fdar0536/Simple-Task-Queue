@@ -6,15 +6,49 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>509</width>
-    <height>126</height>
+    <width>671</width>
+    <height>183</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+   <item row="1" column="2" colspan="8">
+    <widget class="QLineEdit" name="ip"/>
+   </item>
+   <item row="5" column="7">
+    <widget class="QPushButton" name="saveBtn">
+     <property name="text">
+      <string>Save</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Port</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QCheckBox" name="localHost">
+     <property name="text">
+      <string>Local host?</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="9">
+    <widget class="QPushButton" name="configPathBtn">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
     <widget class="QLabel" name="label">
      <property name="font">
       <font>
@@ -26,38 +60,14 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
+   <item row="5" column="9">
+    <widget class="QPushButton" name="exitBtn">
      <property name="text">
-      <string>Port</string>
+      <string>Exit</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Config File</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QCheckBox" name="localHost">
-     <property name="text">
-      <string>Local host?</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QPushButton" name="startBtn">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Start</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2" colspan="2">
+   <item row="5" column="3" colspan="2">
     <widget class="QPushButton" name="stopBtn">
      <property name="enabled">
       <bool>false</bool>
@@ -67,45 +77,104 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="4">
-    <widget class="QPushButton" name="testBtn">
+   <item row="5" column="2">
+    <widget class="QPushButton" name="startBtn">
      <property name="enabled">
       <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Start</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="6" colspan="4">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="5">
+    <widget class="QPushButton" name="testBtn">
+     <property name="enabled">
+      <bool>true</bool>
      </property>
      <property name="text">
       <string>Test</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="5">
+   <item row="0" column="1">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Host</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="2" colspan="4">
+    <widget class="QLabel" name="status">
+     <property name="text">
+      <string>Panding</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="8">
+    <widget class="QPushButton" name="deleteBtn">
+     <property name="text">
+      <string>delete</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2" colspan="8">
+    <widget class="QComboBox" name="hosts">
+     <property name="editable">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Config File</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="6">
     <widget class="QPushButton" name="connectBtn">
      <property name="text">
       <string>Connect</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="6">
-    <widget class="QPushButton" name="exitBtn">
+   <item row="6" column="1">
+    <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>Exit</string>
+      <string>Status:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="6">
-    <widget class="QPushButton" name="configPathBtn">
-     <property name="text">
-      <string>...</string>
+   <item row="2" column="2" colspan="8">
+    <widget class="QSpinBox" name="port">
+     <property name="maximum">
+      <number>65535</number>
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="5">
-    <widget class="QLineEdit" name="configPath"/>
-   </item>
-   <item row="1" column="1" colspan="6">
-    <widget class="QLineEdit" name="port"/>
-   </item>
-   <item row="0" column="1" colspan="6">
-    <widget class="QLineEdit" name="ip"/>
+   <item row="3" column="2" colspan="7">
+    <widget class="QLineEdit" name="configPath">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -1,8 +1,14 @@
 #pragma once
 
-#include <QDialog>
+#include "QDialog"
+#include "QHash"
+#include "QJsonObject"
+#include "QRegularExpressionValidator"
 
-namespace Ui {
+#include "settingsdata.hpp"
+
+namespace Ui
+{
 class SettingsDialog;
 }
 
@@ -11,10 +17,30 @@ class SettingsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SettingsDialog(QWidget *parent = nullptr);
+
+    static SettingsDialog *create(QWidget *parent = nullptr);
+
     ~SettingsDialog();
 
-private:
-    Ui::SettingsDialog *ui;
-};
+private slots:
 
+    void on_hosts_currentIndexChanged(int);
+
+private:
+
+    SettingsDialog(QWidget *parent = nullptr);
+
+    Ui::SettingsDialog *m_ui;
+
+    QString m_configPath;
+
+    QHash<QString, SettingsData> m_config;
+
+    QRegularExpressionValidator *m_regex;
+
+    uint8_t initConfigFile();
+
+    void saveConfigFile();
+
+    void setupData(SettingsData *);
+};
