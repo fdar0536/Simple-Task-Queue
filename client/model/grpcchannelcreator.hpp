@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2020 fdar0536
+ * Copyright (c) 2022 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,29 @@
  * SOFTWARE.
  */
 
-#define STQ_VERSION "@STQ_VERSION@"
-#define STQ_NAME "@STQ_NAME@"
-#define STQ_CLIENT_TIMEOUT @CLIENT_TIMEOUT@
+#pragma once
+
+#include "QThread"
+
+class GrpcChannelCreator : public QThread
+{
+    Q_OBJECT
+
+public:
+
+    GrpcChannelCreator(QObject * = nullptr);
+
+    void create(QString &ip, uint16_t port);
+
+signals:
+
+    void done(std::shared_ptr<grpc::ChannelInterface> &);
+
+protected:
+
+    void run() override;
+
+    QString m_ip;
+
+    uint16_t m_port;
+};

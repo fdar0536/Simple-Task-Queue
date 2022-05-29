@@ -106,14 +106,14 @@ void LoggerDialog::on_saveBtn_clicked()
 {
 #ifdef Q_OS_WINDOWS
     QString res = QFileDialog::getSaveFileName(this,
-                                               "Save log",
-                                               QDir::currentPath(),
-                                               "log (*.log)");
+        "Save log",
+        QDir::currentPath(),
+        "log (*.log)");
 #else
     QString res = QFileDialog::getSaveFileName(this,
-                                               "Save log",
-                                               QDir::homePath(),
-                                               "log (*.log)");
+        "Save log",
+        QDir::homePath(),
+        "log (*.log)");
 #endif
 
     if (res.isEmpty()) return;
@@ -151,11 +151,11 @@ void LoggerDialog::printTimeStamp(time_t in)
     if (!tm) return;
 
     sprintf(m_log,
-            "%d-%02d-%02d %02d:%02d:%02d",
-            tm->tm_year + 1900,
-            tm->tm_mon + 1,
-            tm->tm_mday,
-            tm->tm_hour,
-            tm->tm_min,
-            tm->tm_sec);
+        "%d-%02d-%02d %02d:%02d:%02d",
+        tm->tm_year + 1900,
+        tm->tm_mon + 1,
+        tm->tm_mday,
+        tm->tm_hour,
+        tm->tm_min,
+        tm->tm_sec);
 }

@@ -28,6 +28,9 @@
 #include "QJsonObject"
 #include "QRegularExpressionValidator"
 
+#include "model/accessimpl.hpp"
+#include "model/grpcchannelcreator.hpp"
+
 #include "saveconfigdialog.hpp"
 
 namespace Ui
@@ -45,7 +48,15 @@ public:
 
     ~SettingsDialog();
 
+    void reset();
+
+    std::shared_ptr<grpc::ChannelInterface> takeChannel();
+
     void reject() override;
+
+protected:
+
+    void keyPressEvent(QKeyEvent *) override;
 
 private slots:
 
@@ -55,11 +66,19 @@ private slots:
 
     void on_port_valueChanged(int);
 
+    void on_connectBtn_clicked(bool);
+
     void on_saveBtn_clicked(bool);
+
+    void on_deleteBtn_clicked(bool);
 
     void on_exitBtn_clicked(bool);
 
     void onSaveAccepted();
+
+    void onCreateChannelDone(std::shared_ptr<grpc::ChannelInterface> &);
+
+    void onAccessEchoDone(bool, QString &);
 
 private:
 
@@ -74,6 +93,12 @@ private:
     QRegularExpressionValidator *m_regex;
 
     SaveConfigDialog *m_saveConfigDialog;
+
+    AccessImpl *m_access;
+
+    GrpcChannelCreator *m_creator;
+
+    std::shared_ptr<grpc::ChannelInterface> m_channel;
 
     uint8_t initConfigFile();
 

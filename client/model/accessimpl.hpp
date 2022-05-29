@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2020 fdar0536
+ * Copyright (c) 2022 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,37 @@
  * SOFTWARE.
  */
 
-#define STQ_VERSION "@STQ_VERSION@"
-#define STQ_NAME "@STQ_NAME@"
-#define STQ_CLIENT_TIMEOUT @CLIENT_TIMEOUT@
+#pragma once
+
+#include <mutex>
+
+#include "QThread"
+
+#include "access.grpc.pb.h"
+
+class AccessImpl : public QThread
+{
+    Q_OBJECT
+
+public:
+
+    AccessImpl(QObject *parent = nullptr);
+
+    uint8_t setChannel(std::shared_ptr<grpc::ChannelInterface> &);
+
+    uint8_t echoTest();
+
+signals:
+
+    void echoDone(bool, QString &);
+
+protected:
+
+    void run() override;
+
+private:
+
+    std::unique_ptr<stq::Access::Stub> m_stub;
+
+    std::mutex m_mutex;
+};

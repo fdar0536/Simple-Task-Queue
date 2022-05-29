@@ -28,6 +28,7 @@
 #include "QFile"
 #include "QJsonDocument"
 #include "QJsonArray"
+#include "QKeyEvent"
 #include "QStandardPaths"
 
 #include "settingsdialog.hpp"
@@ -47,7 +48,7 @@ SettingsDialog *SettingsDialog::create(QWidget *parent)
     }
 
     ret->m_ui->setupUi(ret);
-    ret->setFixedSize(375, 25);
+    ret->setFixedSize(435, 155);
 
     QRegularExpression re("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
                           "{3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
@@ -62,6 +63,20 @@ SettingsDialog *SettingsDialog::create(QWidget *parent)
 
     ret->m_saveConfigDialog = SaveConfigDialog::create(&ret->m_config, ret);
     if (!ret->m_saveConfigDialog)
+    {
+        delete ret;
+        return nullptr;
+    }
+
+    ret->m_access = new (std::nothrow) AccessImpl(ret);
+    if (!ret->m_access)
+    {
+        delete ret;
+        return nullptr;
+    }
+
+    ret->m_creator = new (std::nothrow) GrpcChannelCreator(ret);
+    if (!ret->m_creator)
     {
         delete ret;
         return nullptr;
@@ -101,6 +116,20 @@ SettingsDialog *SettingsDialog::create(QWidget *parent)
         &SettingsDialog::onSaveAccepted
     );
 
+    ret->connect(
+        ret->m_access,
+        &AccessImpl::echoDone,
+        ret,
+        &SettingsDialog::onAccessEchoDone
+    );
+
+    ret->connect(
+        ret->m_creator,
+        &GrpcChannelCreator::done,
+        ret,
+        &SettingsDialog::onCreateChannelDone
+    );
+
     return ret;
 }
 
@@ -110,6 +139,24 @@ SettingsDialog::~SettingsDialog()
     if (m_ui) delete m_ui;
     if (m_regex) delete m_regex;
     if (m_saveConfigDialog) delete m_saveConfigDialog;
+    if (m_access) delete m_access;
+    if (m_creator) delete m_creator;
+}
+
+void SettingsDialog::reset()
+{
+    m_ui->ip->clear();
+    m_ui->port->setValue(0);
+    m_ui->connectBtn->setEnabled(false);
+    m_ui->saveBtn->setEnabled(false);
+    m_ui->deleteBtn->setEnabled(false);
+}
+
+std::shared_ptr<grpc::ChannelInterface> SettingsDialog::takeChannel()
+{
+    std::shared_ptr<grpc::ChannelInterface> ret = m_channel;
+    m_channel = nullptr;
+    return ret;
 }
 
 void SettingsDialog::reject()
@@ -117,11 +164,46 @@ void SettingsDialog::reject()
     on_exitBtn_clicked(true);
 }
 
+// protected member function
+void SettingsDialog::keyPressEvent(QKeyEvent *e)
+{
+    if (!e)
+    {
+        QDialog::keyPressEvent(e);
+        return;
+    }
+
+    int key(e->key());
+    switch (key)
+    {
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+    {
+        if (!m_ui->saveBtn->isEnabled()) return;
+        on_saveBtn_clicked(true);
+        return;
+    }
+    case Qt::Key_Escape:
+    {
+        on_exitBtn_clicked(true);
+        return;
+    }
+    default:
+    {
+        break;
+    }
+    }
+
+    QDialog::keyPressEvent(e);
+}
+
 // private slots
 void SettingsDialog::on_hosts_currentIndexChanged(int)
 {
     if (m_config.empty()) return;
     setupData(&m_config[m_ui->hosts->currentText()]);
+    m_channel = nullptr;
+    m_ui->status->setText("Pending");
 }
 
 void SettingsDialog::on_ip_textChanged(const QString &)
@@ -134,14 +216,44 @@ void SettingsDialog::on_port_valueChanged(int)
     verifyIP();
 }
 
+void SettingsDialog::on_connectBtn_clicked(bool)
+{
+    m_ui->status->setText("Start create channel.");
+    QString ip = m_ui->ip->text();
+    m_creator->create(ip, m_ui->port->value());
+}
+
 void SettingsDialog::on_saveBtn_clicked(bool)
 {
     m_saveConfigDialog->open();
 }
 
+void SettingsDialog::on_deleteBtn_clicked(bool)
+{
+    QString key = m_ui->hosts->currentText();
+    m_ui->hosts->removeItem(m_ui->hosts->currentIndex());
+    m_ui->hosts->setCurrentIndex(-1);
+    m_config.remove(key);
+
+    if (m_config.size() == 0)
+    {
+        m_ui->deleteBtn->setEnabled(false);
+    }
+}
+
 void SettingsDialog::on_exitBtn_clicked(bool)
 {
+    if (!m_ui->saveBtn->isEnabled())
+    {
+        reset();
+    }
 
+    if (m_channel != nullptr)
+    {
+        accept();
+    }
+
+    done(0);
 }
 
 void SettingsDialog::onSaveAccepted()
@@ -156,6 +268,50 @@ void SettingsDialog::onSaveAccepted()
     
     m_ui->hosts->insertItem(m_ui->hosts->count() + 1, key);
     m_ui->hosts->setCurrentIndex(m_ui->hosts->count() - 1);
+    if (!m_ui->deleteBtn->isEnabled())
+    {
+        m_ui->deleteBtn->setEnabled(true);
+    }
+}
+
+void SettingsDialog::onCreateChannelDone
+(std::shared_ptr<grpc::ChannelInterface> &channel)
+{
+    if (channel == nullptr)
+    {
+        m_ui->status->setText("Connect Failed.");
+        m_channel = nullptr;
+        return;
+    }
+
+    m_ui->status->setText("Start echo test.");
+    if (m_access->setChannel(channel))
+    {
+        m_ui->status->setText("Fail to set channel.");
+        m_channel = nullptr;
+        return;
+    }
+
+    if (m_access->echoTest())
+    {
+        m_ui->status->setText("Echo test's stub is nullptr.");
+        m_channel = nullptr;
+        return;
+    }
+
+    m_channel = channel;
+}
+
+void SettingsDialog::onAccessEchoDone(bool result, QString &errMsg)
+{
+    if (!result)
+    {
+        m_ui->status->setText(errMsg);
+        m_channel = nullptr;
+        return;
+    }
+
+    m_ui->status->setText("Connected.");
 }
 
 // private member functions
@@ -163,7 +319,10 @@ SettingsDialog::SettingsDialog(QWidget *parent):
     QDialog(parent),
     m_ui(nullptr),
     m_regex(nullptr),
-    m_saveConfigDialog(nullptr)
+    m_saveConfigDialog(nullptr),
+    m_access(nullptr),
+    m_creator(nullptr),
+    m_channel(nullptr)
 {}
 
 uint8_t SettingsDialog::initConfigFile()

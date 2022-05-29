@@ -63,7 +63,7 @@ QString SaveConfigDialog::getName() const
 void SaveConfigDialog::reset()
 {
     m_ui->name->clear();
-    close();
+    done(0);
 }
 
 void SaveConfigDialog::reject()
@@ -87,7 +87,7 @@ void SaveConfigDialog::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Return:
     {
         if (!m_ui->okBtn->isEnabled()) return;
-        emit accepted();
+        accept();
         return;
     }
     case Qt::Key_Escape:
