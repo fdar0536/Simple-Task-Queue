@@ -87,5 +87,6 @@ int main(int argc, char **argv)
     }
 
     w.show();
+    w.on_actionSettings_triggered();
     return a.exec();
 }

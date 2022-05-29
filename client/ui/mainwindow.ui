@@ -13,7 +13,17 @@
   <property name="windowTitle">
    <string>Simple Task Queue</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
@@ -31,12 +41,21 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionSettings"/>
+   <addaction name="actionAddNewQueue"/>
    <addaction name="actionLog"/>
    <addaction name="actionAbout_Qt"/>
   </widget>
   <action name="actionSettings">
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionAddNewQueue">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Add New Queue</string>
    </property>
   </action>
   <action name="actionLog">

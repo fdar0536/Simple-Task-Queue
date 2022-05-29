@@ -66,12 +66,13 @@ uint8_t MainWindow::init(MainWindow *w)
     return 0;
 }
 
-// private slots
+// public slots
 void MainWindow::on_actionSettings_triggered()
 {
     m_settingsDialog->open();
 }
 
+// private slots
 void MainWindow::on_actionLog_triggered()
 {
     m_logger->open();

@@ -45,9 +45,11 @@ public:
 
     ~MainWindow();
 
-private slots:
+public slots:
 
     void on_actionSettings_triggered();
+
+private slots:
 
     void on_actionLog_triggered();
 
