@@ -55,6 +55,8 @@ private slots:
 
     void on_actionAbout_Qt_triggered();
 
+    void onSettingsAccepted();
+
 private:
 
     Ui::MainWindow *m_ui;
@@ -62,5 +64,7 @@ private:
     LoggerDialog *m_logger;
 
     SettingsDialog *m_settingsDialog;
+
+    std::shared_ptr<grpc::ChannelInterface> m_channel;
 };
 

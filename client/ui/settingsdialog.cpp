@@ -156,6 +156,7 @@ std::shared_ptr<grpc::ChannelInterface> SettingsDialog::takeChannel()
 {
     std::shared_ptr<grpc::ChannelInterface> ret = m_channel;
     m_channel = nullptr;
+    m_ui->status->setText("Pending");
     return ret;
 }
 

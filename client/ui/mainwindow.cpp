@@ -31,7 +31,8 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     m_ui(nullptr),
-    m_logger(nullptr)
+    m_logger(nullptr),
+    m_channel(nullptr)
 {}
 
 MainWindow::~MainWindow()
@@ -81,4 +82,9 @@ void MainWindow::on_actionLog_triggered()
 void MainWindow::on_actionAbout_Qt_triggered()
 {
     QMessageBox::aboutQt(this);
+}
+
+void MainWindow::onSettingsAccepted()
+{
+    m_channel = m_settingsDialog->takeChannel();
 }
