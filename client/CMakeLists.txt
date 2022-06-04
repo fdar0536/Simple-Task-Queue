@@ -23,11 +23,15 @@ set(MODEL_SRC
     model/grpcchannelcreator.hpp
     model/grpccommon.cpp
     model/grpccommon.hpp
+
+    model/global.cpp
+    model/global.hpp
 )
 
 add_executable(STQClient WIN32
     main.cpp
-    
+    resources.qrc
+
     ${UI_SRC}
     ${MODEL_SRC}
 )
@@ -40,4 +44,7 @@ target_link_libraries(STQClient
     gRPC::grpc
     gRPC::grpc++
     Qt6::Widgets
+    Qt6::Quick
+    Qt6::Qml
+    Qt6::QuickControls2
 )

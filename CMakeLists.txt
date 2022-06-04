@@ -68,7 +68,7 @@ if (BUILD_SERVER)
 endif(BUILD_SERVER)
 
 if (BUILD_CLIENT)
-    find_package(Qt6 COMPONENTS Widgets REQUIRED)
+    find_package(Qt6 COMPONENTS Widgets QuickControls2 REQUIRED)
 endif(BUILD_CLIENT)
 
 set(PROTOS

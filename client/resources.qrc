@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>ui/main.qml</file>
+        <file>ui/component/MainToolBar.qml</file>
+        <file>ui/icon/menu_black_48dp.svg</file>
+        <file>ui/icon/arrow_back_black_48dp.svg</file>
+    </qresource>
+</RCC>

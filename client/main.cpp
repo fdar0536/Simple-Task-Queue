@@ -27,10 +27,14 @@
 #include "unistd.h"
 #endif
 
+#include <new>
+
 #include "QApplication"
 #include "QMessageBox"
+#include "QQmlApplicationEngine"
+#include "QQuickStyle"
 
-#include "ui/mainwindow.hpp"
+#include "model/global.hpp"
 
 static bool isAdmin()
 {
@@ -60,6 +64,35 @@ static bool isAdmin()
 #endif
 }
 
+static uint8_t init(QQmlApplicationEngine &engine)
+{
+    QQuickStyle::setStyle("Material");
+    Global *global(nullptr);
+    try
+    {
+        global = new (std::nothrow) Global;
+        if (!global) return 1;
+    }
+    catch (...)
+    {
+        return 1;
+    }
+
+    qmlRegisterSingletonType<Global>("model.Global",
+                                     0,
+                                     1,
+                                     "Global",
+                                     [=](QQmlEngine *, QJSEngine *) -> QObject * {
+                                         return global;
+                                     });
+
+    engine.load(QUrl(QStringLiteral("qrc:/ui/main.qml")));
+    if (engine.rootObjects().isEmpty())
+        return 1;
+
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
@@ -77,8 +110,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    MainWindow w;
-    if (MainWindow::init(&w))
+    QQmlApplicationEngine engine;
+    if (init(engine))
     {
         QMessageBox::critical(nullptr,
                               a.tr("Error"),
@@ -86,7 +119,5 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    w.show();
-    w.on_actionSettings_triggered();
     return a.exec();
 }
