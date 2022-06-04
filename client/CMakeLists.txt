@@ -15,10 +15,14 @@ set(UI_SRC
 )
 
 set(MODEL_SRC
+    model/abstractclient.cpp
+    model/abstractclient.hpp
     model/accessimpl.cpp
     model/accessimpl.hpp
     model/grpcchannelcreator.cpp
     model/grpcchannelcreator.hpp
+    model/grpccommon.cpp
+    model/grpccommon.hpp
 )
 
 add_executable(STQClient WIN32

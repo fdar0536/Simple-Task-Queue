@@ -23,28 +23,14 @@
 
 #pragma once
 
-#include "QThread"
+#include "QString"
 #include "grpcpp/grpcpp.h"
 
-class GrpcChannelCreator : public QThread
+namespace GrpcCommon
 {
-    Q_OBJECT
 
-public:
+void setupCtx(grpc::ClientContext &);
 
-    GrpcChannelCreator(QObject * = nullptr);
+void buildErrMsg(grpc::Status &, QString &);
 
-    void create(QString &ip, uint16_t port);
-
-signals:
-
-    void done(std::shared_ptr<grpc::ChannelInterface> &);
-
-protected:
-
-    void run() override;
-
-    QString m_ip;
-
-    uint16_t m_port;
-};
+} // end namespace GrpcCommon

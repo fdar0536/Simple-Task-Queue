@@ -23,12 +23,13 @@
 
 #include <new>
 
+#include "grpccommon.hpp"
+
 #include "accessimpl.hpp"
-#include "config.h"
 
 // public member functions
 AccessImpl::AccessImpl(QObject *parent) :
-    QThread(parent),
+    AbstractClient(parent),
     m_stub(nullptr)
 {
 }
@@ -77,9 +78,7 @@ void AccessImpl::run()
     stq::EchoRes res;
     grpc::ClientContext ctx;
 
-    ctx.set_deadline(std::chrono::system_clock::now() +
-    std::chrono::milliseconds(STQ_CLIENT_TIMEOUT * 1000));
-
+    GrpcCommon::setupCtx(ctx);
     grpc::Status status = m_stub->Echo(&ctx, req, &res);
     if (status.ok())
     {
@@ -87,9 +86,6 @@ void AccessImpl::run()
         return;
     }
 
-    reason = QString::number(static_cast<int>(status.error_code()));
-    reason += ": ";
-    reason += QString::fromStdString(status.error_message());
-
-    emit(false, res);
+    GrpcCommon::buildErrMsg(status, reason);
+    emit echoDone(false, reason);
 }

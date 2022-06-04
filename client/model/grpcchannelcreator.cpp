@@ -21,8 +21,6 @@
  * SOFTWARE.
  */
 
-#include "grpcpp/grpcpp.h"
-
 #include "grpcchannelcreator.hpp"
 
 GrpcChannelCreator::GrpcChannelCreator(QObject *parent) :

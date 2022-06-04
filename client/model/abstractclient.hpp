@@ -23,28 +23,23 @@
 
 #pragma once
 
-#include "QThread"
-#include "grpcpp/grpcpp.h"
+#include <mutex>
 
-class GrpcChannelCreator : public QThread
+#include "grpcpp/grpcpp.h"
+#include "QThread"
+
+class AbstractClient : public QThread
 {
     Q_OBJECT
 
 public:
 
-    GrpcChannelCreator(QObject * = nullptr);
+    AbstractClient(QObject * = nullptr);
 
-    void create(QString &ip, uint16_t port);
-
-signals:
-
-    void done(std::shared_ptr<grpc::ChannelInterface> &);
+    virtual uint8_t setChannel(std::shared_ptr<grpc::ChannelInterface> &) = 0;
 
 protected:
 
-    void run() override;
+    std::mutex m_mutex;
 
-    QString m_ip;
-
-    uint16_t m_port;
 };

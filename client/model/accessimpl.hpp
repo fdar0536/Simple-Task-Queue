@@ -23,13 +23,10 @@
 
 #pragma once
 
-#include <mutex>
-
-#include "QThread"
-
+#include "abstractclient.hpp"
 #include "access.grpc.pb.h"
 
-class AccessImpl : public QThread
+class AccessImpl : public AbstractClient
 {
     Q_OBJECT
 
@@ -37,7 +34,7 @@ public:
 
     AccessImpl(QObject *parent = nullptr);
 
-    uint8_t setChannel(std::shared_ptr<grpc::ChannelInterface> &);
+    uint8_t setChannel(std::shared_ptr<grpc::ChannelInterface> &) override;
 
     uint8_t echoTest();
 
@@ -52,6 +49,4 @@ protected:
 private:
 
     std::unique_ptr<stq::Access::Stub> m_stub;
-
-    std::mutex m_mutex;
 };

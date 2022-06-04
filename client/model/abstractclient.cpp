@@ -21,30 +21,9 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include "abstractclient.hpp"
 
-#include "QThread"
-#include "grpcpp/grpcpp.h"
-
-class GrpcChannelCreator : public QThread
+AbstractClient::AbstractClient(QObject *parent) :
+    QThread(parent)
 {
-    Q_OBJECT
-
-public:
-
-    GrpcChannelCreator(QObject * = nullptr);
-
-    void create(QString &ip, uint16_t port);
-
-signals:
-
-    void done(std::shared_ptr<grpc::ChannelInterface> &);
-
-protected:
-
-    void run() override;
-
-    QString m_ip;
-
-    uint16_t m_port;
-};
+}
