@@ -285,6 +285,7 @@ Item
         onClicked:
         {
             configs.splice(host.currentIndex, 1)
+            dirty = true
             if (configs.length === 0)
             {
                 deleteBtn.enabled = false

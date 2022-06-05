@@ -264,6 +264,9 @@ uint8_t Global::initConfigFile()
 
     QRegularExpressionValidator regex = QRegularExpressionValidator(re, nullptr);
     int pos = 0;
+
+    // note:
+    // array.prototype.push is not working here
     for (int i = 0; i < arr.size(); ++i)
     {
         QJsonObject obj = arr[i].toObject();
