@@ -36,6 +36,39 @@
 
 #include "model/global.hpp"
 
+static bool isAdmin();
+static uint8_t init(QQmlApplicationEngine &engine);
+
+int main(int argc, char **argv)
+{
+    QApplication a(argc, argv);
+    a.setWindowIcon(QIcon(":/ui/icon/computer_black_48dp.svg"));
+    if (isAdmin())
+    {
+#ifdef _WIN32
+        QMessageBox::critical(nullptr,
+                              a.tr("Error"),
+                              a.tr("Refuse to run as administrator."));
+#else
+        QMessageBox::critical(nullptr,
+                              a.tr("Error"),
+                              a.tr("Refuse to run as super user."));
+#endif
+        return 1;
+    }
+
+    QQmlApplicationEngine engine;
+    if (init(engine))
+    {
+        QMessageBox::critical(nullptr,
+                              a.tr("Error"),
+                              a.tr("Fail to initialize."));
+        return 1;
+    }
+
+    return a.exec();
+}
+
 static bool isAdmin()
 {
 #ifdef _WIN32
@@ -70,7 +103,7 @@ static uint8_t init(QQmlApplicationEngine &engine)
     Global *global(nullptr);
     try
     {
-        global = new (std::nothrow) Global;
+        global = Global::create();
         if (!global) return 1;
     }
     catch (...)
@@ -91,33 +124,4 @@ static uint8_t init(QQmlApplicationEngine &engine)
         return 1;
 
     return 0;
-}
-
-int main(int argc, char **argv)
-{
-    QApplication a(argc, argv);
-    if (isAdmin())
-    {
-#ifdef _WIN32
-        QMessageBox::critical(nullptr,
-                              a.tr("Error"),
-                              a.tr("Refuse to run as administrator."));
-#else
-        QMessageBox::critical(nullptr,
-                              a.tr("Error"),
-                              a.tr("Refuse to run as super user."));
-#endif
-        return 1;
-    }
-
-    QQmlApplicationEngine engine;
-    if (init(engine))
-    {
-        QMessageBox::critical(nullptr,
-                              a.tr("Error"),
-                              a.tr("Fail to initialize."));
-        return 1;
-    }
-
-    return a.exec();
 }

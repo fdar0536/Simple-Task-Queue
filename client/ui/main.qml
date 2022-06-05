@@ -42,6 +42,6 @@ ApplicationWindow
     onClosing: function(close)
     {
         close.accepted = false;
-        Global.exit()
+        Global.programExit()
     }
 }

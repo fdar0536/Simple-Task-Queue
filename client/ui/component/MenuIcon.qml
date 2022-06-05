@@ -21,47 +21,34 @@
  * SOFTWARE.
  */
 
-#pragma once
+import QtQuick 2.15
+import QtQuick.Controls
+import QtQuick.Controls.Material 2.12
 
-#include "QWidget"
-#include "QSystemTrayIcon"
-#include "QMenu"
-#include "QAction"
-
-class Global : public QWidget
+Image
 {
-    Q_OBJECT
+    property alias source: root.source
+    property alias toolTip: toolTip.text
 
-public:
+    signal clicked()
 
-    ~Global();
+    id: root
+    transformOrigin: Item.Center
 
-    static Global *create();
+    MouseArea
+    {
+        anchors.fill: parent
+        hoverEnabled: true
+        onClicked: root.clicked()
+        onEntered: toolTip.visible = true
+        onExited: toolTip.visible = false
+    } // end MouseArea
 
-signals:
-
-    void showWindow();
-
-public slots:
-
-    Q_INVOKABLE void programExit();
-
-private slots:
-
-    // tray icon
-    void iconActivated(QSystemTrayIcon::ActivationReason);
-
-private:
-
-    Global();
-
-    QSystemTrayIcon *m_icon;
-
-    QMenu *m_iconContextMenu;
-
-    QAction *m_showAction;
-
-    QAction *m_exitAction;
-
-    void connectHook();
-};
+    ToolTip
+    {
+        id: toolTip
+        delay: 300
+        timeout: 2000
+        visible: false
+    }
+} // end Image root

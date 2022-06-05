@@ -30,6 +30,7 @@ ToolBar
     id: root
     signal menuClicked()
     signal backClicked()
+    signal exitClicked()
 
     anchors
     {
@@ -38,7 +39,7 @@ ToolBar
         right: parent.right
     }
 
-    Image
+    MenuIcon
     {
         id: menu
         anchors
@@ -49,29 +50,25 @@ ToolBar
         }
 
         source: "qrc:/ui/icon/menu_black_48dp.svg"
-        transformOrigin: Item.Center
+        toolTip: "Show Menu"
+        rotation: 0
 
-        MouseArea
+        onClicked: function()
         {
-            anchors.fill: parent
-
-            onClicked: function()
+            if (menu.rotation === 0)
             {
-                if (menu.rotation === 0)
-                {
-                    menu.rotation = 90
-                }
-                else
-                {
-                    menu.rotation = 0
-                }
+                menu.rotation = 90
+            }
+            else
+            {
+                menu.rotation = 0
+            }
 
-                root.menuClicked()
-            } // end onClicked
-        } // end MouseArea
-    } // end Image menu
+            root.menuClicked()
+        } // end onClicked
+    } // end MenuIcon menu
 
-    Image
+    MenuIcon
     {
         id: back
         anchors
@@ -82,12 +79,22 @@ ToolBar
         }
 
         source: "qrc:/ui/icon/arrow_back_black_48dp.svg"
-        transformOrigin: Item.Center
+        toolTip: "Previous page"
+        onClicked: root.backClicked()
+    } // end MenuIcon back
 
-        MouseArea
+    MenuIcon
+    {
+        id: exit
+        anchors
         {
-            anchors.fill: parent
-            onClicked: root.backClicked()
-        } // end MouseArea
-    } // end Image back
+            top: parent.top
+            left: back.right
+            bottom: parent.bottom
+        }
+
+        source: "qrc:/ui/icon/close_black_48dp.svg"
+        toolTip: "Exit"
+        onClicked: root.exitClicked()
+    } // end MenuIcon exit
 } // end ToolBar root
