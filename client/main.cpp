@@ -37,7 +37,7 @@
 #include "model/global.hpp"
 
 static bool isAdmin();
-static uint8_t init(QQmlApplicationEngine &engine);
+static uint8_t init(QQmlApplicationEngine *engine);
 
 int main(int argc, char **argv)
 {
@@ -57,7 +57,15 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    QQmlApplicationEngine engine;
+    QQmlApplicationEngine *engine = new (std::nothrow) QQmlApplicationEngine;
+    if (!engine)
+    {
+        QMessageBox::critical(nullptr,
+                              a.tr("Error"),
+                              a.tr("Fail to create qml engine."));
+        return 1;
+    }
+
     if (init(engine))
     {
         QMessageBox::critical(nullptr,
@@ -66,7 +74,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    return a.exec();
+    const int ret = a.exec();
+    delete engine;
+    return ret;
 }
 
 static bool isAdmin()
@@ -97,13 +107,13 @@ static bool isAdmin()
 #endif
 }
 
-static uint8_t init(QQmlApplicationEngine &engine)
+static uint8_t init(QQmlApplicationEngine *engine)
 {
     QQuickStyle::setStyle("Material");
     Global *global(nullptr);
     try
     {
-        global = Global::create();
+        global = Global::create(engine);
         if (!global) return 1;
     }
     catch (...)
@@ -119,8 +129,8 @@ static uint8_t init(QQmlApplicationEngine &engine)
                                          return global;
                                      });
 
-    engine.load(QUrl(QStringLiteral("qrc:/ui/main.qml")));
-    if (engine.rootObjects().isEmpty())
+    engine->load(QUrl(QStringLiteral("qrc:/ui/main.qml")));
+    if (engine->rootObjects().isEmpty())
         return 1;
 
     return 0;

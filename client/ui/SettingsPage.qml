@@ -37,34 +37,31 @@ Item
     property bool accepted: false
     property bool dirty: false
     property var settings: ({})
+    property var configs: []
+    property bool ipAccepted: false
 
     Component.onCompleted:
     {
         settings = Global.getSettings()
-        var configs = settings["config"]
-        root.accepted = false
-        root.dirty = false
+        configs = settings["config"]
+        accepted = false
+        dirty = false
 
         if (configs.length === 0)
         {
             host.currentIndex = -1
-            return;
+            return
         }
 
-        var i = 0
-        var config = {}
-        for (i = 0; i < configs.length; ++i)
-        {
-            config = configs[i]
-            var toAppend = {}
-            toAppend.text = config["alias"]
-            comboBoxModel.append(toAppend)
-        }
+        updateComboBox()
 
-        config = configs[0]
-        aliasName.text = config["alias"]
-        ip.text = config["ip"]
-        port.value = config["port"]
+        host.currentIndex = 0
+        updateUI(0)
+        ipAccepted = true
+
+        connectBtn.enabled = true
+        saveBtn.enabled = true
+        deleteBtn.enabled = true
     }
 
     Component.onDestruction:
@@ -72,8 +69,37 @@ Item
         Global.isSettingsAccept = root.accepted
         if (root.dirty)
         {
-            Global.saveSettings(settings)
+            settings["config"] = configs
+            Global.saveSettings(root.settings)
         }
+    }
+
+    function checkAllInput()
+    {
+        return (ipAccepted && (aliasName.text.length !== 0))
+    }
+
+    function updateComboBox()
+    {
+        var i = 0
+        var config = {}
+        comboBoxModel.clear()
+        for (i = 0; i < configs.length; ++i)
+        {
+            config = root.configs[i]
+            var toAppend = {}
+            toAppend.text = config["alias"]
+            comboBoxModel.append(toAppend)
+        }
+    }
+
+    function updateUI(index)
+    {
+        var config = root.configs[index]
+        host.currentIndex = index
+        aliasName.text = config["alias"]
+        ip.text = config["ip"]
+        port.value = config["port"]
     }
 
     // row 1
@@ -104,6 +130,16 @@ Item
             left: hostText.right
             right: parent.right
         }
+
+        onCurrentIndexChanged:
+        {
+            if (currentIndex === -1) return
+
+            var config = root.configs[host.currentIndex]
+            aliasName.text = config["alias"]
+            ip.text = config["ip"]
+            port.value = config["port"]
+        }
     }
 
     // row 2
@@ -132,6 +168,13 @@ Item
             left: aliasText.right
             right: parent.right
         }
+
+        onTextEdited:
+        {
+            var res = checkAllInput()
+            connectBtn.enabled = res
+            saveBtn.enabled = res
+        }
     }
 
     // row 3
@@ -159,6 +202,19 @@ Item
             top: aliasName.bottom
             left: ipText.right
             right: parent.right
+        }
+
+        validator: RegularExpressionValidator
+        {
+            regularExpression: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+        }
+
+        onTextEdited:
+        {
+            root.ipAccepted = ip.acceptableInput
+            var res = checkAllInput()
+            connectBtn.enabled = res
+            saveBtn.enabled = res
         }
     }
 
@@ -225,6 +281,17 @@ Item
             top: port.bottom
             right: exitBtn.left
         }
+
+        onClicked:
+        {
+            configs.splice(host.currentIndex, 1)
+            if (configs.length === 0)
+            {
+                deleteBtn.enabled = false
+            }
+
+            updateComboBox()
+        }
     }
 
     ToolTipButton
@@ -239,6 +306,28 @@ Item
         {
             top: port.bottom
             right: deleteBtn.left
+        }
+
+        onClicked:
+        {
+            var res = {}
+            res["alias"] = aliasName.text
+            res["ip"] = ip.text
+            res["port"] = port.value
+            if ((typeof configs === 'undefined'))
+            {
+                configs = []
+            }
+
+            configs.push(res)
+
+            updateComboBox()
+            updateUI(configs.length - 1)
+            dirty = true
+            if (!deleteBtn.enabled)
+            {
+                deleteBtn.enabled = true
+            }
         }
     }
 

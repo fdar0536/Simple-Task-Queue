@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include "QQmlApplicationEngine"
 #include "QWidget"
 #include "QSystemTrayIcon"
 #include "QMenu"
@@ -38,17 +39,17 @@ public:
 
     ~Global();
 
-    static Global *create();
+    static Global *create(QQmlApplicationEngine *);
 
     Q_INVOKABLE void aboutQt();
 
-    Q_INVOKABLE void setState(QString, QVariantMap);
+    Q_INVOKABLE void setState(QString, QJSValue);
 
-    Q_INVOKABLE QVariantMap getState(QString);
+    Q_INVOKABLE QJSValue getState(QString);
 
-    Q_INVOKABLE void saveSettings(QVariantMap);
+    Q_INVOKABLE void saveSettings(QJSValue);
 
-    Q_INVOKABLE QVariantMap getSettings();
+    Q_INVOKABLE QJSValue getSettings();
 
     void setIsSettingsAccept(bool);
 
@@ -79,9 +80,11 @@ private:
 
     QAction *m_exitAction;
 
-    QHash<QString, QVariantMap> m_stateStore;
+    QHash<QString, QJSValue> m_stateStore;
 
     bool m_isSettingsAccept;
+
+    QQmlApplicationEngine *m_engine;
 
     void connectHook();
 

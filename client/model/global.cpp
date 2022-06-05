@@ -6,6 +6,7 @@
 #include "QJsonArray"
 #include "QJsonDocument"
 #include "QJsonObject"
+#include "QJSValue"
 #include "QMessageBox"
 #include "QRegularExpressionValidator"
 #include "QStandardPaths"
@@ -24,13 +25,15 @@ Global::~Global()
     }
 }
 
-Global *Global::create()
+Global *Global::create(QQmlApplicationEngine *engine)
 {
+    if (!engine) return nullptr;
     Global *ret(nullptr);
 
     ret = new (std::nothrow) Global;
     if (!ret) return nullptr;
 
+    ret->m_engine = engine;
     if (ret->initConfigFile())
     {
         delete ret;
@@ -80,7 +83,7 @@ Global *Global::create()
     return ret;
 }
 
-void Global::setState(QString key, QVariantMap data)
+void Global::setState(QString key, QJSValue data)
 {
     m_stateStore[key] = data;
 }
@@ -90,25 +93,28 @@ void Global::aboutQt()
     QMessageBox::aboutQt(this);
 }
 
-QVariantMap Global::getState(QString key)
+QJSValue Global::getState(QString key)
 {
     auto it = m_stateStore.find(key);
     if (it == m_stateStore.end())
     {
-        return QVariantMap();
+        return m_engine->newObject();
     }
 
     return it.value();
 }
 
-void Global::saveSettings(QVariantMap input)
+void Global::saveSettings(QJSValue input)
 {
     m_stateStore["settings"] = input;
-    QVariantList list = input["config"].toList();
+    QJSValue list = input.property("config");
+    qint32 length = list.property("length").toInt();
 
-    if (list.size() == 0) return;
+    if (length == 0) return;
 
-    QFile config(input["configPath"].toString());
+    QString path = input.property("configPath").toString();
+    qDebug() << "path is: " << path;
+    QFile config(path);
     if (!config.open(QIODevice::WriteOnly))
     {
         std::cerr << __FILE__ << ":" << __LINE__;
@@ -118,13 +124,14 @@ void Global::saveSettings(QVariantMap input)
 
     QJsonObject json;
     QJsonArray arr;
-    for (qsizetype i = 0; i < list.size(); ++i)
+
+    for (qsizetype i = 0; i < length; ++i)
     {
         QJsonObject item;
-        QVariantMap map = list[i].toMap();
-        item.insert("alias", map["alias"].toString());
-        item.insert("ip", map["ip"].toString());
-        item.insert("port", map["port"].toInt());
+        QJSValue map = list.property(i);
+        item.insert("alias", map.property("alias").toString());
+        item.insert("ip", map.property("ip").toString());
+        item.insert("port", map.property("port").toInt());
         arr.append(item);
     }
 
@@ -134,7 +141,7 @@ void Global::saveSettings(QVariantMap input)
     config.close();
 }
 
-QVariantMap Global::getSettings()
+QJSValue Global::getSettings()
 {
     return m_stateStore["settings"];
 }
@@ -180,7 +187,8 @@ Global::Global() :
     m_iconContextMenu(nullptr),
     m_showAction(nullptr),
     m_exitAction(nullptr),
-    m_isSettingsAccept(false)
+    m_isSettingsAccept(false),
+    m_engine(nullptr)
 {}
 
 void Global::connectHook()
@@ -224,8 +232,8 @@ uint8_t Global::initConfigFile()
     }
 
     configPath += "/config.json";
-    QVariantMap output;
-    output["configPath"] = configPath;
+    QJSValue output = m_engine->newObject();
+    output.setProperty("configPath", QJSValue(configPath));
 
     QFile config(configPath);
     if (!config.open(QIODevice::ReadOnly))
@@ -248,7 +256,8 @@ uint8_t Global::initConfigFile()
 
     QJsonArray arr = configObj["config"].toArray();
     QString tmpString;
-    QVariantList list;
+    QJSValue list = m_engine->newArray(arr.size());
+
     QRegularExpression re("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
                           "{3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
     re.optimize();
@@ -258,23 +267,23 @@ uint8_t Global::initConfigFile()
     for (int i = 0; i < arr.size(); ++i)
     {
         QJsonObject obj = arr[i].toObject();
-        QVariantMap out;
+        QJSValue out = m_engine->newObject();
 
         if (!obj["alias"].isString())
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid config file." << std::endl;
-            list.clear();
-            return 0;
+            list = m_engine->newArray();
+            goto exit;
         }
 
-        out["alias"] = obj["alias"].toString();
+        out.setProperty("alias", QJSValue(obj["alias"].toString()));
         if (!obj["ip"].isString())
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid config file." << std::endl;
-            list.clear();
-            return 0;
+            list = m_engine->newArray();
+            goto exit;
         }
 
         tmpString = obj["ip"].toString();
@@ -282,18 +291,18 @@ uint8_t Global::initConfigFile()
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid ip." << std::endl;
-            list.clear();
-            return 0;
+            list = m_engine->newArray();
+            goto exit;
         }
 
-        out["ip"] = tmpString;
+        out.setProperty("ip", QJSValue(tmpString));
 
         if (!obj["port"].isDouble())
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid config file." << std::endl;
-            list.clear();
-            return 0;
+            list = m_engine->newArray();
+            goto exit;
         }
 
         pos = obj["port"].toInt();
@@ -301,15 +310,17 @@ uint8_t Global::initConfigFile()
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid port." << std::endl;
-            list.clear();
-            return 0;
+            list = m_engine->newArray();
+            goto exit;
         }
 
-        out["port"] = pos;
-        list.append(out);
+        out.setProperty("port", QJSValue(pos));
+        list.setProperty(i, out);
     }
 
-    output["config"] = list;
+exit:
+
+    output.setProperty("config", list);
     m_stateStore["settings"] = output;
     return 0;
 }
