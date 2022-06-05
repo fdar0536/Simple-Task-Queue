@@ -25,63 +25,64 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Controls.Material 2.12
 
-ToolBar
+Drawer
 {
-    id: root
-    signal menuClicked()
-    signal backClicked()
-    signal exitClicked()
+    required property bool inPortrait
+    property alias menuWidth: root.width
+    property alias menuHeight: root.height
+    signal indexChanged(int index)
 
-    anchors
+    id: root
+
+    modal: inPortrait
+    interactive: inPortrait
+    position: inPortrait ? 0 : 1
+    visible: !inPortrait
+
+    ListModel
     {
-        top: parent.top
-        left: parent.left
-        right: parent.right
+        id: listModel
+        ListElement
+        {
+            name: 'Settings'
+        }
+
+        ListElement
+        {
+            name: 'Queue list'
+        }
     }
 
-    MenuIcon
+    ListView
     {
-        id: menu
-        anchors
+        id: listView
+        anchors.fill: parent
+        model: listModel
+        delegate: Component
         {
-            top: parent.top
-            left: parent.left
-            bottom: parent.bottom
-        }
+            Item
+            {
+                width: parent.width
+                height: 25
+                Column
+                {
+                    Text
+                    {
+                        text: name
+                        font.pointSize: 15
+                    }
+                }
 
-        source: "qrc:/ui/icon/menu_black_48dp.svg"
-        toolTip: "Show Menu"
-
-        onClicked: root.menuClicked()
-    } // end MenuIcon menu
-
-    MenuIcon
-    {
-        id: back
-        anchors
-        {
-            top: parent.top
-            left: menu.right
-            bottom: parent.bottom
-        }
-
-        source: "qrc:/ui/icon/arrow_back_black_48dp.svg"
-        toolTip: "Previous page"
-        onClicked: root.backClicked()
-    } // end MenuIcon back
-
-    MenuIcon
-    {
-        id: exit
-        anchors
-        {
-            top: parent.top
-            left: back.right
-            bottom: parent.bottom
-        }
-
-        source: "qrc:/ui/icon/close_black_48dp.svg"
-        toolTip: "Exit"
-        onClicked: root.exitClicked()
-    } // end MenuIcon exit
-} // end ToolBar root
+                MouseArea
+                {
+                    anchors.fill: parent
+                    onClicked:
+                    {
+                        listView.currentIndex = index
+                        root.indexChanged(index)
+                    }
+                }
+            } // end Item
+        } // end delegate: Component
+    } // end ListView listView
+} // end Drawer root

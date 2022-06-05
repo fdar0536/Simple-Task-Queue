@@ -22,6 +22,7 @@
  */
 
 import QtQml
+import QtQuick 2.15
 import QtQuick.Dialogs
 import QtQuick.Controls
 import QtQuick.Controls.Material 2.12
@@ -33,7 +34,17 @@ ApplicationWindow
 {
     id: root
     title: qsTr("Simple Task Queue")
+
     visible: true
+    minimumWidth: 700
+    minimumHeight: 500
+
+    function getIsInPortrait()
+    {
+        if (root.width <= 750) return true
+        else if (root.width < root.height) return true
+        else return false
+    }
 
     Connections
     {
@@ -44,15 +55,53 @@ ApplicationWindow
         }
     }
 
-    MainToolBar
-    {
-        id: toolBar
-        onExitClicked: Global.programExit()
-    }
-
     onClosing: function(close)
     {
         close.accepted = false;
         root.hide()
+    }
+
+    MainToolBar
+    {
+        id: toolBar
+
+        onMenuClicked:
+        {
+            if (!getIsInPortrait()) return
+
+            if (mainMenu.opened)
+            {
+                mainMenu.close()
+            }
+            else
+            {
+                mainMenu.open()
+            }
+        }
+
+        onExitClicked: Global.programExit()
+    }
+
+    MainMenu
+    {
+        id: mainMenu
+        inPortrait: getIsInPortrait()
+        menuWidth:
+        {
+            if (root.width > 200) return 150
+            else root.width * 0.8
+        }
+
+        menuHeight: root.height - toolBar.height
+        y: toolBar.height
+    }
+
+    Flickable
+    {
+        id: flickable
+
+        anchors.fill: parent
+        anchors.topMargin: toolBar.height
+        anchors.leftMargin: !getIsInPortrait() ? mainMenu.width : undefined
     }
 }

@@ -7,5 +7,6 @@
         <file>ui/icon/close_black_48dp.svg</file>
         <file>ui/component/MenuIcon.qml</file>
         <file>ui/icon/computer_black_48dp.svg</file>
+        <file>ui/component/MainMenu.qml</file>
     </qresource>
 </RCC>
