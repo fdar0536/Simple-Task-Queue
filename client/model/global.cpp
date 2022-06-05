@@ -1,7 +1,14 @@
+#include <iostream>
 #include <new>
 
 #include "QApplication"
+#include "QDir"
+#include "QJsonArray"
+#include "QJsonDocument"
+#include "QJsonObject"
 #include "QMessageBox"
+#include "QRegularExpressionValidator"
+#include "QStandardPaths"
 
 #include "global.hpp"
 
@@ -23,6 +30,12 @@ Global *Global::create()
 
     ret = new (std::nothrow) Global;
     if (!ret) return nullptr;
+
+    if (ret->initConfigFile())
+    {
+        delete ret;
+        return nullptr;
+    }
 
     //trayIcon
     if (QSystemTrayIcon::isSystemTrayAvailable())
@@ -88,6 +101,54 @@ QVariantMap Global::getState(QString key)
     return it.value();
 }
 
+void Global::saveSettings(QVariantMap input)
+{
+    m_stateStore["settings"] = input;
+    QVariantList list = input["config"].toList();
+
+    if (list.size() == 0) return;
+
+    QFile config(input["configPath"].toString());
+    if (!config.open(QIODevice::WriteOnly))
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Fail to open config file." << std::endl;
+        return;
+    }
+
+    QJsonObject json;
+    QJsonArray arr;
+    for (qsizetype i = 0; i < list.size(); ++i)
+    {
+        QJsonObject item;
+        QVariantMap map = list[i].toMap();
+        item.insert("alias", map["alias"].toString());
+        item.insert("ip", map["ip"].toString());
+        item.insert("port", map["port"].toInt());
+        arr.append(item);
+    }
+
+    json.insert("config", arr);
+    QJsonDocument doc(json);
+    config.write(doc.toJson());
+    config.close();
+}
+
+QVariantMap Global::getSettings()
+{
+    return m_stateStore["settings"];
+}
+
+void Global::setIsSettingsAccept(bool input)
+{
+    m_isSettingsAccept = input;
+}
+
+bool Global::isSettingsAccept() const
+{
+    return m_isSettingsAccept;
+}
+
 // public slots
 void Global::programExit()
 {
@@ -118,7 +179,8 @@ Global::Global() :
     m_icon(nullptr),
     m_iconContextMenu(nullptr),
     m_showAction(nullptr),
-    m_exitAction(nullptr)
+    m_exitAction(nullptr),
+    m_isSettingsAccept(false)
 {}
 
 void Global::connectHook()
@@ -141,4 +203,113 @@ void Global::connectHook()
                 this,
                 &Global::programExit);
     }
+}
+
+uint8_t Global::initConfigFile()
+{
+    QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    if (configPath.isEmpty())
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Fail to determine config location." << std::endl;
+        return 1;
+    }
+
+    QDir dir;
+    if (!dir.mkpath(configPath))
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Fail to create config location." << std::endl;
+        return 1;
+    }
+
+    configPath += "/config.json";
+    QVariantMap output;
+    output["configPath"] = configPath;
+
+    QFile config(configPath);
+    if (!config.open(QIODevice::ReadOnly))
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Fail to open config file." << std::endl;
+        return 0;
+    }
+
+    QByteArray data = config.readAll();
+    config.close();
+    QJsonObject configObj = QJsonDocument::fromJson(data).object();
+
+    if (!configObj["config"].isArray())
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Invalid config file." << std::endl;
+        return 0;
+    }
+
+    QJsonArray arr = configObj["config"].toArray();
+    QString tmpString;
+    QVariantList list;
+    QRegularExpression re("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
+                          "{3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+    re.optimize();
+
+    QRegularExpressionValidator regex = QRegularExpressionValidator(re, nullptr);
+    int pos = 0;
+    for (int i = 0; i < arr.size(); ++i)
+    {
+        QJsonObject obj = arr[i].toObject();
+        QVariantMap out;
+
+        if (!obj["alias"].isString())
+        {
+            std::cerr << __FILE__ << ":" << __LINE__;
+            std::cerr << " Invalid config file." << std::endl;
+            list.clear();
+            return 0;
+        }
+
+        out["alias"] = obj["alias"].toString();
+        if (!obj["ip"].isString())
+        {
+            std::cerr << __FILE__ << ":" << __LINE__;
+            std::cerr << " Invalid config file." << std::endl;
+            list.clear();
+            return 0;
+        }
+
+        tmpString = obj["ip"].toString();
+        if (regex.validate(tmpString, pos) != QValidator::Acceptable)
+        {
+            std::cerr << __FILE__ << ":" << __LINE__;
+            std::cerr << " Invalid ip." << std::endl;
+            list.clear();
+            return 0;
+        }
+
+        out["ip"] = tmpString;
+
+        if (!obj["port"].isDouble())
+        {
+            std::cerr << __FILE__ << ":" << __LINE__;
+            std::cerr << " Invalid config file." << std::endl;
+            list.clear();
+            return 0;
+        }
+
+        pos = obj["port"].toInt();
+        if (pos > 65535 || pos < 0)
+        {
+            std::cerr << __FILE__ << ":" << __LINE__;
+            std::cerr << " Invalid port." << std::endl;
+            list.clear();
+            return 0;
+        }
+
+        out["port"] = pos;
+        list.append(out);
+    }
+
+    output["config"] = list;
+    m_stateStore["settings"] = output;
+    return 0;
 }

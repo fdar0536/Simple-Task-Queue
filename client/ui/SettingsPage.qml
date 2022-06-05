@@ -35,6 +35,46 @@ Item
 
     property int fontSize: 15
     property bool accepted: false
+    property bool dirty: false
+    property var settings: ({})
+
+    Component.onCompleted:
+    {
+        settings = Global.getSettings()
+        var configs = settings["config"]
+        root.accepted = false
+        root.dirty = false
+
+        if (configs.length === 0)
+        {
+            host.currentIndex = -1
+            return;
+        }
+
+        var i = 0
+        var config = {}
+        for (i = 0; i < configs.length; ++i)
+        {
+            config = configs[i]
+            var toAppend = {}
+            toAppend.text = config["alias"]
+            comboBoxModel.append(toAppend)
+        }
+
+        config = configs[0]
+        aliasName.text = config["alias"]
+        ip.text = config["ip"]
+        port.value = config["port"]
+    }
+
+    Component.onDestruction:
+    {
+        Global.isSettingsAccept = root.accepted
+        if (root.dirty)
+        {
+            Global.saveSettings(settings)
+        }
+    }
 
     // row 1
     TitleText

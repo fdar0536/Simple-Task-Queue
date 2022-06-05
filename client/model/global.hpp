@@ -32,6 +32,8 @@ class Global : public QWidget
 {
     Q_OBJECT
 
+    Q_PROPERTY(bool isSettingsAccept READ isSettingsAccept WRITE setIsSettingsAccept)
+
 public:
 
     ~Global();
@@ -43,6 +45,14 @@ public:
     Q_INVOKABLE void setState(QString, QVariantMap);
 
     Q_INVOKABLE QVariantMap getState(QString);
+
+    Q_INVOKABLE void saveSettings(QVariantMap);
+
+    Q_INVOKABLE QVariantMap getSettings();
+
+    void setIsSettingsAccept(bool);
+
+    bool isSettingsAccept() const;
 
 signals:
 
@@ -71,5 +81,9 @@ private:
 
     QHash<QString, QVariantMap> m_stateStore;
 
+    bool m_isSettingsAccept;
+
     void connectHook();
+
+    uint8_t initConfigFile();
 };
