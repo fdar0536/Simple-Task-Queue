@@ -38,6 +38,8 @@ public:
 
     static Global *create();
 
+    Q_INVOKABLE void aboutQt();
+
     Q_INVOKABLE void setState(QString, QVariantMap);
 
     Q_INVOKABLE QVariantMap getState(QString);

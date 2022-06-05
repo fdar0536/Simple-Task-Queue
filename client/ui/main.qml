@@ -79,6 +79,7 @@ ApplicationWindow
             }
         }
 
+        onAboutQtClicked: Global.aboutQt()
         onExitClicked: Global.programExit()
     }
 

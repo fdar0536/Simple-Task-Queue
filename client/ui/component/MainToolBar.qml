@@ -29,7 +29,7 @@ ToolBar
 {
     id: root
     signal menuClicked()
-    signal backClicked()
+    signal aboutQtClicked()
     signal exitClicked()
 
     anchors
@@ -57,7 +57,7 @@ ToolBar
 
     MenuIcon
     {
-        id: back
+        id: aboutQt
         anchors
         {
             top: parent.top
@@ -65,9 +65,9 @@ ToolBar
             bottom: parent.bottom
         }
 
-        source: "qrc:/ui/icon/arrow_back_black_48dp.svg"
-        toolTip: "Previous page"
-        onClicked: root.backClicked()
+        source: "qrc:/ui/icon/info_black_48dp.svg"
+        toolTip: "About Qt"
+        onClicked: root.aboutQtClicked()
     } // end MenuIcon back
 
     MenuIcon
@@ -76,7 +76,7 @@ ToolBar
         anchors
         {
             top: parent.top
-            left: back.right
+            left: aboutQt.right
             bottom: parent.bottom
         }
 

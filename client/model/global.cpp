@@ -72,6 +72,11 @@ void Global::setState(QString key, QVariantMap data)
     m_stateStore[key] = data;
 }
 
+void Global::aboutQt()
+{
+    QMessageBox::aboutQt(this);
+}
+
 QVariantMap Global::getState(QString key)
 {
     auto it = m_stateStore.find(key);
