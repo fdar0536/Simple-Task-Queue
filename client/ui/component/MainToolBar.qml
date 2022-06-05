@@ -25,12 +25,12 @@ import QtQuick 2.15
 import QtQuick.Controls
 import QtQuick.Controls.Material 2.12
 
+import model.Global 0.1
+
 ToolBar
 {
     id: root
     signal menuClicked()
-    signal aboutQtClicked()
-    signal exitClicked()
 
     anchors
     {
@@ -67,7 +67,7 @@ ToolBar
 
         source: "qrc:/ui/icon/info_black_48dp.svg"
         toolTip: "About Qt"
-        onClicked: root.aboutQtClicked()
+        onClicked: Global.aboutQt()
     } // end MenuIcon back
 
     MenuIcon
@@ -82,6 +82,6 @@ ToolBar
 
         source: "qrc:/ui/icon/close_black_48dp.svg"
         toolTip: "Exit"
-        onClicked: root.exitClicked()
+        onClicked: Global.programExit()
     } // end MenuIcon exit
 } // end ToolBar root

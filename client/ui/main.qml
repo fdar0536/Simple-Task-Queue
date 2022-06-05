@@ -78,9 +78,6 @@ ApplicationWindow
                 mainMenu.open()
             }
         }
-
-        onAboutQtClicked: Global.aboutQt()
-        onExitClicked: Global.programExit()
     }
 
     MainMenu
