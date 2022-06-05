@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+import QtQml
 import QtQuick.Dialogs
 import QtQuick.Controls
 import QtQuick.Controls.Material 2.12
@@ -34,14 +35,21 @@ ApplicationWindow
     title: qsTr("Simple Task Queue")
     visible: true
 
+    Connections
+    {
+        target: Global
+        onShowWindow: root.show()
+    }
+
     MainToolBar
     {
         id: toolBar
+        onExitClicked: Global.programExit()
     }
 
     onClosing: function(close)
     {
         close.accepted = false;
-        Global.programExit()
+        root.hide()
     }
 }
