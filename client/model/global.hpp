@@ -38,6 +38,10 @@ public:
 
     static Global *create();
 
+    Q_INVOKABLE void setState(QString, QVariantMap);
+
+    Q_INVOKABLE QVariantMap getState(QString);
+
 signals:
 
     void showWindow();
@@ -62,6 +66,8 @@ private:
     QAction *m_showAction;
 
     QAction *m_exitAction;
+
+    QHash<QString, QVariantMap> m_stateStore;
 
     void connectHook();
 };

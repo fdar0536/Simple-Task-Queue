@@ -67,6 +67,22 @@ Global *Global::create()
     return ret;
 }
 
+void Global::setState(QString key, QVariantMap data)
+{
+    m_stateStore[key] = data;
+}
+
+QVariantMap Global::getState(QString key)
+{
+    auto it = m_stateStore.find(key);
+    if (it == m_stateStore.end())
+    {
+        return QVariantMap();
+    }
+
+    return it.value();
+}
+
 // public slots
 void Global::programExit()
 {
