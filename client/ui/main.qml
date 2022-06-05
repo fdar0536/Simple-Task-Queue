@@ -38,7 +38,10 @@ ApplicationWindow
     Connections
     {
         target: Global
-        onShowWindow: root.show()
+        function onShowWindow()
+        {
+            root.show()
+        }
     }
 
     MainToolBar
