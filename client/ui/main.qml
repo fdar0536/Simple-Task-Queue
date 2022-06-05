@@ -101,5 +101,12 @@ ApplicationWindow
         anchors.fill: parent
         anchors.topMargin: toolBar.height
         anchors.leftMargin: !getIsInPortrait() ? mainMenu.width : undefined
+
+        Loader
+        {
+            id: loader
+            anchors.fill: parent
+            source: "qrc:/ui/SettingsPage.qml"
+        }
     }
 }
