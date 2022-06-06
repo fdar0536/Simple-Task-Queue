@@ -137,7 +137,7 @@ std::shared_ptr<grpc::ChannelInterface> Global::grpcChannel()
 
 void Global::setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &in)
 {
-    std::unique_lock lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_channel = in;
 }
 
