@@ -85,7 +85,6 @@ void SettingsModel::run()
 
     std::shared_ptr<grpc::ChannelInterface> channel;
     std::unique_ptr<stq::Access::Stub> stub;
-    qDebug() << m_ip;
 
     try
     {
