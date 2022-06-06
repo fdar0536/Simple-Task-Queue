@@ -82,6 +82,40 @@ Item
         {
             Global.programExit(1, "Fail to initialize queue list model.")
         }
+
+        var lastState = Global.state("queueListState")
+        if (typeof lastState === 'string') return
+
+        var lastList = lastState["list"]
+        if (lastList.length === 0) return
+
+        var i = 0
+        comboBoxModel.clear()
+        for (i = 0; i < lastList.length; ++i)
+        {
+            var toInsert = {}
+            toInsert.text = lastList[i]
+            comboBoxModel.append(toInsert)
+        }
+
+        queueList.currentIndex = lastState["index"]
+        deleteBtn.enabled = true
+    }
+
+    Component.onDestruction:
+    {
+        var i = 0
+        var list = []
+        var lastState = {}
+        lastState["index"] = queueList.currentIndex
+        for (i = 0; i < comboBoxModel.count; ++i)
+        {
+            queueList.currentIndex = i
+            list.push(queueList.currentText)
+        }
+
+        lastState["list"] = list
+        Global.setState("queueListState", lastState)
     }
 
     function lockUI()

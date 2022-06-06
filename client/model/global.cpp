@@ -283,4 +283,5 @@ exit:
 void Global::initState()
 {
     m_stateStore["settingsState"] = QJSValue("");
+    m_stateStore["queueListState"] = QJSValue("");
 }
