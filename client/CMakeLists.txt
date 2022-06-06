@@ -1,38 +1,19 @@
-set(UI_SRC
-    ui/loggerdialog.cpp
-    ui/loggerdialog.hpp
-    ui/loggerdialog.ui
-    ui/mainwindow.cpp
-    ui/mainwindow.hpp
-    ui/mainwindow.ui
-    ui/saveconfigdialog.cpp
-    ui/saveconfigdialog.hpp
-    ui/saveconfigdialog.ui
-    ui/settingsdata.hpp
-    ui/settingsdialog.cpp
-    ui/settingsdialog.hpp
-    ui/settingsdialog.ui
-)
-
 set(MODEL_SRC
-    model/abstractclient.cpp
-    model/abstractclient.hpp
-    model/accessimpl.cpp
-    model/accessimpl.hpp
-    model/grpcchannelcreator.cpp
-    model/grpcchannelcreator.hpp
     model/grpccommon.cpp
     model/grpccommon.hpp
 
     model/global.cpp
     model/global.hpp
+    model/mainmodel.cpp
+    model/mainmodel.hpp
+    model/settingsmodel.cpp
+    model/settingsmodel.hpp
 )
 
 add_executable(STQClient WIN32
     main.cpp
     resources.qrc
 
-    ${UI_SRC}
     ${MODEL_SRC}
 )
 

@@ -28,6 +28,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material 2.12
 
 import model.Global 0.1
+import model.MainModel 0.1
 import "component"
 
 ApplicationWindow
@@ -35,9 +36,22 @@ ApplicationWindow
     id: root
     title: qsTr("Simple Task Queue")
 
+    property int currentPage: 0
+    readonly property var pages: ["qrc:/ui/settings.qml"]
+
     visible: true
     minimumWidth: 700
     minimumHeight: 500
+
+    MainModel
+    {
+        id: mainModel
+
+        onShowWindow:
+        {
+            root.show()
+        }
+    }
 
     function getIsInPortrait()
     {
@@ -46,19 +60,18 @@ ApplicationWindow
         else return false
     }
 
-    Connections
-    {
-        target: Global
-        function onShowWindow()
-        {
-            root.show()
-        }
-    }
-
     onClosing: function(close)
     {
         close.accepted = false;
         root.hide()
+    }
+
+    onAfterSynchronizing:
+    {
+        if (mainModel.init())
+        {
+            Global.programExit(1, "Fail to initialize main model.")
+        }
     }
 
     MainToolBar
@@ -78,6 +91,10 @@ ApplicationWindow
                 mainMenu.open()
             }
         }
+
+        onAboutQtClicked: mainModel.aboutQt()
+
+        onExitClicked: mainModel.programExit()
     }
 
     MainMenu
@@ -92,6 +109,28 @@ ApplicationWindow
 
         menuHeight: root.height - toolBar.height
         y: toolBar.height
+
+        onIndexChanged: function(index)
+        {
+            if (Global.isSettingsNotAccepted())
+            {
+                if (index !== 0)
+                {
+                    return
+                }
+
+                if (currentPage === 0)
+                {
+                    return
+                }
+
+                currentPage = 0
+                loader.source = pages[0]
+            }
+
+            currentPage = index
+            loader.source = pages[index]
+        } // end onIndexChanged
     }
 
     Flickable
@@ -106,7 +145,7 @@ ApplicationWindow
         {
             id: loader
             anchors.fill: parent
-            source: "qrc:/ui/SettingsPage.qml"
+            source: "qrc:/ui/settings.qml"
         }
     }
 }

@@ -1,3 +1,26 @@
+/*
+ * Simple Task Queue
+ * Copyright (c) 2022 fdar0536
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include <iostream>
 #include <new>
 
@@ -13,87 +36,36 @@
 
 #include "global.hpp"
 
+Global *Global::m_instance = nullptr;
+
 // public member functions
 Global::~Global()
+{}
+
+Global *Global::instance(QQmlApplicationEngine *engine)
 {
-    if (QSystemTrayIcon::isSystemTrayAvailable())
+    if (!engine)
     {
-        if (m_icon) delete m_icon;
-        if (m_iconContextMenu) delete m_iconContextMenu;
-        if (m_showAction) delete m_showAction;
-        if (m_exitAction) delete m_exitAction;
-    }
-}
-
-Global *Global::create(QQmlApplicationEngine *engine)
-{
-    if (!engine) return nullptr;
-    Global *ret(nullptr);
-
-    ret = new (std::nothrow) Global;
-    if (!ret) return nullptr;
-
-    ret->m_engine = engine;
-    if (ret->initConfigFile())
-    {
-        delete ret;
+        if (m_instance) return m_instance;
         return nullptr;
     }
 
-    //trayIcon
-    if (QSystemTrayIcon::isSystemTrayAvailable())
+    m_instance = new (std::nothrow) Global;
+    if (!m_instance) return nullptr;
+
+    m_instance->m_engine = engine;
+    if (m_instance->initConfigFile())
     {
-        ret->m_icon = new (std::nothrow) QSystemTrayIcon(QIcon(":/ui/icon/computer_black_48dp.svg"), ret);
-        if (!ret->m_icon)
-        {
-            delete ret;
-            return nullptr;
-        }
-
-        ret->m_icon->show();
-
-        //iconContextMenu
-        ret->m_iconContextMenu = new (std::nothrow) QMenu(ret);
-        if (!ret->m_iconContextMenu)
-        {
-            delete ret;
-            return nullptr;
-        }
-
-        ret->m_showAction = new (std::nothrow) QAction("Show", ret);
-        if (!ret->m_showAction)
-        {
-            delete ret;
-            return nullptr;
-        }
-
-        ret->m_exitAction = new (std::nothrow) QAction("Exit", ret);
-        if (!ret->m_exitAction)
-        {
-            delete ret;
-            return nullptr;
-        }
-
-        ret->m_iconContextMenu->addAction(ret->m_showAction);
-        ret->m_iconContextMenu->addAction(ret->m_exitAction);
-        ret->m_icon->setContextMenu(ret->m_iconContextMenu);
+        delete m_instance;
+        m_instance = nullptr;
+        return nullptr;
     }
 
-    ret->connectHook();
-    return ret;
+    m_instance->initState();
+    return m_instance;
 }
 
-void Global::setState(QString key, QJSValue data)
-{
-    m_stateStore[key] = data;
-}
-
-void Global::aboutQt()
-{
-    QMessageBox::aboutQt(this);
-}
-
-QJSValue Global::getState(QString key)
+QJSValue Global::state(QString key)
 {
     auto it = m_stateStore.find(key);
     if (it == m_stateStore.end())
@@ -102,6 +74,16 @@ QJSValue Global::getState(QString key)
     }
 
     return it.value();
+}
+
+void Global::setState(QString key, QJSValue data)
+{
+    m_stateStore[key] = data;
+}
+
+QJSValue Global::settings()
+{
+    return m_stateStore["settings"];
 }
 
 void Global::saveSettings(QJSValue input)
@@ -141,77 +123,42 @@ void Global::saveSettings(QJSValue input)
     config.close();
 }
 
-QJSValue Global::getSettings()
+bool Global::isSettingsNotAccepted()
 {
-    return m_stateStore["settings"];
+    std::unique_lock<std::mutex> lock(m_mutex);
+    return (m_channel == nullptr);
 }
 
-void Global::setIsSettingsAccept(bool input)
+std::shared_ptr<grpc::ChannelInterface> Global::grpcChannel()
 {
-    m_isSettingsAccept = input;
+    std::unique_lock<std::mutex> lock(m_mutex);
+    return m_channel;
 }
 
-bool Global::isSettingsAccept() const
+void Global::setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &in)
 {
-    return m_isSettingsAccept;
+    std::unique_lock lock(m_mutex);
+    m_channel = in;
 }
 
-// public slots
-void Global::programExit()
+void Global::programExit(int exitCode, QString reason)
 {
-    auto res(QMessageBox::question(nullptr,
-                                   tr("Exit"),
-                                   tr("Are you sure to exit?"),
-                                   QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel));
-    if (res == QMessageBox::Yes)
+    if (exitCode)
     {
-        QApplication::quit();
+        QMessageBox::critical(this,
+                              tr("Error"),
+                              reason);
     }
-}
 
-// private slots
-// Tray Icon
-void Global::iconActivated(QSystemTrayIcon::ActivationReason reason)
-{
-    if (reason == QSystemTrayIcon::Trigger ||
-        reason == QSystemTrayIcon::DoubleClick)
-    {
-        emit showWindow();
-    }
+    QApplication::exit(exitCode);
 }
 
 // private member functions
 Global::Global() :
     QWidget(),
-    m_icon(nullptr),
-    m_iconContextMenu(nullptr),
-    m_showAction(nullptr),
-    m_exitAction(nullptr),
-    m_isSettingsAccept(false),
-    m_engine(nullptr)
+    m_engine(nullptr),
+    m_channel(nullptr)
 {}
-
-void Global::connectHook()
-{
-    //trayIcon
-    if (QSystemTrayIcon::isSystemTrayAvailable())
-    {
-        connect(m_icon,
-                &QSystemTrayIcon::activated,
-                this,
-                &Global::iconActivated);
-
-        connect(m_showAction,
-                &QAction::triggered,
-                this,
-                &Global::showWindow);
-
-        connect(m_exitAction,
-                &QAction::triggered,
-                this,
-                &Global::programExit);
-    }
-}
 
 uint8_t Global::initConfigFile()
 {
@@ -326,4 +273,9 @@ exit:
     output.setProperty("config", list);
     m_stateStore["settings"] = output;
     return 0;
+}
+
+void Global::initState()
+{
+    m_stateStore["settingsState"] = QJSValue("");
 }

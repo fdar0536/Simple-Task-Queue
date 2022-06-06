@@ -23,11 +23,45 @@
 
 #pragma once
 
-#include "QString"
+#include "QThread"
 
-typedef struct SettingsData
+#include "global.hpp"
+
+class SettingsModel : public QThread
 {
-    QString ip;
+    Q_OBJECT
 
-    uint16_t port;
-} SettingsData;
+public:
+
+    SettingsModel();
+
+    ~SettingsModel();
+
+    Q_INVOKABLE bool init();
+
+    Q_INVOKABLE void startConnect(QString, int);
+
+    Q_INVOKABLE bool hasError();
+
+    Q_INVOKABLE QString lastError();
+
+    void run() override;
+
+signals:
+
+    void done();
+
+private:
+
+    bool m_isInit;
+
+    Global *m_global;
+
+    QString m_ip;
+
+    uint16_t m_port;
+
+    bool m_hasError;
+
+    QString m_lastError;
+};

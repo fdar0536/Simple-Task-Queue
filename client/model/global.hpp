@@ -23,70 +23,53 @@
 
 #pragma once
 
+#include <mutex>
+
+#include "grpcpp/grpcpp.h"
 #include "QQmlApplicationEngine"
 #include "QWidget"
-#include "QSystemTrayIcon"
-#include "QMenu"
-#include "QAction"
 
 class Global : public QWidget
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool isSettingsAccept READ isSettingsAccept WRITE setIsSettingsAccept)
-
 public:
 
     ~Global();
 
-    static Global *create(QQmlApplicationEngine *);
+    static Global *instance(QQmlApplicationEngine * = nullptr);
 
-    Q_INVOKABLE void aboutQt();
+    Q_INVOKABLE QJSValue state(QString);
 
     Q_INVOKABLE void setState(QString, QJSValue);
 
-    Q_INVOKABLE QJSValue getState(QString);
+    Q_INVOKABLE QJSValue settings();
 
     Q_INVOKABLE void saveSettings(QJSValue);
 
-    Q_INVOKABLE QJSValue getSettings();
+    Q_INVOKABLE bool isSettingsNotAccepted();
 
-    void setIsSettingsAccept(bool);
+    std::shared_ptr<grpc::ChannelInterface> grpcChannel();
 
-    bool isSettingsAccept() const;
+    void setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &);
 
-signals:
-
-    void showWindow();
-
-public slots:
-
-    Q_INVOKABLE void programExit();
-
-private slots:
-
-    // tray icon
-    void iconActivated(QSystemTrayIcon::ActivationReason);
+    Q_INVOKABLE void programExit(int, QString);
 
 private:
 
     Global();
 
-    QSystemTrayIcon *m_icon;
-
-    QMenu *m_iconContextMenu;
-
-    QAction *m_showAction;
-
-    QAction *m_exitAction;
+    static Global *m_instance;
 
     QHash<QString, QJSValue> m_stateStore;
 
-    bool m_isSettingsAccept;
-
     QQmlApplicationEngine *m_engine;
 
-    void connectHook();
+    std::shared_ptr<grpc::ChannelInterface> m_channel;
+
+    std::mutex m_mutex;
 
     uint8_t initConfigFile();
+
+    void initState();
 };

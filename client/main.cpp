@@ -35,6 +35,8 @@
 #include "QQuickStyle"
 
 #include "model/global.hpp"
+#include "model/mainmodel.hpp"
+#include "model/settingsmodel.hpp"
 
 static bool isAdmin();
 static uint8_t init(QQmlApplicationEngine *engine);
@@ -113,7 +115,7 @@ static uint8_t init(QQmlApplicationEngine *engine)
     Global *global(nullptr);
     try
     {
-        global = Global::create(engine);
+        global = Global::instance(engine);
         if (!global) return 1;
     }
     catch (...)
@@ -125,9 +127,13 @@ static uint8_t init(QQmlApplicationEngine *engine)
                                      0,
                                      1,
                                      "Global",
-                                     [=](QQmlEngine *, QJSEngine *) -> QObject * {
+                                     [=](QQmlEngine *, QJSEngine *) -> QObject *
+                                     {
                                          return global;
                                      });
+
+    qmlRegisterType<MainModel>("model.MainModel", 0, 1, "MainModel");
+    qmlRegisterType<SettingsModel>("model.SettingsModel", 0, 1, "SettingsModel");
 
     engine->load(QUrl(QStringLiteral("qrc:/ui/main.qml")));
     if (engine->rootObjects().isEmpty())

@@ -8,8 +8,8 @@
         <file>ui/icon/computer_black_48dp.svg</file>
         <file>ui/component/MainMenu.qml</file>
         <file>ui/icon/info_black_48dp.svg</file>
-        <file>ui/SettingsPage.qml</file>
         <file>ui/component/TitleText.qml</file>
         <file>ui/component/ToolTipButton.qml</file>
+        <file>ui/settings.qml</file>
     </qresource>
 </RCC>

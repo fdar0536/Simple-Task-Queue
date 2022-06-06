@@ -23,49 +23,49 @@
 
 #pragma once
 
-#include "QDialog"
+#include "QObject"
+#include "QSystemTrayIcon"
+#include "QMenu"
+#include "QAction"
 
-#include "settingsdata.hpp"
-
-namespace Ui
-{
-class SaveConfigDialog;
-}
-
-class SaveConfigDialog : public QDialog
+class MainModel : public QObject
 {
     Q_OBJECT
 
 public:
 
-    static SaveConfigDialog *create(QHash<QString, SettingsData> *,
-        QWidget * = nullptr);
+    MainModel();
 
-    ~SaveConfigDialog();
+    ~MainModel();
 
-    QString getName() const;
+    Q_INVOKABLE bool init();
 
-    void reset();
+    Q_INVOKABLE void aboutQt();
 
-    void reject() override;
+signals:
 
-protected:
+    void showWindow();
 
-    void keyPressEvent(QKeyEvent *) override;
+public slots:
+
+    Q_INVOKABLE void programExit();
 
 private slots:
 
-    void on_name_textChanged(const QString &);
-
-    void on_okBtn_clicked(bool);
-
-    void on_cancelBtn_clicked(bool);
+    // tray icon
+    void iconActivated(QSystemTrayIcon::ActivationReason);
 
 private:
 
-    SaveConfigDialog(QWidget * = nullptr);
+    bool m_isInit;
 
-    Ui::SaveConfigDialog *m_ui;
+    QSystemTrayIcon *m_icon;
 
-    QHash<QString, SettingsData> *m_config;
+    QMenu *m_iconContextMenu;
+
+    QAction *m_showAction;
+
+    QAction *m_exitAction;
+
+    void connectHook();
 };
