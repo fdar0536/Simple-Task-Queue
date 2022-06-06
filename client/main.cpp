@@ -36,6 +36,7 @@
 
 #include "model/global.hpp"
 #include "model/mainmodel.hpp"
+#include "model/queuelistmodel.hpp"
 #include "model/settingsmodel.hpp"
 
 static bool isAdmin();
@@ -134,6 +135,7 @@ static uint8_t init(QQmlApplicationEngine *engine)
 
     qmlRegisterType<MainModel>("model.MainModel", 0, 1, "MainModel");
     qmlRegisterType<SettingsModel>("model.SettingsModel", 0, 1, "SettingsModel");
+    qmlRegisterType<QueueListModel>("model.QueueListModel", 0, 1, "QueueListModel");
 
     engine->load(QUrl(QStringLiteral("qrc:/ui/main.qml")));
     if (engine->rootObjects().isEmpty())

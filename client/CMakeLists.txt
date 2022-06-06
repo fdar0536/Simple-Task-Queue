@@ -6,6 +6,8 @@ set(MODEL_SRC
     model/global.hpp
     model/mainmodel.cpp
     model/mainmodel.hpp
+    model/queuelistmodel.cpp
+    model/queuelistmodel.hpp
     model/settingsmodel.cpp
     model/settingsmodel.hpp
 )

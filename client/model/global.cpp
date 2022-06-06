@@ -141,6 +141,11 @@ void Global::setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &in)
     m_channel = in;
 }
 
+QQmlApplicationEngine *Global::engine() const
+{
+    return m_engine;
+}
+
 void Global::programExit(int exitCode, QString reason)
 {
     if (exitCode)

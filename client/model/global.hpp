@@ -53,6 +53,8 @@ public:
 
     void setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &);
 
+    QQmlApplicationEngine *engine() const;
+
     Q_INVOKABLE void programExit(int, QString);
 
 private:
