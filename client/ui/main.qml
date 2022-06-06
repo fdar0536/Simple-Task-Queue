@@ -37,7 +37,10 @@ ApplicationWindow
     title: qsTr("Simple Task Queue")
 
     property int currentPage: 0
-    readonly property var pages: ["qrc:/ui/settings.qml"]
+    readonly property var pages: [
+                                      "qrc:/ui/settings.qml",
+                                      "qrc:/ui/queuelist.qml"
+                                 ]
 
     visible: true
     minimumWidth: 700

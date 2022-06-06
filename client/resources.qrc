@@ -11,5 +11,6 @@
         <file>ui/component/TitleText.qml</file>
         <file>ui/component/ToolTipButton.qml</file>
         <file>ui/settings.qml</file>
+        <file>ui/queuelist.qml</file>
     </qresource>
 </RCC>
