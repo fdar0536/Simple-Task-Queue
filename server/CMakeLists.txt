@@ -46,6 +46,8 @@ set(SERVER_SRC
     common.hpp
     global.cpp
     global.hpp
+    logger.cpp
+    logger.hpp
     main.cpp
 )
 
@@ -53,7 +55,7 @@ add_executable(STQServer
     ${SERVER_SRC}
 )
 
-add_dependencies(STQServer logger grpc_common)
+add_dependencies(STQServer grpc_common)
 
 target_include_directories(STQServer PRIVATE ${CPPCODEC_INCLUDE_DIR})
 
@@ -63,7 +65,6 @@ target_link_libraries(STQServer
     gRPC::grpc++
     gRPC::grpc++_reflection
     absl::synchronization
-    logger
     grpc_common
     nlohmann_json::nlohmann_json
 )

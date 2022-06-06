@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "../logger.hpp"
+#include "logger.hpp"
 #include "model/stqqueuelist.hpp"
 
 namespace Global

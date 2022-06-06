@@ -80,11 +80,6 @@ set(PROTOS
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${CMAKE_CURRENT_BINARY_DIR} ${PROTOS})
 grpc_generate_cpp(GRPC_SRCS GRPC_HDRS ${CMAKE_CURRENT_BINARY_DIR} ${PROTOS})
 
-add_library(logger STATIC
-    logger.cpp
-    logger.hpp
-)
-
 add_library(grpc_common STATIC
     ${PROTO_HDRS}
     ${PROTO_SRCS}
