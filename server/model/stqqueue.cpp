@@ -108,6 +108,12 @@ uint8_t STQQueue::finishedDetails(uint32_t id, STQTask *out)
     return taskDetails(m_finished, id, out);
 }
 
+void STQQueue::clearFinished()
+{
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+    m_finished.clear();
+}
+
 uint8_t STQQueue::currentTask(STQTask *out)
 {
     if (!out) return 1;

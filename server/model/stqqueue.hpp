@@ -62,6 +62,8 @@ public:
 
     uint8_t finishedDetails(uint32_t, STQTask *);
 
+    void clearFinished();
+
     uint8_t currentTask(STQTask *);
 
     uint8_t addTask(STQTask *);
