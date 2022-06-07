@@ -47,86 +47,14 @@
 
 // controllers
 #include "controller/accessimpl.hpp"
+#include "controller/pendingimpl.hpp"
 #include "controller/queueimpl.hpp"
 
-static void printHelp(char **argv)
-{
-    std::cout << argv[0] << " usage:" << std::endl;
-    std::cout << "-h, --help: Print this message and exit." << std::endl;
-    std::cout << "-d, --debug: Start server with debug mode." << std::endl;
-    std::cout << "-c, --config <config file>: Path to config file." << std::endl;
-}
+static void printHelp(char **);
 
-static void runServer(bool debug)
-{
-    if (debug)
-    {
-        grpc::reflection::InitProtoReflectionServerBuilderPlugin();
-    }
+static void runServer(bool);
 
-    grpc::ServerBuilder builder;
-    int actualPort(0);
-    builder.AddListeningPort(Global::ip + ":" + Global::port,
-                             grpc::InsecureServerCredentials(),
-                             &actualPort);
-
-    AccessImpl accessImpl;
-    builder.RegisterService(&accessImpl);
-
-    QueueImpl queueImpl;
-    builder.RegisterService(&queueImpl);
-
-    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    std::cout << "Server listening on ";
-    std::cout << Global::ip << ":" << actualPort;
-    if (debug)
-    {
-        std::cout << " with debug mode." << std::endl;
-    }
-    else
-    {
-        std::cout << std::endl;
-    }
-
-    auto serveFn = [&]()
-    {
-        server->Wait();
-    };
-
-    std::thread serving_thread(serveFn);
-    auto f = Global::exit_requested.get_future();
-    f.wait();
-    server->Shutdown();
-    serving_thread.join();
-}
-
-static bool isAdmin()
-{
-#ifdef _WIN32
-    PSID sid;
-    SID_IDENTIFIER_AUTHORITY auth = SECURITY_NT_AUTHORITY;
-    if (!AllocateAndInitializeSid(&auth,
-                                  2,
-                                  SECURITY_BUILTIN_DOMAIN_RID,
-                                  DOMAIN_ALIAS_RID_ADMINS,
-                                  0, 0, 0, 0, 0, 0,
-                                  &sid))
-    {
-        return true;
-    }
-
-    BOOL res;
-    if (!CheckTokenMembership(nullptr, sid, &res))
-    {
-        return true;
-    }
-
-    FreeSid(sid);
-    return res;
-#else
-    return (geteuid() == 0);
-#endif
-}
+static bool isAdmin();
 
 int main(int argc, char **argv)
 {
@@ -193,4 +121,86 @@ int main(int argc, char **argv)
 
     runServer(debug);
     return 0;
+}
+
+static bool isAdmin()
+{
+#ifdef _WIN32
+    PSID sid;
+    SID_IDENTIFIER_AUTHORITY auth = SECURITY_NT_AUTHORITY;
+    if (!AllocateAndInitializeSid(&auth,
+                                  2,
+                                  SECURITY_BUILTIN_DOMAIN_RID,
+                                  DOMAIN_ALIAS_RID_ADMINS,
+                                  0, 0, 0, 0, 0, 0,
+                                  &sid))
+    {
+        return true;
+    }
+
+    BOOL res;
+    if (!CheckTokenMembership(nullptr, sid, &res))
+    {
+        return true;
+    }
+
+    FreeSid(sid);
+    return res;
+#else
+    return (geteuid() == 0);
+#endif
+}
+
+static void runServer(bool debug)
+{
+    if (debug)
+    {
+        grpc::reflection::InitProtoReflectionServerBuilderPlugin();
+    }
+
+    grpc::ServerBuilder builder;
+    int actualPort(0);
+    builder.AddListeningPort(Global::ip + ":" + Global::port,
+                             grpc::InsecureServerCredentials(),
+                             &actualPort);
+
+    AccessImpl accessImpl;
+    builder.RegisterService(&accessImpl);
+
+    QueueImpl queueImpl;
+    builder.RegisterService(&queueImpl);
+
+    PendingImpl pendingImpl;
+    builder.RegisterService(&pendingImpl);
+
+    std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+    std::cout << "Server listening on ";
+    std::cout << Global::ip << ":" << actualPort;
+    if (debug)
+    {
+        std::cout << " with debug mode." << std::endl;
+    }
+    else
+    {
+        std::cout << std::endl;
+    }
+
+    auto serveFn = [&]()
+    {
+        server->Wait();
+    };
+
+    std::thread serving_thread(serveFn);
+    auto f = Global::exit_requested.get_future();
+    f.wait();
+    server->Shutdown();
+    serving_thread.join();
+}
+
+static void printHelp(char **argv)
+{
+    std::cout << argv[0] << " usage:" << std::endl;
+    std::cout << "-h, --help: Print this message and exit." << std::endl;
+    std::cout << "-d, --debug: Start server with debug mode." << std::endl;
+    std::cout << "-c, --config <config file>: Path to config file." << std::endl;
 }

@@ -21,25 +21,21 @@
  * SOFTWARE.
  */
 
-#include "queue.grpc.pb.h"
+#include "implcommon.hpp"
 
-class QueueImpl: public stq::Queue::Service
+namespace ImplCommon
 {
-public:
 
-    ::grpc::Status CreateQueue(::grpc::ServerContext* context,
-                               const ::stq::QueueReq* request,
-                               ::stq::Empty* response) override;
+void buildTaskRes(::stq::TaskDetailsRes *res, STQTask &task)
+{
+    res->set_workdir(task.workDir);
+    res->set_programname(task.execName);
+    for (auto it = task.args.begin();
+         it != task.args.end();
+         ++it)
+    {
+        res->add_args(*it);
+    }
+}
 
-    ::grpc::Status RenameQueue(::grpc::ServerContext* context,
-                               const ::stq::RenameQueueReq* request,
-                               ::stq::Empty* response) override;
-
-    ::grpc::Status DeleteQueue(::grpc::ServerContext* context,
-                               const ::stq::QueueReq* request,
-                               ::stq::Empty* response) override;
-
-    ::grpc::Status ListQueue(::grpc::ServerContext* context,
-                             const ::stq::ListQueueReq* request,
-                             ::stq::ListQueueRes* response) override;
-};
+} // end namespace ImplCommon

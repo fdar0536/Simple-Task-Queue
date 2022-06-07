@@ -7,8 +7,16 @@ import "types.proto";
 service Pending {
   rpc List(QueueReq) returns (ListTaskRes);
   rpc Details(TaskDetailsReq) returns (TaskDetailsRes);
-  rpc Current(TaskDetailsReq) returns (TaskDetailsRes);
-  rpc Add(TaskDetailsRes) returns (Empty);
+  rpc Current(QueueReq) returns (TaskDetailsRes);
+  rpc Add(AddTaskReq) returns (Empty);
+  rpc Remove(TaskDetailsReq) returns (Empty);
   rpc Start(QueueReq) returns (Empty);
   rpc Stop(QueueReq) returns (Empty);
+}
+
+message AddTaskReq {
+  string queueName = 1;
+  string workDir = 2;
+  string programName = 3;
+  repeated string args = 4;
 }

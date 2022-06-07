@@ -34,6 +34,16 @@ uint8_t STQQueueList::createQueue(const std::string &name)
     }
 
     auto toBeInserted = std::make_shared<STQQueue>();
+    if (toBeInserted == nullptr)
+    {
+        return 1;
+    }
+
+    if (STQQueue::init(toBeInserted, name))
+    {
+        return 1;
+    }
+
     m_queueList[name] = toBeInserted;
     return 0;
 }
@@ -50,6 +60,8 @@ uint8_t STQQueueList::renameQueue(const std::string &oldName,
         {
             auto queue = it->second;
             m_queueList.erase(it);
+            std::string name = newName;
+            queue->setName(name);
             m_queueList[newName] = queue;
             return 0;
         }

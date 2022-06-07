@@ -46,10 +46,8 @@ STQQueue::~STQQueue()
     if (m_process) delete m_process;
 }
 
-uint8_t STQQueue::init(STQQueue *in, const std::string &name)
+uint8_t STQQueue::init(std::shared_ptr<STQQueue> &in, const std::string &name)
 {
-    if (!in) return 1;
-
 #ifdef _WIN32
     in->m_process = new (std::nothrow) WinProcess();
 #else
@@ -85,12 +83,17 @@ uint8_t STQQueue::init(STQQueue *in, const std::string &name)
     return 0;
 }
 
-uint8_t STQQueue::listPanding(std::vector<uint32_t> *out)
+void STQQueue::setName(std::string &name)
+{
+    m_name = name;
+}
+
+uint8_t STQQueue::listPanding(::stq::ListTaskRes *out)
 {
     return listID(m_pending, out);
 }
 
-uint8_t STQQueue::listFinished(std::vector<uint32_t> *out)
+uint8_t STQQueue::listFinished(::stq::ListTaskRes *out)
 {
     return listID(m_finished, out);
 }
@@ -178,21 +181,19 @@ void STQQueue::stop()
 }
 
 // private member functions
-uint8_t STQQueue::listID(std::deque<STQTask> &queue, std::vector<uint32_t> *out)
+uint8_t STQQueue::listID(std::deque<STQTask> &queue, ::stq::ListTaskRes *out)
 {
     if (!out) return 1;
     std::unique_lock<std::mutex> lock(m_queueMutex);
-    (*out).clear();
 
     if (queue.empty())
     {
         return 0;
     }
 
-    (*out).reserve(queue.size());
     for (auto it = queue.begin(); it != queue.end(); ++it)
     {
-        (*out).push_back(it->id);
+        out->add_list(it->id);
     }
 
     return 0;

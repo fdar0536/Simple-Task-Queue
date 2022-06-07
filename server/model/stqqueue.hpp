@@ -26,6 +26,7 @@
 #include <condition_variable>
 #include <fstream>
 #include <deque>
+#include <memory>
 #include <mutex>
 #include <thread>
 
@@ -39,6 +40,8 @@
 
 #include "stqtask.hpp"
 
+#include "pending.grpc.pb.h"
+
 class STQQueue
 {
 public:
@@ -47,11 +50,13 @@ public:
 
     ~STQQueue();
 
-    static uint8_t init(STQQueue *, const std::string &);
+    static uint8_t init(std::shared_ptr<STQQueue> &, const std::string &);
 
-    uint8_t listPanding(std::vector<uint32_t> *);
+    void setName(std::string &);
 
-    uint8_t listFinished(std::vector<uint32_t> *);
+    uint8_t listPanding(::stq::ListTaskRes *);
+
+    uint8_t listFinished(::stq::ListTaskRes *);
 
     uint8_t pendingDetails(uint32_t, STQTask *);
 
@@ -101,9 +106,9 @@ private:
 
     bool m_stopped = true;
 
-    uint8_t listID(std::deque<STQTask>&, std::vector<uint32_t>*);
+    uint8_t listID(std::deque<STQTask> &, ::stq::ListTaskRes *);
 
-    uint8_t taskDetails(std::deque<STQTask>&, uint32_t, STQTask*);
+    uint8_t taskDetails(std::deque<STQTask> &, uint32_t, STQTask *);
 
     void mainLoop();
 
