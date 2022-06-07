@@ -33,6 +33,8 @@ set(SERVER_SRC
 
     controller/accessimpl.cpp
     controller/accessimpl.hpp
+    controller/doneimpl.cpp
+    controller/doneimpl.hpp
     controller/implcommon.cpp
     controller/implcommon.hpp
     controller/pendingimpl.cpp

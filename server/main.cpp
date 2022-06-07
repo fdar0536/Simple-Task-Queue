@@ -47,6 +47,7 @@
 
 // controllers
 #include "controller/accessimpl.hpp"
+#include "controller/doneimpl.hpp"
 #include "controller/pendingimpl.hpp"
 #include "controller/queueimpl.hpp"
 
@@ -172,6 +173,9 @@ static void runServer(bool debug)
 
     PendingImpl pendingImpl;
     builder.RegisterService(&pendingImpl);
+
+    DoneImpl doneImpl;
+    builder.RegisterService(&doneImpl);
 
     std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
     std::cout << "Server listening on ";
