@@ -7,8 +7,13 @@ As its name, and just for reference.
 
 ## Dependency
 
-- C++17
-- [Qt](https://www.qt.io) 6.0 or later
+- Common
+  - C++17
+  - [gRPC](https://grpc.io)
+- Server
+  - [nlohmann/json](https://github.com/nlohmann/json)
+- Client
+  - [Qt](https://www.qt.io) 6.0 or later
 
 ## Licence
 
