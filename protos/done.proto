@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package stq;
+
+import "types.proto";
+
+service Done {
+  rpc List(QueueReq) returns (ListTaskRes);
+  rpc Details(TaskDetailsReq) returns (TaskDetailsRes);
+  rpc Clear(QueueReq) returns (Empty);
+}
