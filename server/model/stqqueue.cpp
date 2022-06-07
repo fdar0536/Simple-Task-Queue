@@ -80,6 +80,7 @@ uint8_t STQQueue::init(std::shared_ptr<STQQueue> &in, const std::string &name)
     }
 
     in->m_name = name;
+    in->m_out[0] = '\0';
     return 0;
 }
 
@@ -158,6 +159,19 @@ uint8_t STQQueue::removeTask(uint32_t id)
 
     m_condition.notify_one();
     return ret;
+}
+
+uint8_t STQQueue::readCurrentOutput(char *in, size_t size)
+{
+    if (!in || size < 4096) return 1;
+    {
+        std::unique_lock<std::mutex> lock(m_outMutex);
+        size_t len = strlen(m_out);
+        memcpy(in, m_out, len);
+        in[len] = '\0';
+    }
+
+    return 0;
 }
 
 void STQQueue::start()
@@ -310,6 +324,7 @@ void STQQueue::mainLoop()
                 std::unique_lock<std::mutex> lock(m_outMutex);
                 if (m_process->readStdOut(m_out, &bufSize))
                 {
+                    m_out[0] = '\0';
                     bufSize = 4096;
                     errorLog.clear();
                     errorLog += __FILE__;
@@ -323,6 +338,7 @@ void STQQueue::mainLoop()
                 f = fopen(fileName.c_str(), "a");
                 if (!f)
                 {
+                    m_out[0] = '\0';
                     bufSize = 4096;
                     errorLog.clear();
                     errorLog += __FILE__;
@@ -335,6 +351,7 @@ void STQQueue::mainLoop()
 
                 fwrite(m_out, 1, bufSize, f);
                 fclose(f);
+                m_out[bufSize] = '\0';
                 f = nullptr;
             }
         } // end while (m_process->isRunning())

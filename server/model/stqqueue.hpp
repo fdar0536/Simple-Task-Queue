@@ -70,6 +70,8 @@ public:
 
     uint8_t removeTask(uint32_t);
 
+    uint8_t readCurrentOutput(char *, size_t);
+
     void start();
 
     void stop();
