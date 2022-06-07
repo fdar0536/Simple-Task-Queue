@@ -114,3 +114,18 @@ uint8_t STQQueueList::listQueue(::stq::ListQueueRes *res,
     if (endIt != m_queueList.end()) res->add_list(endIt->first);
     return 0;
 }
+
+std::shared_ptr<STQQueue> STQQueueList::getQueue(const std::string &name)
+{
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+
+    for (auto it = m_queueList.begin(); it != m_queueList.end(); ++it)
+    {
+        if (it->first == name)
+        {
+            return it->second;
+        }
+    }
+
+    return nullptr;
+}

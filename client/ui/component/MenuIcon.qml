@@ -34,14 +34,25 @@ Image
 
     id: root
     transformOrigin: Item.Center
+    scale: 0.5
 
     MouseArea
     {
         anchors.fill: parent
         hoverEnabled: true
         onClicked: root.clicked()
-        onEntered: toolTip.visible = true
-        onExited: toolTip.visible = false
+
+        onEntered:
+        {
+            toolTip.visible = true
+            root.scale = 0.7
+        }
+
+        onExited:
+        {
+            toolTip.visible = false
+            root.scale = 0.5
+        }
     } // end MouseArea
 
     ToolTip

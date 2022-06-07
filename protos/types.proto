@@ -4,57 +4,25 @@ option csharp_namespace = "STQdotnet";
 
 package stq;
 
-enum StateCode {
-  OK = 0;
-  FAILED = 1;
-}
-
 message Empty {
 }
 
 // for task
-message AddTaskReq {
-  string queueName = 1;
-  string workDir = 2;
-  string programName = 3;
-  repeated string args = 4;
-}
-
-message TaskIDReq {
-  string queueName = 1;
-  uint32 id = 2;
+message QueueReq {
+  string name = 1;
 }
 
 message ListTaskRes {
-  StateCode stateCode = 1;
-  repeated uint32 list = 2;
+  repeated uint32 list = 1;
 }
 
-message TaskStateRes {
-  StateCode stateCode = 1;
-  string workDir = 2;
-  string programName = 3;
-  repeated string args = 4;
+message TaskDetailsReq {
+  string queueName = 1;
+  uint32 ID = 2;
 }
 
-message CurrentTaskOutputRes {
-  StateCode stateCode = 1;
-  string output = 2;
-}
-
-message TaskExitStateRes {
-  StateCode stateCode = 1;
-  string workDir = 2;
-  string programName = 3;
-  repeated string args = 4;
-  int32 exitCode = 5;
-}
-
-message File {
-  bytes content = 1;
-}
-
-message FileRes {
-  StateCode stateCode = 1;
-  string path = 2;
+message TaskDetailsRes {
+  string workDir = 1;
+  string programName = 2;
+  repeated string args = 3;
 }

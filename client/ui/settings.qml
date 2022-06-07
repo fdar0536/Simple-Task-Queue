@@ -130,6 +130,7 @@ Item
 
     function lockUI()
     {
+        host.enabled = false
         aliasName.enabled = false
         ip.enabled = false
         port.enabled = false
@@ -137,6 +138,7 @@ Item
 
     function unlockUI()
     {
+        host.enabled = true
         aliasName.enabled = true
         ip.enabled = true
         port.enabled = true

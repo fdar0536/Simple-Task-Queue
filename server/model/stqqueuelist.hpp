@@ -47,6 +47,8 @@ public:
                       int limit,
                       char *errMsg);
 
+    std::shared_ptr<STQQueue> getQueue(const std::string &);
+
 private:
 
     std::mutex m_queueMutex;

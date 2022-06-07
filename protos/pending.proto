@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package stq;
+
+import "types.proto";
+
+service Pending {
+  rpc List(QueueReq) returns (ListTaskRes);
+  rpc Details(TaskDetailsReq) returns (TaskDetailsRes);
+  rpc Current(TaskDetailsReq) returns (TaskDetailsRes);
+  rpc Add(TaskDetailsRes) returns (Empty);
+  rpc Start(QueueReq) returns (Empty);
+  rpc Stop(QueueReq) returns (Empty);
+}

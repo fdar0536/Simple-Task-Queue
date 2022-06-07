@@ -73,6 +73,7 @@ endif(BUILD_CLIENT)
 
 set(PROTOS
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/access.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protos/pending.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/queue.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/types.proto
 )

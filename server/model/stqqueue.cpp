@@ -87,7 +87,7 @@ uint8_t STQQueue::init(STQQueue *in, const std::string &name)
 
 uint8_t STQQueue::listPanding(std::vector<uint32_t> *out)
 {
-    return listID(m_panding, out);
+    return listID(m_pending, out);
 }
 
 uint8_t STQQueue::listFinished(std::vector<uint32_t> *out)
@@ -95,9 +95,9 @@ uint8_t STQQueue::listFinished(std::vector<uint32_t> *out)
     return listID(m_finished, out);
 }
 
-uint8_t STQQueue::pandingDetails(uint32_t id, STQTask *out)
+uint8_t STQQueue::pendingDetails(uint32_t id, STQTask *out)
 {
-    return taskDetails(m_panding, id, out);
+    return taskDetails(m_pending, id, out);
 }
 
 uint8_t STQQueue::finishedDetails(uint32_t id, STQTask *out)
@@ -124,7 +124,7 @@ uint8_t STQQueue::addTask(STQTask *in)
         std::unique_lock<std::mutex> lock(m_queueMutex);
         (*in).id = m_id;
         ++m_id;
-        m_panding.push_back(*in);
+        m_pending.push_back(*in);
     }
 
     m_condition.notify_one();
@@ -136,11 +136,11 @@ uint8_t STQQueue::removeTask(uint32_t id)
     uint8_t ret(1);
     {
         std::unique_lock<std::mutex> lock(m_queueMutex);
-        for (auto it = m_panding.begin(); it != m_panding.end(); ++it)
+        for (auto it = m_pending.begin(); it != m_pending.end(); ++it)
         {
             if (it->id == id)
             {
-                m_panding.erase(it);
+                m_pending.erase(it);
                 ret = 0;
                 break;
             }
@@ -172,6 +172,7 @@ void STQQueue::stop()
     }
 
     m_condition.notify_all();
+    m_process->stop();
     m_thread.join();
     m_stopped = true;
 }
@@ -241,7 +242,7 @@ void STQQueue::mainLoop()
             std::unique_lock<std::mutex> lock(m_queueMutex);
             m_condition.wait(lock, [this]()
             {
-                return !m_panding.empty() || m_terminate;
+                return !m_pending.empty() || m_terminate;
             });
 
             if (m_terminate)
@@ -250,8 +251,8 @@ void STQQueue::mainLoop()
                 break;
             }
 
-            task = m_panding.front();
-            m_panding.pop_front();
+            task = m_pending.front();
+            m_pending.pop_front();
         }
 
         {

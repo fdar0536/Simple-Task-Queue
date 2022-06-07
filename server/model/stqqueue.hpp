@@ -53,7 +53,7 @@ public:
 
     uint8_t listFinished(std::vector<uint32_t> *);
 
-    uint8_t pandingDetails(uint32_t, STQTask *);
+    uint8_t pendingDetails(uint32_t, STQTask *);
 
     uint8_t finishedDetails(uint32_t, STQTask *);
 
@@ -71,7 +71,7 @@ private:
 
     std::string m_name;
 
-    std::deque<STQTask> m_panding;
+    std::deque<STQTask> m_pending;
 
     std::deque<STQTask> m_finished;
 

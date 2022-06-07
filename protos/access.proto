@@ -11,29 +11,3 @@ service Access {
 
 message EchoRes {
 }
-
-// for login
-/*
-service Access {
-  // for task
-  // panding list
-  rpc AddTask(AddTaskReq) returns (ExitRes);
-  rpc DeleteTask(TaskIDReq) returns (ExitRes);
-  rpc ListTask(QueueReq) returns (ListTaskRes);
-  rpc TaskState(TaskIDReq) returns (TaskStateRes);
-
-  // for current
-  rpc CurrentRunning(QueueReq) returns (TaskStateRes);
-  rpc StopCurrent(QueueReq) returns (ExitRes);
-  rpc StopAll(QueueReq) returns (ExitRes);
-  rpc CurrentTaskOutput(QueueReq) returns (CurrentTaskOutputRes);
-
-  // exited list
-  rpc ListExitedTask(QueueReq) returns (ListTaskRes);
-  rpc TaskExitState(TaskIDReq) returns (TaskExitStateRes);
-
-  // for file
-  rpc UploadHook(stream File) returns (FileRes);
-  rpc DownloadLog(TaskIDReq) returns (stream File);
-}
-*/

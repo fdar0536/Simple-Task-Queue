@@ -11,10 +11,6 @@ service Queue {
   rpc ListQueue(ListQueueReq) returns (ListQueueRes);
 }
 
-message QueueReq {
-  string name = 1;
-}
-
 message RenameQueueReq {
   string oldname = 1;
   string newName = 2;
@@ -26,6 +22,5 @@ message ListQueueReq {
 }
 
 message ListQueueRes {
-  StateCode stateCode = 1;
-  repeated string list = 2;
+  repeated string list = 1;
 }

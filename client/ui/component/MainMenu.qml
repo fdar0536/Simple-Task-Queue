@@ -58,31 +58,40 @@ Drawer
         id: listView
         anchors.fill: parent
         model: listModel
-        delegate: Component
+        delegate: Rectangle
         {
-            Item
+            width: parent.width
+            height: 25
+            color: 'white'
+            Text
             {
-                width: parent.width
-                height: 25
-                Column
+                id: itemText
+                text: name
+                font.pointSize: 15
+            }
+
+            MouseArea
+            {
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked:
                 {
-                    Text
-                    {
-                        text: name
-                        font.pointSize: 15
-                    }
+                    listView.currentIndex = index
+                    root.indexChanged(index)
                 }
 
-                MouseArea
+                onEntered:
                 {
-                    anchors.fill: parent
-                    onClicked:
-                    {
-                        listView.currentIndex = index
-                        root.indexChanged(index)
-                    }
+                    parent.color = 'gray'
+                    itemText.color = 'white'
                 }
-            } // end Item
-        } // end delegate: Component
+
+                onExited:
+                {
+                    parent.color = 'white'
+                    itemText.color = 'black'
+                }
+            }
+        }
     } // end ListView listView
 } // end Drawer root
