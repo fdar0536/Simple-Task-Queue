@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package stq;
+
+service Console {
+  rpc Output(stream Msg) returns (stream Msg);
+}
+
+message Msg {
+  string msg = 1;
+}
