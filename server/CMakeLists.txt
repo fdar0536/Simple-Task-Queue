@@ -40,7 +40,7 @@ set(SERVER_SRC
     controller/implcommon.cpp
     controller/implcommon.hpp
     controller/pendingimpl.cpp
-    controller/pendingimpl.cpp
+    controller/pendingimpl.hpp
     controller/queueimpl.cpp
     controller/queueimpl.hpp
 

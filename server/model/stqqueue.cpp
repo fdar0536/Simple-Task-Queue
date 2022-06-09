@@ -89,12 +89,12 @@ void STQQueue::setName(std::string &name)
     m_name = name;
 }
 
-uint8_t STQQueue::listPanding(::stq::ListTaskRes *out)
+uint8_t STQQueue::listPanding(::grpc::ServerWriter<::stq::ListTaskRes> *out)
 {
     return listID(m_pending, out);
 }
 
-uint8_t STQQueue::listFinished(::stq::ListTaskRes *out)
+uint8_t STQQueue::listFinished(::grpc::ServerWriter<::stq::ListTaskRes> *out)
 {
     return listID(m_finished, out);
 }
@@ -201,7 +201,8 @@ void STQQueue::stop()
 }
 
 // private member functions
-uint8_t STQQueue::listID(std::deque<STQTask> &queue, ::stq::ListTaskRes *out)
+uint8_t STQQueue::listID(std::deque<STQTask> &queue,
+                         ::grpc::ServerWriter<::stq::ListTaskRes> *out)
 {
     if (!out) return 1;
     std::unique_lock<std::mutex> lock(m_queueMutex);
@@ -211,9 +212,11 @@ uint8_t STQQueue::listID(std::deque<STQTask> &queue, ::stq::ListTaskRes *out)
         return 0;
     }
 
+    ::stq::ListTaskRes res;
     for (auto it = queue.begin(); it != queue.end(); ++it)
     {
-        out->add_list(it->id);
+        res.set_id(it->id);
+        out->Write(res);
     }
 
     return 0;

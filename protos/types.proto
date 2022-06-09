@@ -13,7 +13,7 @@ message QueueReq {
 }
 
 message ListTaskRes {
-  repeated uint32 list = 1;
+  uint32 ID = 1;
 }
 
 message TaskDetailsReq {

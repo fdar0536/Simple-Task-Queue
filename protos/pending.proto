@@ -5,10 +5,10 @@ package stq;
 import "types.proto";
 
 service Pending {
-  rpc List(QueueReq) returns (ListTaskRes);
+  rpc List(QueueReq) returns (stream ListTaskRes);
   rpc Details(TaskDetailsReq) returns (TaskDetailsRes);
   rpc Current(QueueReq) returns (TaskDetailsRes);
-  rpc Add(AddTaskReq) returns (Empty);
+  rpc Add(AddTaskReq) returns (ListTaskRes);
   rpc Remove(TaskDetailsReq) returns (Empty);
   rpc Start(QueueReq) returns (Empty);
   rpc Stop(QueueReq) returns (Empty);

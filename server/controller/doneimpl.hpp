@@ -31,7 +31,8 @@ public:
 
     ::grpc::Status List(::grpc::ServerContext *context,
                         const ::stq::QueueReq *request,
-                        ::stq::ListTaskRes *response) override;
+                        ::grpc::ServerWriter<::stq::ListTaskRes> *writer)
+                        override;
 
     ::grpc::Status Details(::grpc::ServerContext *context,
                            const ::stq::TaskDetailsReq *request,

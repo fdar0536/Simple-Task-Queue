@@ -5,7 +5,7 @@ package stq;
 import "types.proto";
 
 service Done {
-  rpc List(QueueReq) returns (ListTaskRes);
+  rpc List(QueueReq) returns (stream ListTaskRes);
   rpc Details(TaskDetailsReq) returns (TaskDetailsRes);
   rpc Clear(QueueReq) returns (Empty);
 }

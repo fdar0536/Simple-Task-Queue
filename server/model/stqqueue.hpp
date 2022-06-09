@@ -54,9 +54,9 @@ public:
 
     void setName(std::string &);
 
-    uint8_t listPanding(::stq::ListTaskRes *);
+    uint8_t listPanding(::grpc::ServerWriter<::stq::ListTaskRes> *);
 
-    uint8_t listFinished(::stq::ListTaskRes *);
+    uint8_t listFinished(::grpc::ServerWriter<::stq::ListTaskRes> *);
 
     uint8_t pendingDetails(uint32_t, STQTask *);
 
@@ -110,7 +110,8 @@ private:
 
     bool m_stopped = true;
 
-    uint8_t listID(std::deque<STQTask> &, ::stq::ListTaskRes *);
+    uint8_t listID(std::deque<STQTask> &,
+                   ::grpc::ServerWriter<::stq::ListTaskRes> *);
 
     uint8_t taskDetails(std::deque<STQTask> &, uint32_t, STQTask *);
 

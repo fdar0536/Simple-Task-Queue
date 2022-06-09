@@ -30,7 +30,7 @@
 ::grpc::Status
 PendingImpl::List(::grpc::ServerContext *ctx,
                   const ::stq::QueueReq *req,
-                  ::stq::ListTaskRes *res)
+                  ::grpc::ServerWriter<::stq::ListTaskRes> *res)
 {
     UNUSED(ctx);
     std::shared_ptr<STQQueue> queue = Global::queueList.getQueue(req->name());
@@ -96,10 +96,9 @@ PendingImpl::Current(::grpc::ServerContext *ctx,
 ::grpc::Status
 PendingImpl::Add(::grpc::ServerContext *ctx,
                  const ::stq::AddTaskReq *req,
-                 ::stq::Empty *res)
+                 ::stq::ListTaskRes *res)
 {
     UNUSED(ctx);
-    UNUSED(res);
 
     std::shared_ptr<STQQueue> queue = Global::queueList.getQueue(req->queuename());
     if (queue == nullptr)
@@ -126,6 +125,7 @@ PendingImpl::Add(::grpc::ServerContext *ctx,
                               "Fail to add task.");
     }
 
+    res->set_id(task.id);
     return ::grpc::Status::OK;
 }
 

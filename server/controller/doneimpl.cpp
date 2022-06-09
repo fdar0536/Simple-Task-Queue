@@ -29,7 +29,7 @@
 ::grpc::Status
 DoneImpl::List(::grpc::ServerContext *ctx,
                const ::stq::QueueReq *req,
-               ::stq::ListTaskRes *res)
+               ::grpc::ServerWriter<::stq::ListTaskRes> *res)
 {
     UNUSED(ctx);
 
