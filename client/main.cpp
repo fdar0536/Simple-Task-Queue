@@ -31,21 +31,17 @@
 
 #include "QApplication"
 #include "QMessageBox"
-#include "QQmlApplicationEngine"
-#include "QQuickStyle"
 
 #include "model/global.hpp"
-#include "model/mainmodel.hpp"
-#include "model/queuelistmodel.hpp"
-#include "model/settingsmodel.hpp"
+#include "ui/mainwindow.hpp"
 
 static bool isAdmin();
-static uint8_t init(QQmlApplicationEngine *engine);
 
 int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/ui/icon/computer_black_48dp.svg"));
+
     if (isAdmin())
     {
 #ifdef _WIN32
@@ -60,16 +56,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    QQmlApplicationEngine *engine = new (std::nothrow) QQmlApplicationEngine;
-    if (!engine)
-    {
-        QMessageBox::critical(nullptr,
-                              a.tr("Error"),
-                              a.tr("Fail to create qml engine."));
-        return 1;
-    }
-
-    if (init(engine))
+    MainWindow w;
+    if (w.init())
     {
         QMessageBox::critical(nullptr,
                               a.tr("Error"),
@@ -77,9 +65,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    const int ret = a.exec();
-    delete engine;
-    return ret;
+    w.show();
+    return a.exec();
 }
 
 static bool isAdmin()
@@ -108,38 +95,4 @@ static bool isAdmin()
 #else
     return (geteuid() == 0);
 #endif
-}
-
-static uint8_t init(QQmlApplicationEngine *engine)
-{
-    QQuickStyle::setStyle("Material");
-    Global *global(nullptr);
-    try
-    {
-        global = Global::instance(engine);
-        if (!global) return 1;
-    }
-    catch (...)
-    {
-        return 1;
-    }
-
-    qmlRegisterSingletonType<Global>("model.Global",
-                                     0,
-                                     1,
-                                     "Global",
-                                     [=](QQmlEngine *, QJSEngine *) -> QObject *
-                                     {
-                                         return global;
-                                     });
-
-    qmlRegisterType<MainModel>("model.MainModel", 0, 1, "MainModel");
-    qmlRegisterType<SettingsModel>("model.SettingsModel", 0, 1, "SettingsModel");
-    qmlRegisterType<QueueListModel>("model.QueueListModel", 0, 1, "QueueListModel");
-
-    engine->load(QUrl(QStringLiteral("qrc:/ui/main.qml")));
-    if (engine->rootObjects().isEmpty())
-        return 1;
-
-    return 0;
 }

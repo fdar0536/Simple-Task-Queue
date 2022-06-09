@@ -21,23 +21,33 @@
  * SOFTWARE.
  */
 
-#include "QApplication"
+#include "QCloseEvent"
+#include "QMenu"
 #include "QMessageBox"
 
-#include "mainmodel.hpp"
+#include "queuelist.hpp"
+#include "settings.hpp"
 
-// public member functions
-MainModel::MainModel() :
-    QObject(),
-    m_isInit(false),
+#include "mainwindow.hpp"
+#include "ui_mainwindow.h"
+
+#include "config.h"
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    m_ui(nullptr),
+    m_global(nullptr),
     m_icon(nullptr),
     m_iconContextMenu(nullptr),
     m_showAction(nullptr),
-    m_exitAction(nullptr)
+    m_exitAction(nullptr),
+    m_currentWidget(SETTINGS)
 {}
 
-MainModel::~MainModel()
+MainWindow::~MainWindow()
 {
+    if (m_ui) delete m_ui;
+
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
         if (m_icon) delete m_icon;
@@ -47,11 +57,24 @@ MainModel::~MainModel()
     }
 }
 
-bool MainModel::init()
+uint8_t MainWindow::init()
 {
-    if (m_isInit)
+    try
     {
-        return false;
+        m_ui = new Ui::MainWindow;
+    }
+    catch (...)
+    {
+        m_ui = nullptr;
+        return 1;
+    }
+
+    m_ui->setupUi(this);
+
+    m_global = Global::instance();
+    if (m_global == nullptr)
+    {
+        return 1;
     }
 
     //trayIcon
@@ -61,7 +84,7 @@ bool MainModel::init()
                                                     this);
         if (!m_icon)
         {
-            return true;
+            return 1;
         }
 
         m_icon->show();
@@ -70,19 +93,19 @@ bool MainModel::init()
         m_iconContextMenu = new (std::nothrow) QMenu;
         if (!m_iconContextMenu)
         {
-            return true;
+            return 1;
         }
 
         m_showAction = new (std::nothrow) QAction("Show", this);
         if (!m_showAction)
         {
-            return true;
+            return 1;
         }
 
         m_exitAction = new (std::nothrow) QAction("Exit", this);
         if (!m_exitAction)
         {
-            return true;
+            return 1;
         }
 
         m_iconContextMenu->addAction(m_showAction);
@@ -90,59 +113,128 @@ bool MainModel::init()
         m_icon->setContextMenu(m_iconContextMenu);
     }
 
+    Settings *toBeInsert = Settings::create(this);
+    if (!toBeInsert)
+    {
+        return 1;
+    }
+
+    setCentralWidget(toBeInsert);
     connectHook();
-    m_isInit = true;
-    return false;
+
+    QString title(STQ_NAME);
+    title += " ";
+    title += STQ_VERSION;
+    setWindowTitle(title);
+    return 0;
 }
 
-void MainModel::aboutQt()
+// protected member function
+void MainWindow::closeEvent(QCloseEvent *e)
 {
-    QMessageBox::aboutQt(nullptr);
+    e->ignore();
+    hide();
 }
 
-// public slots
-void MainModel::programExit()
+// private slots
+void MainWindow::programExit()
 {
     auto res(QMessageBox::question(nullptr,
                                    tr("Exit"),
                                    tr("Are you sure to exit?"),
-                                   QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel));
+                                   QMessageBox::Yes |
+                                   QMessageBox::No |
+                                   QMessageBox::Cancel));
     if (res == QMessageBox::Yes)
     {
         QApplication::quit();
     }
 }
 
-// private slots
 // Tray Icon
-void MainModel::iconActivated(QSystemTrayIcon::ActivationReason reason)
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::Trigger ||
         reason == QSystemTrayIcon::DoubleClick)
     {
-        emit showWindow();
+        show();
     }
 }
 
-// private member functions
-void MainModel::connectHook()
+#define CREATE_WIDGET(targetCode, target, errMsg) \
+    if (cleanCentral(targetCode)) return; \
+    target *widget(target::create(this)); \
+    if (!widget) \
+    { \
+        QMessageBox::critical(this, \
+                              "Error", \
+                              errMsg); \
+        return; \
+    } \
+    setCentralWidget(widget); \
+    m_currentWidget = targetCode
+
+void MainWindow::on_actionSettings_triggered()
 {
+    CREATE_WIDGET(SETTINGS, Settings, "Fail to initialize \"Settings\"");
+}
+
+void MainWindow::on_actionQueueList_triggered()
+{
+    CREATE_WIDGET(QUEUELIST, QueueList, "Fail to initialize \"Queue list\"");
+}
+
+#undef CREATE_WIDGET
+
+void MainWindow::on_actionAboutQt_triggered()
+{
+    QMessageBox::aboutQt(this);
+}
+
+// private member functions
+void MainWindow::connectHook()
+{
+    connect(m_ui->actionExit,
+            &QAction::triggered,
+            this,
+            &MainWindow::programExit);
+
     //trayIcon
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
         connect(m_icon,
                 &QSystemTrayIcon::activated,
                 this,
-                &MainModel::iconActivated);
+                &MainWindow::iconActivated);
 
         connect(m_showAction,
                 &QAction::triggered,
                 this,
-                &MainModel::showWindow);
+                &MainWindow::show);
 
         connect(m_exitAction,
                 &QAction::triggered,
                 this,
-                &MainModel::programExit);
+                &MainWindow::programExit);
     }
+}
+
+uint8_t MainWindow::cleanCentral(CurrentWidget index)
+{
+    if (index == m_currentWidget)
+    {
+        return 1;
+    }
+
+    if (index != SETTINGS)
+    {
+        if (m_global->grpcChannel() == nullptr)
+        {
+            return 1;
+        }
+    }
+
+    QWidget *widget(takeCentralWidget());
+    widget->deleteLater();
+    return 0;
 }

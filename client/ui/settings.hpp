@@ -21,13 +21,69 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
+#pragma once
 
-Text
+#include "QWidget"
+
+#include "model/global.hpp"
+#include "model/settingsmodel.hpp"
+
+namespace Ui
 {
-    id: root
-    property alias pointSize: root.font.pointSize
-    font.pointSize: 15
-    smooth: true
-    verticalAlignment: Text.AlignVCenter
+class Settings;
 }
+
+class Settings : public QWidget
+{
+    Q_OBJECT
+
+public:
+
+    static Settings *create(QWidget * = nullptr);
+
+    ~Settings();
+
+private slots:
+
+    void onModelDone();
+
+    void on_host_currentIndexChanged(int index);
+
+    void on_alias_editingFinished();
+
+    void on_ip_editingFinished();
+
+    void on_deleteBtn_clicked();
+
+    void on_saveBtn_clicked();
+
+    void on_connectBtn_clicked();
+
+private:
+
+    Settings(QWidget * = nullptr);
+
+    Ui::Settings *m_ui;
+
+    std::shared_ptr<Global> m_global;
+
+    SettingsModel *m_model;
+
+    QHash<QString, QVariant> m_settings;
+
+    QList<QVariant> m_configs;
+
+    bool m_dirty;
+
+    bool m_ipAccepted;
+
+    bool m_accepted;
+
+    void updateHostList();
+
+    void updateUI(int, bool = true);
+
+    bool checkAllInput();
+
+};
+

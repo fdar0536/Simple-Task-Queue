@@ -26,52 +26,51 @@
 #include <mutex>
 
 #include "grpcpp/grpcpp.h"
-#include "QQmlApplicationEngine"
-#include "QWidget"
+#include "QObject"
+#include "QHash"
+#include "QRegularExpressionValidator"
 
-class Global : public QWidget
+class Global : public QObject
 {
     Q_OBJECT
 
 public:
 
+    Global();
+
     ~Global();
 
-    static Global *instance(QQmlApplicationEngine * = nullptr);
+    static std::shared_ptr<Global> instance();
 
-    Q_INVOKABLE QJSValue state(QString);
+    uint8_t state(const QString &, QHash<QString, QVariant> &);
 
-    Q_INVOKABLE void setState(QString, QJSValue);
+    void setState(const QString &, QHash<QString, QVariant> &);
 
-    Q_INVOKABLE QJSValue settings();
+    QHash<QString, QVariant> settings();
 
-    Q_INVOKABLE void saveSettings(QJSValue);
+    void saveSettings(QHash<QString, QVariant> &);
 
-    Q_INVOKABLE bool isSettingsNotAccepted();
+    bool isSettingsNotAccepted();
 
     std::shared_ptr<grpc::ChannelInterface> grpcChannel();
 
     void setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &);
 
-    QQmlApplicationEngine *engine() const;
-
-    Q_INVOKABLE void programExit(int, QString);
+    std::shared_ptr<QRegularExpressionValidator> ipRegex() const;
 
 private:
 
-    Global();
+    static std::shared_ptr<Global> m_instance;
 
-    static Global *m_instance;
+    QHash<QString, QHash<QString, QVariant>> m_stateStore;
 
-    QHash<QString, QJSValue> m_stateStore;
-
-    QQmlApplicationEngine *m_engine;
+    std::mutex m_stateMutex;
 
     std::shared_ptr<grpc::ChannelInterface> m_channel;
 
-    std::mutex m_mutex;
+    std::mutex m_channelMutex;
+
+    std::shared_ptr<QRegularExpressionValidator> m_ipRegex;
 
     uint8_t initConfigFile();
-
-    void initState();
 };

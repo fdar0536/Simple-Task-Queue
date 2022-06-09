@@ -39,7 +39,8 @@ public:
                                const ::stq::QueueReq* request,
                                ::stq::Empty* response) override;
 
-    ::grpc::Status ListQueue(::grpc::ServerContext* context,
-                             const ::stq::ListQueueReq* request,
-                             ::stq::ListQueueRes* response) override;
+    ::grpc::Status ListQueue(::grpc::ServerContext *context,
+                             const ::stq::Empty *request,
+                             ::grpc::ServerWriter<::stq::ListQueueRes> *writer)
+                             override;
 };

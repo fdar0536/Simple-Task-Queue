@@ -21,22 +21,69 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
-import QtQuick.Controls
-import QtQuick.Controls.Material 2.12
+#pragma once
 
-Button
+#include "model/global.hpp"
+#include "QMainWindow"
+#include "QSystemTrayIcon"
+
+namespace Ui
 {
-    id: root
-    property alias tooltip: btnToolTip.text
-
-    hoverEnabled: true
-
-    ToolTip
-    {
-        id: btnToolTip
-        visible: root.hovered
-        delay: 1000
-        timeout: 2000
-    }
+class MainWindow;
 }
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+
+    MainWindow(QWidget * = nullptr);
+
+    ~MainWindow();
+
+    uint8_t init();
+
+protected:
+
+    void closeEvent(QCloseEvent *) override;
+
+private slots:
+
+    void programExit();
+
+    // tray icon
+    void iconActivated(QSystemTrayIcon::ActivationReason);
+
+    void on_actionSettings_triggered();
+
+    void on_actionAboutQt_triggered();
+
+    void on_actionQueueList_triggered();
+
+private:
+
+    Ui::MainWindow *m_ui;
+
+    std::shared_ptr<Global> m_global;
+
+    QSystemTrayIcon *m_icon;
+
+    QMenu *m_iconContextMenu;
+
+    QAction *m_showAction;
+
+    QAction *m_exitAction;
+
+    typedef enum CurrentWidget
+    {
+        SETTINGS, QUEUELIST, PENDING, DONE, CONSOLE
+    } CurrentWidget;
+
+    CurrentWidget m_currentWidget;
+
+    void connectHook();
+
+    uint8_t cleanCentral(CurrentWidget);
+
+};

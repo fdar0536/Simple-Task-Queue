@@ -1,16 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>ui/main.qml</file>
-        <file>ui/component/MainToolBar.qml</file>
-        <file>ui/icon/menu_black_48dp.svg</file>
-        <file>ui/icon/close_black_48dp.svg</file>
-        <file>ui/component/MenuIcon.qml</file>
         <file>ui/icon/computer_black_48dp.svg</file>
-        <file>ui/component/MainMenu.qml</file>
-        <file>ui/icon/info_black_48dp.svg</file>
-        <file>ui/component/TitleText.qml</file>
-        <file>ui/component/ToolTipButton.qml</file>
-        <file>ui/settings.qml</file>
-        <file>ui/queuelist.qml</file>
     </qresource>
 </RCC>

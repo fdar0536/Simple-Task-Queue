@@ -27,57 +27,45 @@
 #include "queuelistmodel.hpp"
 
 // public member function
-QueueListModel::QueueListModel() :
-    QThread(),
-    m_isInit(false),
-    m_engine(nullptr),
-    m_hasError(false),
-    m_lastError(""),
-    m_oldName(""),
-    m_name(""),
-    m_res(QJSValue()),
-    m_func(Create),
-    m_stub(nullptr)
-{}
-
-QueueListModel::~QueueListModel()
-{}
-
-bool QueueListModel::init()
+QueueListModel *QueueListModel::create(QObject *parent)
 {
-    if (m_isInit)
+    std::shared_ptr<Global> global = Global::instance();
+    if (global == nullptr)
     {
-        return false;
+        return nullptr;
     }
 
-    Global *global = Global::instance();
-    if (!global)
+    QueueListModel *ret(nullptr);
+    try
     {
-        return true;
+        ret = new QueueListModel(parent);
     }
-
-    m_engine = global->engine();
-    if (!m_engine)
+    catch (...)
     {
-        return true;
+        return nullptr;
     }
 
     try
     {
-        m_stub = stq::Queue::NewStub(global->grpcChannel());
-        if (m_stub == nullptr)
+        ret->m_stub = stq::Queue::NewStub(global->grpcChannel());
+        if (ret->m_stub == nullptr)
         {
-            return true;
+            delete ret;
+            return nullptr;
         }
     }
     catch (...)
     {
-        return true;
+        delete ret;
+        return nullptr;
     }
 
-    m_isInit = true;
-    return false;
+    ret->m_res.reserve(100);
+    return ret;
 }
+
+QueueListModel::~QueueListModel()
+{}
 
 bool QueueListModel::hasError()
 {
@@ -89,7 +77,7 @@ QString QueueListModel::lastError()
     return m_lastError;
 }
 
-QJSValue QueueListModel::result()
+QStringList QueueListModel::result()
 {
     return m_res;
 }
@@ -132,6 +120,16 @@ void QueueListModel::run()
 }
 
 // private member functions
+QueueListModel::QueueListModel(QObject *parent) :
+    QThread(parent),
+    m_hasError(false),
+    m_lastError(""),
+    m_oldName(""),
+    m_name(""),
+    m_func(Create),
+    m_stub(nullptr)
+{}
+
 void QueueListModel::createImpl()
 {
     stq::QueueReq req;
@@ -201,61 +199,32 @@ void QueueListModel::listImpl()
     std::vector<std::string> list;
     list.reserve(100);
 
-    int startIndex(0);
+    stq::Empty req;
+    stq::ListQueueRes res;
+    grpc::ClientContext ctx;
 
-    while (1)
+    auto reader = m_stub->ListQueue(&ctx, req);
+    while (reader->Read(&res))
     {
-        stq::ListQueueReq req;
-        req.set_startindex(startIndex);
-        req.set_limit(10);
-
-        stq::ListQueueRes res;
-        grpc::ClientContext ctx;
-
-        GrpcCommon::setupCtx(ctx);
-        grpc::Status status = m_stub->ListQueue(&ctx, req, &res);
-        if (status.ok())
-        {
-            auto data = res.list();
-            for (auto i = 0; i < data.size(); ++i)
-            {
-                list.push_back(data.at(i));
-            }
-
-            if (data.size() < 10)
-            {
-                buildRes(list);
-                emit done();
-                return;
-            }
-
-            startIndex += 10;
-            continue;
-        }
-
-        m_hasError = true;
-        GrpcCommon::buildErrMsg(status, m_lastError);
-        buildRes(list);
-        emit done();
-        break;
+        m_res.push_back(QString::fromStdString(res.name()));
     }
+
+    grpc::Status status = reader->Finish();
+    if (status.ok())
+    {
+        emit done();
+        return;
+    }
+
+    m_hasError = true;
+    m_res.clear();
+    GrpcCommon::buildErrMsg(status, m_lastError);
+    emit done();
 }
 
 void QueueListModel::reset()
 {
     m_lastError = "";
     m_hasError = false;
-    m_res = m_engine->newArray(0);
-}
-
-void QueueListModel::buildRes(std::vector<std::string> &in)
-{
-    if (in.empty()) return;
-
-    size_t size = in.size();
-    m_res = m_engine->newArray(size);
-    for (size_t i = 0; i < size; ++i)
-    {
-        m_res.setProperty(i, QJSValue(QString::fromStdString(in.at(i))));
-    }
+    m_res.clear();
 }

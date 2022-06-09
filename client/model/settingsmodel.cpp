@@ -26,37 +26,34 @@
 #include "grpccommon.hpp"
 #include "settingsmodel.hpp"
 
-SettingsModel::SettingsModel() :
-    QThread(),
-    m_isInit(false),
-    m_global(nullptr),
-    m_ip("127.0.0.1"),
-    m_port(12345),
-    m_hasError(false),
-    m_lastError("")
-{}
+// public member functions
+SettingsModel *SettingsModel::create(QObject *parent)
+{
+    SettingsModel *ret(nullptr);
+
+    try
+    {
+        ret = new SettingsModel(parent);
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+
+    ret->m_global = Global::instance();
+    if (ret->m_global == nullptr)
+    {
+        delete ret;
+        return nullptr;
+    }
+
+    return ret;
+}
 
 SettingsModel::~SettingsModel()
 {}
 
-bool SettingsModel::init()
-{
-    if (m_isInit)
-    {
-        return false;
-    }
-
-    m_global = Global::instance();
-    if (!m_global)
-    {
-        return true;
-    }
-
-    m_isInit = true;
-    return false;
-}
-
-void SettingsModel::startConnect(QString ip, int port)
+void SettingsModel::startConnect(const QString &ip, int port)
 {
     std::shared_ptr<grpc::ChannelInterface> null(nullptr);
     m_global->setGrpcChannel(null);
@@ -130,3 +127,13 @@ void SettingsModel::run()
     GrpcCommon::buildErrMsg(status, m_lastError);
     emit done();
 }
+
+// private member function
+SettingsModel::SettingsModel(QObject *parent) :
+    QThread(parent),
+    m_global(nullptr),
+    m_ip("127.0.0.1"),
+    m_port(12345),
+    m_hasError(false),
+    m_lastError("")
+{}

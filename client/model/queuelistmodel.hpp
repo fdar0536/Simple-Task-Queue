@@ -36,25 +36,23 @@ class QueueListModel : public QThread
 
 public:
 
-    QueueListModel();
+    static QueueListModel *create(QObject * = nullptr);
 
     ~QueueListModel();
 
-    Q_INVOKABLE bool init();
+    bool hasError();
 
-    Q_INVOKABLE bool hasError();
+    QString lastError();
 
-    Q_INVOKABLE QString lastError();
+    QStringList result();
 
-    Q_INVOKABLE QJSValue result();
+    void startCreate(QString);
 
-    Q_INVOKABLE void startCreate(QString);
+    void startRename(QString, QString);
 
-    Q_INVOKABLE void startRename(QString, QString);
+    void startDelete(QString);
 
-    Q_INVOKABLE void startDelete(QString);
-
-    Q_INVOKABLE void startList();
+    void startList();
 
     void run() override;
 
@@ -64,9 +62,7 @@ signals:
 
 private:
 
-    bool m_isInit;
-
-    QQmlApplicationEngine *m_engine;
+    QueueListModel(QObject * = nullptr);
 
     bool m_hasError;
 
@@ -76,7 +72,7 @@ private:
 
     QString m_name;
 
-    QJSValue m_res;
+    QStringList m_res;
 
     typedef enum funcs
     {
@@ -106,6 +102,4 @@ private:
     };
 
     void reset();
-
-    void buildRes(std::vector<std::string> &);
 };

@@ -87,12 +87,11 @@ uint8_t STQQueueList::deleteQueue(const std::string &name)
     return 1;
 }
 
-uint8_t STQQueueList::listQueue(::stq::ListQueueRes *res,
-                                int startIndex,
-                                int limit,
-                                char *errMsg)
+uint8_t
+STQQueueList::listQueue(::grpc::ServerWriter<::stq::ListQueueRes> *res,
+                        char *errMsg)
 {
-    if (!res || !limit || startIndex < 0)
+    if (!res)
     {
         PRINT_ERROR_BUF(errMsg, "Invalid input.");
         return 1;
@@ -105,25 +104,13 @@ uint8_t STQQueueList::listQueue(::stq::ListQueueRes *res,
         return 2;
     }
 
-    size_t start(static_cast<size_t>(startIndex));
-    if (start >= m_queueList.size())
+    ::stq::ListQueueRes toWrite;
+    for (auto it = m_queueList.begin(); it != m_queueList.end(); ++it)
     {
-        PRINT_ERROR_BUF(errMsg, "Invalid input.");
-        return 1;
+        toWrite.set_name(it->first);
+        res->Write(toWrite);
     }
 
-    auto startIt(m_queueList.begin());
-    for (size_t i = 0; i < start; ++i, ++startIt);
-    auto endIt(startIt);
-    size_t end(start + limit);
-    for (size_t i = start; i < end && endIt != m_queueList.end(); ++i, ++endIt);
-
-    for (auto it = startIt; it != endIt; ++it)
-    {
-        res->add_list(it->first);
-    }
-
-    if (endIt != m_queueList.end()) res->add_list(endIt->first);
     return 0;
 }
 

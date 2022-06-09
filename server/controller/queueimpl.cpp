@@ -89,15 +89,14 @@
     return ::grpc::Status::OK;
 }
 
-::grpc::Status QueueImpl::ListQueue(::grpc::ServerContext* context,
-                         const ::stq::ListQueueReq* req,
-                         ::stq::ListQueueRes* res)
+::grpc::Status QueueImpl::ListQueue(::grpc::ServerContext *ctx,
+                         const ::stq::Empty *req,
+                         ::grpc::ServerWriter<::stq::ListQueueRes> *res)
 {
-    UNUSED(context);
+    UNUSED(ctx);
+    UNUSED(req);
     char buf[2048];
-    switch (Global::queueList.listQueue(res,
-                                        req->startindex(),
-                                        req->limit(), buf))
+    switch (Global::queueList.listQueue(res, buf))
     {
     case 0:
     {

@@ -33,17 +33,15 @@ class SettingsModel : public QThread
 
 public:
 
-    SettingsModel();
+    static SettingsModel *create(QObject * = nullptr);
 
     ~SettingsModel();
 
-    Q_INVOKABLE bool init();
+    void startConnect(const QString &, int);
 
-    Q_INVOKABLE void startConnect(QString, int);
+    bool hasError();
 
-    Q_INVOKABLE bool hasError();
-
-    Q_INVOKABLE QString lastError();
+    QString lastError();
 
     void run() override;
 
@@ -53,9 +51,9 @@ signals:
 
 private:
 
-    bool m_isInit;
+    SettingsModel(QObject * = nullptr);
 
-    Global *m_global;
+    std::shared_ptr<Global> m_global;
 
     QString m_ip;
 

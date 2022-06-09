@@ -8,7 +8,7 @@ service Queue {
   rpc CreateQueue(QueueReq) returns (Empty);
   rpc RenameQueue(RenameQueueReq) returns (Empty);
   rpc DeleteQueue(QueueReq) returns (Empty);
-  rpc ListQueue(ListQueueReq) returns (ListQueueRes);
+  rpc ListQueue(Empty) returns (stream ListQueueRes);
 }
 
 message RenameQueueReq {
@@ -16,11 +16,6 @@ message RenameQueueReq {
   string newName = 2;
 }
 
-message ListQueueReq {
-  int32 startIndex = 1;
-  int32 limit = 2;
-}
-
 message ListQueueRes {
-  repeated string list = 1;
+  string name = 1;
 }

@@ -22,7 +22,6 @@
  */
 
 #include <iostream>
-#include <new>
 
 #include "QApplication"
 #include "QDir"
@@ -31,71 +30,84 @@
 #include "QJsonObject"
 #include "QJSValue"
 #include "QMessageBox"
-#include "QRegularExpressionValidator"
 #include "QStandardPaths"
 
 #include "global.hpp"
 
-Global *Global::m_instance = nullptr;
+std::shared_ptr<Global> Global::m_instance = nullptr;
 
 // public member functions
+Global::Global() :
+    QObject(),
+    m_channel(nullptr),
+    m_ipRegex(nullptr)
+{}
+
 Global::~Global()
 {}
 
-Global *Global::instance(QQmlApplicationEngine *engine)
+std::shared_ptr<Global> Global::instance()
 {
-    if (!engine)
+    if (m_instance != nullptr) return m_instance;
+
+    try
     {
-        if (m_instance) return m_instance;
-        return nullptr;
+        m_instance = std::make_shared<Global>();
     }
-
-    m_instance = new (std::nothrow) Global;
-    if (!m_instance) return nullptr;
-
-    m_instance->m_engine = engine;
-    if (m_instance->initConfigFile())
+    catch (...)
     {
-        delete m_instance;
         m_instance = nullptr;
         return nullptr;
     }
 
-    m_instance->initState();
+
+    if (m_instance->initConfigFile())
+    {
+        m_instance = nullptr;
+        return nullptr;
+    }
+
     return m_instance;
 }
 
-QJSValue Global::state(QString key)
+uint8_t Global::state(const QString &key, QHash<QString, QVariant> &out)
 {
+    std::unique_lock<std::mutex> lock(m_stateMutex);
     auto it = m_stateStore.find(key);
     if (it == m_stateStore.end())
     {
-        return m_engine->newObject();
+        return 1;
     }
 
-    return it.value();
+    out = it.value();
+    return 0;
 }
 
-void Global::setState(QString key, QJSValue data)
+void Global::setState(const QString &key, QHash<QString, QVariant> &data)
 {
+    std::unique_lock<std::mutex> lock(m_stateMutex);
     m_stateStore[key] = data;
 }
 
-QJSValue Global::settings()
+QHash<QString, QVariant> Global::settings()
 {
+    std::unique_lock<std::mutex> lock(m_stateMutex);
     return m_stateStore["settings"];
 }
 
-void Global::saveSettings(QJSValue input)
+void Global::saveSettings(QHash<QString, QVariant> &input)
 {
-    m_stateStore["settings"] = input;
-    QJSValue list = input.property("config");
-    qint32 length = list.property("length").toInt();
+    {
+        std::unique_lock<std::mutex> lock(m_stateMutex);
+        m_stateStore["settings"] = input;
+    }
+
+    QList<QVariant> list = input["config"].toList();
+    qint32 length = list.size();
 
     if (length == 0) return;
 
-    QString path = input.property("configPath").toString();
-    qDebug() << "path is: " << path;
+    QString path = input["configPath"].toString();
     QFile config(path);
     if (!config.open(QIODevice::WriteOnly))
     {
@@ -110,10 +122,10 @@ void Global::saveSettings(QJSValue input)
     for (qsizetype i = 0; i < length; ++i)
     {
         QJsonObject item;
-        QJSValue map = list.property(i);
-        item.insert("alias", map.property("alias").toString());
-        item.insert("ip", map.property("ip").toString());
-        item.insert("port", map.property("port").toInt());
+        QHash<QString, QVariant> map = list[i].toHash();
+        item.insert("alias", map["alias"].toString());
+        item.insert("ip", map["ip"].toString());
+        item.insert("port", map["port"].toInt());
         arr.append(item);
     }
 
@@ -125,46 +137,28 @@ void Global::saveSettings(QJSValue input)
 
 bool Global::isSettingsNotAccepted()
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_channelMutex);
     return (m_channel == nullptr);
 }
 
 std::shared_ptr<grpc::ChannelInterface> Global::grpcChannel()
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_channelMutex);
     return m_channel;
 }
 
 void Global::setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &in)
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_channelMutex);
     m_channel = in;
 }
 
-QQmlApplicationEngine *Global::engine() const
+std::shared_ptr<QRegularExpressionValidator> Global::ipRegex() const
 {
-    return m_engine;
-}
-
-void Global::programExit(int exitCode, QString reason)
-{
-    if (exitCode)
-    {
-        QMessageBox::critical(this,
-                              tr("Error"),
-                              reason);
-    }
-
-    QApplication::exit(exitCode);
+    return m_ipRegex;
 }
 
 // private member functions
-Global::Global() :
-    QWidget(),
-    m_engine(nullptr),
-    m_channel(nullptr)
-{}
-
 uint8_t Global::initConfigFile()
 {
     QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
@@ -184,8 +178,8 @@ uint8_t Global::initConfigFile()
     }
 
     configPath += "/config.json";
-    QJSValue output = m_engine->newObject();
-    output.setProperty("configPath", QJSValue(configPath));
+    QHash<QString, QVariant> output;
+    output["configPath"] = configPath;
 
     QFile config(configPath);
     if (!config.open(QIODevice::ReadOnly))
@@ -208,13 +202,22 @@ uint8_t Global::initConfigFile()
 
     QJsonArray arr = configObj["config"].toArray();
     QString tmpString;
-    QJSValue list = m_engine->newArray(arr.size());
+    QList<QVariant> list;
+    list.reserve(arr.size());
 
     QRegularExpression re("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
                           "{3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
     re.optimize();
 
-    QRegularExpressionValidator regex = QRegularExpressionValidator(re, nullptr);
+    try
+    {
+        m_ipRegex = std::make_shared<QRegularExpressionValidator>(re, this);
+    }
+    catch (...)
+    {
+        return 1;
+    }
+
     int pos = 0;
 
     // note:
@@ -222,41 +225,41 @@ uint8_t Global::initConfigFile()
     for (int i = 0; i < arr.size(); ++i)
     {
         QJsonObject obj = arr[i].toObject();
-        QJSValue out = m_engine->newObject();
+        QHash<QString, QVariant> out;
 
         if (!obj["alias"].isString())
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid config file." << std::endl;
-            list = m_engine->newArray();
+            list.clear();
             goto exit;
         }
 
-        out.setProperty("alias", QJSValue(obj["alias"].toString()));
+        out["alias"] = obj["alias"].toString();
         if (!obj["ip"].isString())
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid config file." << std::endl;
-            list = m_engine->newArray();
+            list.clear();
             goto exit;
         }
 
         tmpString = obj["ip"].toString();
-        if (regex.validate(tmpString, pos) != QValidator::Acceptable)
+        if (m_ipRegex->validate(tmpString, pos) != QValidator::Acceptable)
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid ip." << std::endl;
-            list = m_engine->newArray();
+            list.clear();
             goto exit;
         }
 
-        out.setProperty("ip", QJSValue(tmpString));
+        out["ip"] = tmpString;
 
         if (!obj["port"].isDouble())
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid config file." << std::endl;
-            list = m_engine->newArray();
+            list.clear();
             goto exit;
         }
 
@@ -265,23 +268,17 @@ uint8_t Global::initConfigFile()
         {
             std::cerr << __FILE__ << ":" << __LINE__;
             std::cerr << " Invalid port." << std::endl;
-            list = m_engine->newArray();
+            list.clear();
             goto exit;
         }
 
-        out.setProperty("port", QJSValue(pos));
-        list.setProperty(i, out);
+        out["port"] = pos;
+        list.push_back(out);
     }
 
 exit:
 
-    output.setProperty("config", list);
+    output["config"] = list;
     m_stateStore["settings"] = output;
     return 0;
-}
-
-void Global::initState()
-{
-    m_stateStore["settingsState"] = QJSValue("");
-    m_stateStore["queueListState"] = QJSValue("");
 }

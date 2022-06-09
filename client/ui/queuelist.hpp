@@ -21,45 +21,50 @@
  * SOFTWARE.
  */
 
-import QtQuick 2.15
-import QtQuick.Controls
-import QtQuick.Controls.Material 2.12
+#pragma once
 
-Image
+#include "QWidget"
+
+#include "model/global.hpp"
+#include "model/queuelistmodel.hpp"
+
+namespace Ui
 {
-    property alias source: root.source
-    property alias toolTip: toolTip.text
+class QueueList;
+}
 
-    signal clicked()
+class QueueList : public QWidget
+{
+    Q_OBJECT
 
-    id: root
-    transformOrigin: Item.Center
-    scale: 0.5
+public:
 
-    MouseArea
-    {
-        anchors.fill: parent
-        hoverEnabled: true
-        onClicked: root.clicked()
+    static QueueList *create(QWidget * = nullptr);
 
-        onEntered:
-        {
-            toolTip.visible = true
-            root.scale = 0.7
-        }
+    ~QueueList();
 
-        onExited:
-        {
-            toolTip.visible = false
-            root.scale = 0.5
-        }
-    } // end MouseArea
+private slots:
 
-    ToolTip
-    {
-        id: toolTip
-        delay: 300
-        timeout: 2000
-        visible: false
-    }
-} // end Image root
+    void onModelDone();
+
+    void on_deleteBtn_clicked();
+
+    void on_refreshBtn_clicked();
+
+    void on_newName_editingFinished();
+
+    void on_createBtn_clicked();
+
+    void on_renameBtn_clicked();
+
+private:
+
+    QueueList(QWidget * = nullptr);
+
+    Ui::QueueList *m_ui;
+
+    std::shared_ptr<Global> m_global;
+
+    QueueListModel *m_model;
+};
+

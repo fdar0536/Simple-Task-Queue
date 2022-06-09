@@ -42,9 +42,7 @@ public:
 
     uint8_t deleteQueue(const std::string &);
 
-    uint8_t listQueue(::stq::ListQueueRes *response,
-                      int startIndex,
-                      int limit,
+    uint8_t listQueue(::grpc::ServerWriter<::stq::ListQueueRes> *res,
                       char *errMsg);
 
     std::shared_ptr<STQQueue> getQueue(const std::string &);
