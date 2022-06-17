@@ -163,6 +163,8 @@ uint8_t STQQueue::removeTask(uint32_t id)
 
 uint8_t STQQueue::readCurrentOutput(char *in, size_t size)
 {
+    if (m_stopped) return 1;
+
     if (!in || size < 4096) return 1;
     {
         std::unique_lock<std::mutex> lock(m_outMutex);

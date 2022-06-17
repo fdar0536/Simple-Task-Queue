@@ -60,7 +60,7 @@ ConsoleImpl::Output
         if (queue->readCurrentOutput(buf, 4096))
         {
             return ::grpc::Status(::grpc::StatusCode::INTERNAL,
-                      "Internal server error.");
+                      "Queue is stopped or internal server error.");
         }
 
         msg.set_msg(buf);

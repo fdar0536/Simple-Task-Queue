@@ -4,6 +4,8 @@ set(MODEL_SRC
 
     model/global.cpp
     model/global.hpp
+    model/pendinglistmodel.cpp
+    model/pendinglistmodel.hpp
     model/queuelistmodel.cpp
     model/queuelistmodel.hpp
     model/settingsmodel.cpp
@@ -14,6 +16,9 @@ set(UI_SRC
     ui/mainwindow.cpp
     ui/mainwindow.hpp
     ui/mainwindow.ui
+    ui/pendinglist.cpp
+    ui/pendinglist.hpp
+    ui/pendinglist.ui
     ui/queuelist.cpp
     ui/queuelist.hpp
     ui/queuelist.ui
