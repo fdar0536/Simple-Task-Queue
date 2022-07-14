@@ -1,3 +1,5 @@
+option(BUILD_SERVER_DEV "build binary for server develop" ON)
+
 set(PROCESS_SRC
     model/process/abstractprocess.cpp
     model/process/abstractprocess.hpp
@@ -65,8 +67,6 @@ add_executable(STQServer
 
 add_dependencies(STQServer grpc_common)
 
-target_include_directories(STQServer PRIVATE ${CPPCODEC_INCLUDE_DIR})
-
 target_link_libraries(STQServer
     PRIVATE
     gRPC::grpc
@@ -76,3 +76,12 @@ target_link_libraries(STQServer
     grpc_common
     nlohmann_json::nlohmann_json
 )
+
+if(BUILD_SERVER_DEV)
+    add_executable(ServerTest
+        ${PROCESS_SRC}
+        logger.cpp
+        logger.hpp
+        test.cpp
+    )
+endif(BUILD_SERVER_DEV)

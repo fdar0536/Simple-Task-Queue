@@ -28,6 +28,8 @@
 
 #include <cinttypes>
 
+#include "logger.hpp"
+
 class AbstractProcess
 {
 public:
@@ -39,7 +41,7 @@ public:
 
     virtual ~AbstractProcess() = 0;
 
-    virtual uint8_t init(AbstractProcess *) = 0;
+    virtual uint8_t init(AbstractProcess *, Logger *) = 0;
 
     virtual void reset() = 0;
 
@@ -58,4 +60,6 @@ public:
 protected:
 
     std::string m_error;
+
+    Logger *m_logger;
 };

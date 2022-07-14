@@ -35,7 +35,7 @@ public:
 
     ~WinProcess();
 
-    uint8_t init(AbstractProcess *) override;
+    uint8_t init(AbstractProcess *, Logger *m_logger) override;
 
     void reset() override;
 

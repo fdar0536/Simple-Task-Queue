@@ -35,7 +35,7 @@ public:
 
     ~NixProcess();
 
-    uint8_t init(AbstractProcess *) override;
+    uint8_t init(AbstractProcess *, Logger *) override;
 
     void reset() override;
 
@@ -56,6 +56,10 @@ private:
     pid_t m_pid;
 
     int m_fd[2];
+
+    bool m_isStop;
+
+    bool m_exitCode;
 
     void resetImpl();
 

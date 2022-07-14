@@ -25,4 +25,5 @@ message TaskDetailsRes {
   string workDir = 1;
   string programName = 2;
   repeated string args = 3;
+  uint32 exitCode = 4;
 }

@@ -26,14 +26,13 @@
 #include "winprocess.hpp"
 #include "tlhelp32.h"
 
-#include "global.hpp"
-
 WinProcess::WinProcess() :
     m_childStdInRead(NULL),
     m_childStdInWrite(NULL),
     m_childStdOutRead(NULL),
     m_childStdOutWrite(NULL)
 {
+    m_logger = nullptr;
     m_error.reserve(4096);
 }
 
@@ -42,8 +41,11 @@ WinProcess::~WinProcess()
     resetImpl();
 }
 
-uint8_t WinProcess::init(AbstractProcess *)
+uint8_t WinProcess::init(AbstractProcess *, Logger *logger)
 {
+    if (!logger) return 1;
+
+    m_logger = logger;
     return 0;
 }
 
@@ -64,7 +66,7 @@ uint8_t WinProcess::start(const char *pathToProcess,
         m_error += std::to_string(__LINE__);
         m_error += " Invalid input.";
 
-        Global::logger.write(Logger::Error, m_error.c_str());
+        m_logger->write(Logger::Error, m_error.c_str());
         reset();
         return 1;
     }
@@ -126,7 +128,7 @@ uint8_t WinProcess::start(const char *pathToProcess,
             m_error += std::to_string(__LINE__);
             m_error += " Fail to allocate memory for command line.";
 
-            Global::logger.write(Logger::Error, m_error.c_str());
+            m_logger->write(Logger::Error, m_error.c_str());
             reset();
             return 1;
         }
@@ -196,13 +198,11 @@ bool WinProcess::isRunning()
     DWORD exitCode;
     if (!GetExitCodeProcess(m_procInfo.hProcess, &exitCode))
     {
-        if (GetLastError() == STILL_ACTIVE)
-        {
-            return true;
-        }
+        writeLastError(__FILE__, __LINE__);
+        return true;
     }
 
-    return false;
+    return (exitCode == STILL_ACTIVE);
 }
 
 uint8_t WinProcess::readStdOut(char *buffer, size_t *bufferLen)
@@ -234,7 +234,7 @@ uint8_t WinProcess::readStdOut(char *buffer, size_t *bufferLen)
     }
     else
     {
-        bufferLen = 0;
+        *bufferLen = 0;
     }
 
     return 0;
@@ -244,6 +244,11 @@ AbstractProcess::ExitState WinProcess::exitCode(int *code)
 {
     DWORD exitCode;
     if (!GetExitCodeProcess(m_procInfo.hProcess, &exitCode))
+    {
+        return AbstractProcess::ExitState::Failed;
+    }
+
+    if (exitCode == STILL_ACTIVE)
     {
         return AbstractProcess::ExitState::Failed;
     }
@@ -291,7 +296,7 @@ void WinProcess::writeLastError(const char *file, int line)
     m_error += std::string(msgBuf, errSize);
 
     LocalFree(msgBuf);
-    Global::logger.write(Logger::Error, m_error.c_str());
+    m_logger->write(Logger::Error, m_error.c_str());
 }
 
 void WinProcess::resetImpl()

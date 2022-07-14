@@ -65,7 +65,7 @@ uint8_t STQQueue::init(std::shared_ptr<STQQueue> &in, const std::string &name)
         return 1;
     }
 
-    if (in->m_process->init(in->m_process))
+    if (in->m_process->init(in->m_process, &Global::logger))
     {
         in->m_errLog.clear();
         in->m_errLog += __FILE__;
@@ -264,6 +264,8 @@ void STQQueue::mainLoop()
 
     while (1)
     {
+        m_process->reset();
+
         {
             std::unique_lock<std::mutex> lock(m_queueMutex);
             m_condition.wait(lock, [this]()
@@ -357,6 +359,7 @@ void STQQueue::mainLoop()
                 fwrite(m_out, 1, bufSize, f);
                 fclose(f);
                 m_out[bufSize] = '\0';
+                bufSize = 4096;
                 f = nullptr;
             }
         } // end while (m_process->isRunning())

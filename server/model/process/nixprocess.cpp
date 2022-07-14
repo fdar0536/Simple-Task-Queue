@@ -21,31 +21,36 @@
  * SOFTWARE.
  */
 
-#include <cstring>
 #include <new>
+
+#include <cstdio>
+#include <cstring>
 
 #include "sys/types.h"
 #include "sys/wait.h"
 
 #include "nixprocess.hpp"
 
-#include "global.hpp"
-
 NixProcess::NixProcess() :
-    m_pid(0)
-{}
+    m_pid(0),
+    m_isStop(false),
+    m_exitCode(0)
+{
+    m_logger = nullptr;
+}
 
 NixProcess::~NixProcess()
 {
     resetImpl();
 }
 
-uint8_t NixProcess::init(AbstractProcess *in)
+uint8_t NixProcess::init(AbstractProcess *in, Logger *logger)
 {
-    if (!in) return 1;
+    if (!in || !logger) return 1;
 
     NixProcess *process = reinterpret_cast<NixProcess *>(in);
     memset(process->m_fd, 0, 2 * sizeof(int));
+    process->m_logger = logger;
     return 0;
 }
 
@@ -57,7 +62,18 @@ void NixProcess::reset()
 bool NixProcess::isRunning()
 {
     int state(0);
-    return !waitpid(-1, &state, WNOHANG);
+
+    pid_t pid = waitpid(m_pid, &state, WNOHANG);
+    if (pid)
+    {
+        // failed
+        m_isStop = !(errno == EAGAIN);
+        if (m_isStop) m_exitCode = state;
+
+        return !m_isStop;
+    }
+
+    return true;
 }
 
 uint8_t NixProcess::start(const char *name,
@@ -75,7 +91,7 @@ uint8_t NixProcess::start(const char *name,
         m_error += " fork: ";
         m_error += strerror(errno);
 
-        Global::logger.write(Logger::Error, m_error.c_str());
+        m_logger->write(Logger::Error, m_error.c_str());
         return 1;
     }
 
@@ -92,7 +108,7 @@ uint8_t NixProcess::start(const char *name,
         m_error = __FILE__":" + std::to_string(__LINE__);
         m_error += " pipe: ";
         m_error += strerror(errno);
-        Global::logger.write(Logger::Error, m_error.c_str());
+        m_logger->write(Logger::Error, m_error.c_str());
         return 1;
     }
 
@@ -100,8 +116,7 @@ uint8_t NixProcess::start(const char *name,
     {
         // child process
         while ((dup2(m_fd[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-
-        close(m_fd[1]);
+        while ((dup2(STDOUT_FILENO, STDERR_FILENO) == -1) && (errno == EINTR)) {}
         close(m_fd[0]);
 
         if (chdir(workDir) == -1)
@@ -173,18 +188,18 @@ uint8_t NixProcess::start(const char *name,
         exit(1);
     }
 
-    close(m_fd[1]);
     if (setpgid(m_pid, 0) == -1)
     {
         m_error.clear();
         m_error = __FILE__":" + std::to_string(__LINE__);
         m_error += " setpgid: ";
         m_error += strerror(errno);
-        Global::logger.write(Logger::Error, m_error.c_str());
+        m_logger->write(Logger::Error, m_error.c_str());
         kill(m_pid, SIGKILL);
         return 1;
     }
 
+    close(m_fd[1]);
     return 0;
 }
 
@@ -200,7 +215,7 @@ uint8_t NixProcess::readStdOut(char *buf, size_t *bufSize)
         m_error.clear();
         m_error = __FILE__":" + std::to_string(__LINE__);
         m_error += " Invalid input.";
-        Global::logger.write(Logger::Error, m_error.c_str());
+        m_logger->write(Logger::Error, m_error.c_str());
         return 1;
     }
 
@@ -209,11 +224,11 @@ uint8_t NixProcess::readStdOut(char *buf, size_t *bufSize)
         m_error.clear();
         m_error = __FILE__":" + std::to_string(__LINE__);
         m_error += " Invalid buffer size.";
-        Global::logger.write(Logger::Error, m_error.c_str());
+        m_logger->write(Logger::Error, m_error.c_str());
         return 1;
     }
 
-    ssize_t count;
+    ssize_t count(0);
     while (1)
     {
         count = read(m_fd[0], buf, *bufSize);
@@ -226,7 +241,7 @@ uint8_t NixProcess::readStdOut(char *buf, size_t *bufSize)
                 m_error = __FILE__":" + std::to_string(__LINE__);
                 m_error += " read: ";
                 m_error += strerror(errno);
-                Global::logger.write(Logger::Error, m_error.c_str());
+                m_logger->write(Logger::Error, m_error.c_str());
 
                 *bufSize = 0;
                 buf[0] = '\0';
@@ -252,24 +267,13 @@ AbstractProcess::ExitState NixProcess::exitCode(int *code)
     if (!code) return AbstractProcess::ExitState::Failed;
     if (isRunning()) return AbstractProcess::ExitState::Failed;
 
-    int status = 0;
-    if (waitpid(m_pid, &status, WNOHANG) == -1)
+    if (WIFEXITED(m_exitCode))
     {
-        m_error.clear();
-        m_error = __FILE__":" + std::to_string(__LINE__);
-        m_error += " waitpid: ";
-        m_error += strerror(errno);
-        Global::logger.write(Logger::Error, m_error.c_str());
-        return AbstractProcess::ExitState::Failed;
-    }
-
-    if (WIFEXITED(status))
-    {
-        *code = WEXITSTATUS(status);
+        *code = WEXITSTATUS(m_exitCode);
         return AbstractProcess::ExitState::NormalExit;
     }
 
-    if (WIFSIGNALED(status))
+    if (WIFSIGNALED(m_exitCode))
     {
         return AbstractProcess::ExitState::NonNormalExit;
     }
@@ -285,6 +289,8 @@ void NixProcess::resetImpl()
     close(m_fd[1]);
     memset(m_fd, 0, 2 * sizeof(int));
     m_pid = 0;
+    m_isStop = 0;
+    m_exitCode = 0;
 }
 
 uint8_t NixProcess::stopImpl()
@@ -295,7 +301,7 @@ uint8_t NixProcess::stopImpl()
         m_error = __FILE__":" + std::to_string(__LINE__);
         m_error += " kill: ";
         m_error += strerror(errno);
-        Global::logger.write(Logger::Error, m_error.c_str());
+        m_logger->write(Logger::Error, m_error.c_str());
         return 1;
     }
 
