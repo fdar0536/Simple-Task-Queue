@@ -24,6 +24,7 @@
 #include <iostream>
 
 #include <cinttypes>
+#include <csignal>
 #include <cstring>
 
 #ifdef _WIN32
@@ -43,6 +44,7 @@
 #include "grpcpp/server.h"
 #include "grpcpp/server_builder.h"
 
+#include "common.hpp"
 #include "global.hpp"
 
 // controllers
@@ -57,6 +59,12 @@ static void printHelp(char **);
 static void runServer(bool);
 
 static bool isAdmin();
+
+static void sighandler(int signum);
+
+#ifdef _WIN32
+static BOOL eventHandler(DWORD dwCtrlType);
+#endif
 
 int main(int argc, char **argv)
 {
@@ -120,6 +128,17 @@ int main(int argc, char **argv)
     {
         return 1;
     }
+
+    signal(SIGABRT, sighandler);
+    signal(SIGFPE, sighandler);
+    signal(SIGILL, sighandler);
+    signal(SIGINT, sighandler);
+    signal(SIGSEGV, sighandler);
+    signal(SIGTERM, sighandler);
+
+#ifdef _WIN32
+    SetConsoleCtrlHandler(eventHandler, TRUE);
+#endif
 
     runServer(debug);
     return 0;
@@ -212,3 +231,19 @@ static void printHelp(char **argv)
     std::cout << "-d, --debug: Start server with debug mode." << std::endl;
     std::cout << "-c, --config <config file>: Path to config file." << std::endl;
 }
+
+static void sighandler(int signum)
+{
+    UNUSED(signum);
+    Global::logger.write(Logger::Info, "Good Bye!");
+    Global::exit_requested.set_value();
+}
+
+#ifdef _WIN32
+static BOOL eventHandler(DWORD dwCtrlType)
+{
+    UNUSED(dwCtrlType);
+    sighandler(0);
+    return TRUE;
+}
+#endif
