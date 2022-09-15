@@ -116,12 +116,12 @@ int main(int argc, char **argv)
 
         outBufLen = 4096;
         std::cout << "Sleep for 1 second" << std::endl;
+        outBuf[0] = '\0';
         sleep(1);
     }
 #endif
 
     proc->stop();
-    sleep(1);
     exitState = proc->exitCode(&childExitCode);
     if (exitState == AbstractProcess::ExitState::Failed)
     {
@@ -133,7 +133,6 @@ int main(int argc, char **argv)
     if (exitState == AbstractProcess::ExitState::NonNormalExit)
     {
         std::cout << "Child process may be crashed or signaled" << std::endl;
-        goto error;
     }
 
     std::cout << "Child process' exit code is: " << childExitCode << std::endl;

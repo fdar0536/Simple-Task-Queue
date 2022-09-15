@@ -59,7 +59,7 @@ private:
 
     bool m_isStop;
 
-    bool m_exitCode;
+    int m_exitCode;
 
     void resetImpl();
 

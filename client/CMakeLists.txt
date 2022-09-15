@@ -13,18 +13,18 @@ set(MODEL_SRC
 )
 
 set(UI_SRC
-    ui/mainwindow.cpp
-    ui/mainwindow.hpp
-    ui/mainwindow.ui
-    ui/pendinglist.cpp
-    ui/pendinglist.hpp
-    ui/pendinglist.ui
-    ui/queuelist.cpp
-    ui/queuelist.hpp
-    ui/queuelist.ui
-    ui/settings.cpp
-    ui/settings.hpp
-    ui/settings.ui
+    controller/mainwindow.cpp
+    controller/mainwindow.hpp
+    view/mainwindow.ui
+    controller/pendinglist.cpp
+    controller/pendinglist.hpp
+    view/pendinglist.ui
+    controller/queuelist.cpp
+    controller/queuelist.hpp
+    view/queuelist.ui
+    controller/settings.cpp
+    controller/settings.hpp
+    view/settings.ui
 )
 
 add_executable(STQClient WIN32

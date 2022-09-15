@@ -1,5 +1,5 @@
 #include "pendinglist.hpp"
-#include "ui_pendinglist.h"
+#include "../view/ui_pendinglist.h"
 
 PendingList::PendingList(QWidget *parent) :
     QWidget(parent),

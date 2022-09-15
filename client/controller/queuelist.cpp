@@ -22,7 +22,7 @@
  */
 
 #include "queuelist.hpp"
-#include "ui_queuelist.h"
+#include "../view/ui_queuelist.h"
 
 QueueList *QueueList::create(QWidget *parent)
 {
@@ -110,16 +110,44 @@ void QueueList::onModelDone()
 {
     m_ui->queueList->clear();
     setEnabled(true);
-    if (m_model->hasError())
+    bool hasError;
+
+    if (m_model->hasError(hasError))
     {
-        m_ui->status->setText(m_model->lastError());
+        m_ui->status->setText("Fail to get has error or not.");
+        m_ui->deleteBtn->setEnabled(false);
+        on_newName_editingFinished();
+        return;
+    }
+
+    if (hasError)
+    {
+        QString lastError;
+        if (m_model->lastError(lastError))
+        {
+            m_ui->status->setText("Fail to get last error.");
+            m_ui->deleteBtn->setEnabled(false);
+            on_newName_editingFinished();
+            return;
+        }
+
+        m_ui->status->setText(lastError);
+        m_ui->deleteBtn->setEnabled(false);
+        on_newName_editingFinished();
+        return;
+    }
+
+    QStringList result;
+    if (m_model->result(result))
+    {
+        m_ui->status->setText("Fail to get result.");
         m_ui->deleteBtn->setEnabled(false);
         on_newName_editingFinished();
         return;
     }
 
     m_ui->status->setText("Done");
-    m_ui->queueList->insertItems(0, m_model->result());
+    m_ui->queueList->insertItems(0, result);
     m_ui->queueList->setCurrentIndex(0);
     m_ui->deleteBtn->setEnabled(true);
     on_newName_editingFinished();

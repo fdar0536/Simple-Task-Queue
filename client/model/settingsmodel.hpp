@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <atomic>
+
 #include "QThread"
 
 #include "global.hpp"
@@ -37,11 +39,11 @@ public:
 
     ~SettingsModel();
 
-    void startConnect(const QString &, int);
+    uint8_t startConnect(const QString &, int);
 
-    bool hasError();
+    uint8_t hasError(bool &);
 
-    QString lastError();
+    uint8_t lastError(QString &);
 
     void run() override;
 
@@ -62,4 +64,6 @@ private:
     bool m_hasError;
 
     QString m_lastError;
+
+    std::atomic<bool> m_isRunning;
 };

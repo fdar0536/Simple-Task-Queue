@@ -169,6 +169,8 @@ uint8_t STQQueue::readCurrentOutput(char *in, size_t size)
     {
         std::unique_lock<std::mutex> lock(m_outMutex);
         size_t len = strlen(m_out);
+        if (len < 1) return 1;
+
         memcpy(in, m_out, len);
         in[len] = '\0';
     }

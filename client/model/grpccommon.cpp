@@ -41,4 +41,32 @@ void buildErrMsg(grpc::Status &status, QString &reason)
     reason += QString::fromStdString(status.error_message());
 }
 
+uint8_t getQueueName(std::shared_ptr<Global> &global, QString &output)
+{
+    if (global == nullptr) return 1;
+
+    QHash<QString, QVariant> listState;
+    if (global->state("queueListState", listState))
+    {
+        return 1;
+    }
+
+    QStringList queueList(listState["list"].toStringList());
+    if (!queueList.size())
+    {
+        return 1;
+    }
+
+    int listIndex(listState["index"].toInt());
+    if (listIndex < 0 || listIndex >= queueList.size())
+    {
+        return 1;
+    }
+
+    output = queueList[listIndex];
+    if (output.isEmpty()) return 1;
+
+    return 0;
+}
+
 } // end namespace GrpcCommon

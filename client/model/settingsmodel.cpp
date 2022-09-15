@@ -53,30 +53,36 @@ SettingsModel *SettingsModel::create(QObject *parent)
 SettingsModel::~SettingsModel()
 {}
 
-void SettingsModel::startConnect(const QString &ip, int port)
+uint8_t SettingsModel::startConnect(const QString &ip, int port)
 {
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     std::shared_ptr<grpc::ChannelInterface> null(nullptr);
     m_global->setGrpcChannel(null);
     m_ip = ip;
     m_port = static_cast<uint16_t>(port);
     m_hasError = false;
     m_lastError = "";
-
     start();
+    return 0;
 }
 
-bool SettingsModel::hasError()
+uint8_t SettingsModel::hasError(bool &out)
 {
-    return m_hasError;
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+    out = m_hasError;
+    return 0;
 }
 
-QString SettingsModel::lastError()
+uint8_t SettingsModel::lastError(QString &out)
 {
-    return m_lastError;
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+    out = m_lastError;
+    return 0;
 }
 
 void SettingsModel::run()
 {
+    m_isRunning.store(true, std::memory_order_relaxed);
     m_ip += ":";
     m_ip += QString::number(m_port);
 
@@ -92,6 +98,8 @@ void SettingsModel::run()
         {
             m_hasError = true;
             m_lastError = "Fail to create channel.";
+            m_isRunning.store(false, std::memory_order_relaxed);
+            emit done();
             return;
         }
 
@@ -100,6 +108,8 @@ void SettingsModel::run()
         {
             m_hasError = true;
             m_lastError = "Fail to create access' stub.";
+            m_isRunning.store(false, std::memory_order_relaxed);
+            emit done();
             return;
         }
     }
@@ -107,6 +117,8 @@ void SettingsModel::run()
     {
         m_hasError = true;
         m_lastError = "Fail to initialize connection.";
+        m_isRunning.store(false, std::memory_order_relaxed);
+        emit done();
         return;
     }
 
@@ -119,12 +131,14 @@ void SettingsModel::run()
     if (status.ok())
     {
         m_global->setGrpcChannel(channel);
+        m_isRunning.store(false, std::memory_order_relaxed);
         emit done();
         return;
     }
 
     m_hasError = true;
     GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
     emit done();
 }
 
@@ -136,4 +150,6 @@ SettingsModel::SettingsModel(QObject *parent) :
     m_port(12345),
     m_hasError(false),
     m_lastError("")
-{}
+{
+    m_isRunning.store(false, std::memory_order_relaxed);
+}

@@ -26,11 +26,15 @@
 #include "QString"
 #include "grpcpp/grpcpp.h"
 
+#include "global.hpp"
+
 namespace GrpcCommon
 {
 
 void setupCtx(grpc::ClientContext &);
 
 void buildErrMsg(grpc::Status &, QString &);
+
+uint8_t getQueueName(std::shared_ptr<Global> &, QString &);
 
 } // end namespace GrpcCommon

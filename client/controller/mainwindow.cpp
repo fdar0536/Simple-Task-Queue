@@ -29,7 +29,7 @@
 #include "settings.hpp"
 
 #include "mainwindow.hpp"
-#include "ui_mainwindow.h"
+#include "../view/ui_mainwindow.h"
 
 #include "config.h"
 

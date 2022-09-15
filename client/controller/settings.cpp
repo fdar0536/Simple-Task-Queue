@@ -22,7 +22,7 @@
  */
 
 #include "settings.hpp"
-#include "ui_settings.h"
+#include "../view/ui_settings.h"
 
 Settings *Settings::create(QWidget *parent)
 {
@@ -124,9 +124,25 @@ Settings::~Settings()
 // private slots
 void Settings::onModelDone()
 {
-    if (m_model->hasError())
+    bool hasError(false);
+    if (m_model->hasError(hasError))
     {
-        m_ui->status->setText(m_model->lastError());
+        m_ui->status->setText("Fail to get \"hasError\"");
+        setEnabled(true);
+        return;
+    }
+
+    if (hasError)
+    {
+        QString lastError;
+        if (m_model->lastError(lastError))
+        {
+            m_ui->status->setText("Fail to get \"lastError\"");
+            setEnabled(true);
+            return;
+        }
+
+        m_ui->status->setText(lastError);
         setEnabled(true);
         return;
     }

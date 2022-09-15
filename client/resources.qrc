@@ -1,5 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>ui/icon/computer_black_48dp.svg</file>
+        <file>view/icon/computer_black_48dp.svg</file>
     </qresource>
 </RCC>

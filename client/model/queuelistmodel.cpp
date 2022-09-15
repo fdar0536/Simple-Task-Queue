@@ -67,56 +67,73 @@ QueueListModel *QueueListModel::create(QObject *parent)
 QueueListModel::~QueueListModel()
 {}
 
-bool QueueListModel::hasError()
+uint8_t QueueListModel::hasError(bool &out)
 {
-    return m_hasError;
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+    out = m_hasError;
+    return 0;
 }
 
-QString QueueListModel::lastError()
+uint8_t QueueListModel::lastError(QString &out)
 {
-    return m_lastError;
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+    out = m_lastError;
+    return 0;
 }
 
-QStringList QueueListModel::result()
+uint8_t QueueListModel::result(QStringList &out)
 {
-    return m_res;
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+    out = m_res;
+    return 0;
 }
 
-void QueueListModel::startCreate(QString name)
+uint8_t QueueListModel::startCreate(const QString &name)
 {
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_name = name;
     reset();
     m_func = Create;
     start();
+    return 0;
 }
 
-void QueueListModel::startRename(QString oldName, QString newName)
+uint8_t QueueListModel::startRename(const QString &oldName, const QString &newName)
 {
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_oldName = oldName;
     m_name = newName;
     reset();
     m_func = Rename;
     start();
+
+    return 0;
 }
 
-void QueueListModel::startDelete(QString name)
+uint8_t QueueListModel::startDelete(const QString &name)
 {
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_name = name;
     reset();
     m_func = Delete;
     start();
+    return 0;
 }
 
-void QueueListModel::startList()
+uint8_t QueueListModel::startList()
 {
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     reset();
     m_func = List;
     start();
+    return 0;
 }
 
 void QueueListModel::run()
 {
+    m_isRunning.store(true, std::memory_order_relaxed);
     (this->*m_handler[m_func])();
+    m_isRunning.store(false, std::memory_order_relaxed);
 }
 
 // private member functions
@@ -128,7 +145,9 @@ QueueListModel::QueueListModel(QObject *parent) :
     m_name(""),
     m_func(Create),
     m_stub(nullptr)
-{}
+{
+    m_isRunning.store(false, std::memory_order_relaxed);
+}
 
 void QueueListModel::createImpl()
 {

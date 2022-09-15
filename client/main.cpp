@@ -33,14 +33,14 @@
 #include "QMessageBox"
 
 #include "model/global.hpp"
-#include "ui/mainwindow.hpp"
+#include "controller/mainwindow.hpp"
 
 static bool isAdmin();
 
 int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
-    a.setWindowIcon(QIcon(":/ui/icon/computer_black_48dp.svg"));
+    a.setWindowIcon(QIcon(":/view/icon/computer_black_48dp.svg"));
 
     if (isAdmin())
     {

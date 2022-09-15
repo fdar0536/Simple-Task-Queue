@@ -28,6 +28,7 @@
 
 #include "sys/types.h"
 #include "sys/wait.h"
+#include "fcntl.h"
 
 #include "nixprocess.hpp"
 
@@ -82,6 +83,16 @@ uint8_t NixProcess::start(const char *name,
 {
     if (!name || !workDir) return 1;
 
+    if (pipe(m_fd) == -1)
+    {
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " pipe: ";
+        m_error += strerror(errno);
+        m_logger->write(Logger::Error, m_error.c_str());
+        return 1;
+    }
+
     m_pid = fork();
     if (m_pid == -1)
     {
@@ -91,23 +102,6 @@ uint8_t NixProcess::start(const char *name,
         m_error += " fork: ";
         m_error += strerror(errno);
 
-        m_logger->write(Logger::Error, m_error.c_str());
-        return 1;
-    }
-
-    if (pipe(m_fd) == -1)
-    {
-        if (m_pid == 0)
-        {
-            // child process
-            perror("pipe");
-            exit(1);
-        }
-
-        m_error.clear();
-        m_error = __FILE__":" + std::to_string(__LINE__);
-        m_error += " pipe: ";
-        m_error += strerror(errno);
         m_logger->write(Logger::Error, m_error.c_str());
         return 1;
     }
@@ -305,5 +299,6 @@ uint8_t NixProcess::stopImpl()
         return 1;
     }
 
+    sleep(1);
     return 0;
 }

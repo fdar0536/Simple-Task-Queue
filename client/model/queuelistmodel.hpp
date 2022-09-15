@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <vector>
 
 #include "QJSValue"
@@ -40,19 +41,19 @@ public:
 
     ~QueueListModel();
 
-    bool hasError();
+    uint8_t hasError(bool &);
 
-    QString lastError();
+    uint8_t lastError(QString &);
 
-    QStringList result();
+    uint8_t result(QStringList &);
 
-    void startCreate(QString);
+    uint8_t startCreate(const QString &);
 
-    void startRename(QString, QString);
+    uint8_t startRename(const QString &, const QString &);
 
-    void startDelete(QString);
+    uint8_t startDelete(const QString &);
 
-    void startList();
+    uint8_t startList();
 
     void run() override;
 
@@ -82,6 +83,8 @@ private:
     funcs m_func;
 
     std::unique_ptr<stq::Queue::Stub> m_stub;
+
+    std::atomic<bool> m_isRunning;
 
     typedef void (QueueListModel::*Handler)();
 
