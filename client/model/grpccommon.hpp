@@ -24,9 +24,12 @@
 #pragma once
 
 #include "QString"
-#include "grpcpp/grpcpp.h"
 
 #include "global.hpp"
+
+#include "taskdetails.hpp"
+
+#include "types.pb.h"
 
 namespace GrpcCommon
 {
@@ -36,5 +39,7 @@ void setupCtx(grpc::ClientContext &);
 void buildErrMsg(grpc::Status &, QString &);
 
 uint8_t getQueueName(std::shared_ptr<Global> &, QString &);
+
+void buildTaskDetails(stq::TaskDetailsRes &res, TaskDetails &details);
 
 } // end namespace GrpcCommon

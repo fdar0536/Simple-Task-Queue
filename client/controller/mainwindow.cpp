@@ -25,6 +25,7 @@
 #include "QMenu"
 #include "QMessageBox"
 
+#include "pendinglist.hpp"
 #include "queuelist.hpp"
 #include "settings.hpp"
 
@@ -182,6 +183,11 @@ void MainWindow::on_actionSettings_triggered()
 void MainWindow::on_actionQueueList_triggered()
 {
     CREATE_WIDGET(QUEUELIST, QueueList, "Fail to initialize \"Queue list\"");
+}
+
+void MainWindow::on_actionPending_triggered()
+{
+    CREATE_WIDGET(PENDING, PendingList, "Fail to initialize \"Pending list\"");
 }
 
 #undef CREATE_WIDGET

@@ -69,4 +69,18 @@ uint8_t getQueueName(std::shared_ptr<Global> &global, QString &output)
     return 0;
 }
 
+void buildTaskDetails(stq::TaskDetailsRes &res, TaskDetails &details)
+{
+    details.workDir = res.workdir();
+    details.programName = res.programname();
+
+    details.args.reserve(res.args_size());
+    for (int i = 0; i < res.args_size(); ++i)
+    {
+        details.args.push_back(res.args().at(i));
+    }
+
+    details.exitCode = res.exitcode();
+}
+
 } // end namespace GrpcCommon

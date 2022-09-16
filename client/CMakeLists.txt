@@ -10,6 +10,8 @@ set(MODEL_SRC
     model/queuelistmodel.hpp
     model/settingsmodel.cpp
     model/settingsmodel.hpp
+    model/taskdetails.cpp
+    model/taskdetails.hpp
 )
 
 set(UI_SRC

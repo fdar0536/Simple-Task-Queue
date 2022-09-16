@@ -1,8 +1,11 @@
 #pragma once
 
-#include <QWidget>
+#include "QWidget"
 
-namespace Ui {
+#include "model/pendinglistmodel.hpp"
+
+namespace Ui
+{
 class PendingList;
 }
 
@@ -12,7 +15,7 @@ class PendingList : public QWidget
 
 public:
 
-    PendingList *create(QWidget * = nullptr);
+    static PendingList *create(QWidget * = nullptr);
 
     ~PendingList();
 
@@ -20,6 +23,8 @@ private:
 
     PendingList(QWidget * = nullptr);
 
-    Ui::PendingList *ui;
+    Ui::PendingList *m_ui;
+
+    PendingListModel *m_model;
 };
 

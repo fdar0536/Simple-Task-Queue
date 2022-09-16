@@ -61,6 +61,8 @@ private slots:
 
     void on_actionQueueList_triggered();
 
+    void on_actionPending_triggered();
+
 private:
 
     Ui::MainWindow *m_ui;

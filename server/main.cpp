@@ -28,7 +28,6 @@
 #include <cstring>
 
 #ifdef _WIN32
-#include "windows.h"
 #ifdef __MINGW32__
 #include "getopt.h"
 #else
@@ -201,7 +200,7 @@ static void runServer(bool debug)
     builder.RegisterService(&consoleImpl);
 
     std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
-    std::cout << "Server listening on ";
+    std::cout << "Server is listening on ";
     std::cout << Global::ip << ":" << actualPort;
     if (debug)
     {
