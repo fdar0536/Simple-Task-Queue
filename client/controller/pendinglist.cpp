@@ -27,6 +27,7 @@ PendingList *PendingList::create(QWidget *parent)
     return ret;
 }
 
+// private
 PendingList::PendingList(QWidget *parent) :
     QWidget(parent),
     m_ui(nullptr),

@@ -46,20 +46,6 @@ PendingListModel *PendingListModel::create(QObject *parent)
     return ret;
 }
 
-uint8_t PendingListModel::hasError(bool &out)
-{
-    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
-    out = m_hasError;
-    return 0;
-}
-
-uint8_t PendingListModel::lastError(QString &out)
-{
-    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
-    out = m_lastError;
-    return 0;
-}
-
 uint8_t PendingListModel::startList()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
@@ -169,9 +155,7 @@ void PendingListModel::run()
 // private member functions
 PendingListModel::PendingListModel(QObject *parent) :
     QThread(parent),
-    m_queueName(""),
-    m_hasError(false),
-    m_lastError("")
+    m_queueName("")
 {
     m_isRunning.store(false, std::memory_order_relaxed);
     m_pendingList.reserve(128);
@@ -200,9 +184,8 @@ void PendingListModel::listImpl()
         return;
     }
 
-    m_hasError = true;
     GrpcCommon::buildErrMsg(status, m_lastError);
-    emit done();
+    emit errorOccurred();
 }
 
 void PendingListModel::detailsImpl()
@@ -219,13 +202,12 @@ void PendingListModel::detailsImpl()
     if (status.ok())
     {
         GrpcCommon::buildTaskDetails(res, m_taskDetailsRes);
-        emit done();
+        emit detailsDone();
         return;
     }
 
-    m_hasError = true;
     GrpcCommon::buildErrMsg(status, m_lastError);
-    emit done();
+    emit errorOccurred();
 }
 
 void PendingListModel::currentImpl()
@@ -241,13 +223,12 @@ void PendingListModel::currentImpl()
     if (status.ok())
     {
         GrpcCommon::buildTaskDetails(res, m_taskDetailsRes);
-        emit done();
+        emit listDone();
         return;
     }
 
-    m_hasError = true;
     GrpcCommon::buildErrMsg(status, m_lastError);
-    emit done();
+    emit errorOccurred();
 }
 
 void PendingListModel::addImpl()
@@ -271,13 +252,12 @@ void PendingListModel::addImpl()
     if (status.ok())
     {
         m_resID = res.id();
-        emit done();
+        emit addDone();
         return;
     }
 
-    m_hasError = true;
     GrpcCommon::buildErrMsg(status, m_lastError);
-    emit done();
+    emit errorOccurred();
 }
 
 void PendingListModel::removeImpl()
@@ -297,9 +277,8 @@ void PendingListModel::removeImpl()
         return;
     }
 
-    m_hasError = true;
     GrpcCommon::buildErrMsg(status, m_lastError);
-    emit done();
+    emit errorOccurred();
 }
 
 void PendingListModel::startImpl()
@@ -333,16 +312,14 @@ void PendingListModel::startStopImpl(uint8_t shouldStart)
         return;
     }
 
-    m_hasError = true;
     GrpcCommon::buildErrMsg(status, m_lastError);
-    emit done();
+    emit errorOccurred();
 }
 
 void PendingListModel::reset()
 {
     m_lastError = "";
     m_pendingList.clear();
-    m_hasError = false;
 
     // reset task details
     m_taskDetailsRes.workDir = "";

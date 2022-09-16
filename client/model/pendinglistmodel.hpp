@@ -17,8 +17,6 @@ public:
 
     static PendingListModel *create(QObject * = nullptr);
 
-    uint8_t hasError(bool &);
-
     uint8_t lastError(QString &);
 
     uint8_t startList();
@@ -47,7 +45,13 @@ public:
 
 signals:
 
-    void done();
+    void errorOccurred();
+
+    void detailsDone();
+
+    void listDone();
+
+    void addDone();
 
 private:
 
@@ -92,8 +96,6 @@ private:
     };
 
     QString m_queueName;
-
-    bool m_hasError;
 
     QString m_lastError;
 
