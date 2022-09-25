@@ -28,7 +28,7 @@
 
 static std::vector<QString> priorityString =
 {
-    "High", "Abrove nornal", "Normal", "Below nornal", "Low"
+    "High", "Abrove normal", "Normal", "Below normal", "Low"
 };
 
 TaskDetailsDialog::TaskDetailsDialog(QWidget *parent) :
