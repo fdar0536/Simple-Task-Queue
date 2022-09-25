@@ -202,7 +202,6 @@ void PendingListModel::listImpl()
 
 void PendingListModel::detailsImpl()
 {
-    qDebug() << "detailsImpl";
     stq::TaskDetailsReq req;
     req.set_queuename(m_queueName.toLocal8Bit().toStdString());
     req.set_id(m_reqID);

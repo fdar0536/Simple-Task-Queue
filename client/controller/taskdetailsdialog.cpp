@@ -77,7 +77,6 @@ void TaskDetailsDialog::openDialog(TaskDetails &task, bool isExitCodeValid)
         m_ui->dlBtn->setEnabled(false);
     }
 
-    qDebug() << "open";
     QDialog::open();
 }
 

@@ -76,7 +76,6 @@ void PendingList::onModelErrorOccurred()
 
 void PendingList::onModelDetailsDone()
 {
-    qDebug() << "onDetailsDone";
     setEnabled(true);
     TaskDetails taskDetails;
     QString err;
@@ -143,7 +142,6 @@ void PendingList::onCurrentDetailClicked()
 
 void PendingList::onPendingItemActivated(QListWidgetItem *item)
 {
-    qDebug() << "PendingItemActivated";
     if (!item) return;
 
     m_model->startDetails(item->text().toUInt());
