@@ -132,7 +132,7 @@ void PendingList::onAddTaskDialogClosed()
             &PendingListModel::errorOccurred,
             this,
             &PendingList::onModelErrorOccurred);
-    onRefreshBtnClicked();
+    onStartBtnClicked();
 }
 
 void PendingList::onCurrentDetailClicked()
@@ -185,12 +185,14 @@ void PendingList::onRefreshBtnClicked()
 void PendingList::onStartBtnClicked()
 {
     if (!m_ui->pending->count()) return;
+    setEnabled(false);
     m_model->startStart();
 }
 
 void PendingList::onStopBtnClicked()
 {
     if (m_ui->current->text().isEmpty()) return;
+    setEnabled(false);
     m_model->startStop();
 }
 

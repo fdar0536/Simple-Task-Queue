@@ -160,7 +160,6 @@ void PendingListModel::run()
     m_isRunning.store(true, std::memory_order_relaxed);
     reset();
     (this->*m_handler[m_func])();
-    m_isRunning.store(false, std::memory_order_relaxed);
 }
 
 // private member functions
@@ -197,6 +196,7 @@ void PendingListModel::listImpl()
     }
 
     GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
     emit errorOccurred();
 }
 
@@ -214,12 +214,13 @@ void PendingListModel::detailsImpl()
     if (status.ok())
     {
         GrpcCommon::buildTaskDetails(res, m_taskDetailsRes);
-
+        m_isRunning.store(false, std::memory_order_relaxed);
         emit detailsDone();
         return;
     }
 
     GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
     emit errorOccurred();
 }
 
@@ -236,11 +237,13 @@ void PendingListModel::currentImpl()
     if (status.ok())
     {
         GrpcCommon::buildTaskDetails(res, m_taskDetailsRes);
+        m_isRunning.store(false, std::memory_order_relaxed);
         emit listDone();
         return;
     }
 
     GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
     emit errorOccurred();
 }
 
@@ -267,11 +270,13 @@ void PendingListModel::addImpl()
     if (status.ok())
     {
         m_resID = res.id();
+        m_isRunning.store(false, std::memory_order_relaxed);
         emit addDone();
         return;
     }
 
     GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
     emit errorOccurred();
 }
 
@@ -293,6 +298,7 @@ void PendingListModel::removeImpl()
         if (!status.ok())
         {
             GrpcCommon::buildErrMsg(status, m_lastError);
+            m_isRunning.store(false, std::memory_order_relaxed);
             emit errorOccurred();
             return;
         }
@@ -333,6 +339,7 @@ void PendingListModel::startStopImpl(uint8_t shouldStart)
     }
 
     GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
     emit errorOccurred();
 }
 
