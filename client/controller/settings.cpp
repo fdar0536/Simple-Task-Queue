@@ -91,11 +91,7 @@ Settings *Settings::create(QWidget *parent)
     ret->m_ui->saveBtn->setEnabled(true);
     ret->m_ui->deleteBtn->setEnabled(true);
 
-    ret->connect(ret->m_model,
-                 &SettingsModel::done,
-                 ret,
-                 &Settings::onModelDone);
-
+    ret->connectHook();
     return ret;
 }
 
@@ -152,13 +148,13 @@ void Settings::onModelDone()
     setEnabled(true);
 }
 
-void Settings::on_host_currentIndexChanged(int index)
+void Settings::onHostCurrentIndexChanged(int index)
 {
     if (index == -1) return;
     updateUI(index, false);
 }
 
-void Settings::on_alias_editingFinished()
+void Settings::onAliasEditingFinished()
 {
     m_accepted = false;
     bool res(checkAllInput());
@@ -166,7 +162,7 @@ void Settings::on_alias_editingFinished()
     m_ui->saveBtn->setEnabled(res);
 }
 
-void Settings::on_ip_editingFinished()
+void Settings::onIpEditingFinished()
 {
     // m_ipRegex->validate(tmpString, pos) != QValidator::Acceptable
     int pos(0);
@@ -174,10 +170,10 @@ void Settings::on_ip_editingFinished()
     m_ipAccepted = (m_global->ipRegex()->validate(text, pos) ==
                     QValidator::Acceptable);
 
-    on_alias_editingFinished();
+    onAliasEditingFinished();
 }
 
-void Settings::on_deleteBtn_clicked()
+void Settings::onDeleteBtnClicked()
 {
     auto it = m_configs.begin();
     for (auto i = 0; i < m_ui->host->currentIndex(); ++i)
@@ -191,7 +187,7 @@ void Settings::on_deleteBtn_clicked()
     updateHostList();
 }
 
-void Settings::on_saveBtn_clicked()
+void Settings::onSaveBtnClicked()
 {
     QHash<QString, QVariant> res;
     res["alias"] = m_ui->alias->text();
@@ -209,7 +205,7 @@ void Settings::on_saveBtn_clicked()
     }
 }
 
-void Settings::on_connectBtn_clicked()
+void Settings::onConnectBtnClicked()
 {
     setEnabled(false);
     m_accepted = false;
@@ -253,4 +249,43 @@ void Settings::updateUI(int index, bool isNotSlot)
 bool Settings::checkAllInput()
 {
     return (m_ipAccepted && !m_ui->alias->text().isEmpty());
+}
+
+void Settings::connectHook()
+{
+    connect(m_model,
+            &SettingsModel::done,
+            this,
+            &Settings::onModelDone);
+
+    // ui
+    connect(m_ui->host,
+            &QComboBox::currentIndexChanged,
+            this,
+            &Settings::onHostCurrentIndexChanged);
+
+    connect(m_ui->alias,
+            &QLineEdit::editingFinished,
+            this,
+            &Settings::onAliasEditingFinished);
+
+    connect(m_ui->ip,
+            &QLineEdit::editingFinished,
+            this,
+            &Settings::onIpEditingFinished);
+
+    connect(m_ui->deleteBtn,
+            &QPushButton::clicked,
+            this,
+            &Settings::onDeleteBtnClicked);
+
+    connect(m_ui->saveBtn,
+            &QPushButton::clicked,
+            this,
+            &Settings::onSaveBtnClicked);
+
+    connect(m_ui->connectBtn,
+            &QPushButton::clicked,
+            this,
+            &Settings::onConnectBtnClicked);
 }

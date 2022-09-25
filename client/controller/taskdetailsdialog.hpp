@@ -17,7 +17,7 @@ public:
 
     TaskDetailsDialog(QWidget * = nullptr);
 
-    static std::shared_ptr<TaskDetailsDialog> create();
+    static TaskDetailsDialog *create(QWidget * = nullptr);
 
     ~TaskDetailsDialog();
 
@@ -27,12 +27,10 @@ protected:
 
     void keyPressEvent(QKeyEvent *) override;
 
-private slots:
-
-    void on_closeBtn_clicked();
-
 private:
 
     Ui::TaskDetailsDialog *m_ui;
+
+    void connectHook();
 };
 

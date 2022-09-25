@@ -32,7 +32,6 @@
 #include "QApplication"
 #include "QMessageBox"
 
-#include "model/global.hpp"
 #include "controller/mainwindow.hpp"
 
 static bool isAdmin();

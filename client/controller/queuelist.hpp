@@ -47,15 +47,16 @@ private slots:
 
     void onModelDone();
 
-    void on_deleteBtn_clicked();
+    // ui
+    void onDeleteBtnClicked();
 
-    void on_refreshBtn_clicked();
+    void onRefreshBtnClicked();
 
-    void on_newName_editingFinished();
+    void onNewNameEditingFinished();
 
-    void on_createBtn_clicked();
+    void onCreateBtnClicked();
 
-    void on_renameBtn_clicked();
+    void onRenameBtnClicked();
 
 private:
 
@@ -66,5 +67,7 @@ private:
     std::shared_ptr<Global> m_global;
 
     QueueListModel *m_model;
+
+    void connectHook();
 };
 

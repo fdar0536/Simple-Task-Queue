@@ -32,19 +32,20 @@ private slots:
 
     void onAddTaskDialogClosed();
 
-    void on_currentDetail_clicked();
+    // ui
+    void onCurrentDetailClicked();
 
-    void on_pending_itemDoubleClicked(QListWidgetItem *item);
+    void onPendingItemActivated(QListWidgetItem *item);
 
-    void on_addBtn_clicked();
+    void onAddBtnClicked();
 
-    void on_deleteBtn_clicked();
+    void onDeleteBtnClicked();
 
-    void on_refreshBtn_clicked();
+    void onRefreshBtnClicked();
 
-    void on_startBtn_clicked();
+    void onStartBtnClicked();
 
-    void on_stopBtn_clicked();
+    void onStopBtnClicked();
 
 private:
 
@@ -62,7 +63,7 @@ private:
 
     std::shared_ptr<Global> m_global;
 
-    std::shared_ptr<TaskDetailsDialog> m_taskDetailsDialog;
+    TaskDetailsDialog *m_taskDetailsDialog;
 
     void connectHook();
 };

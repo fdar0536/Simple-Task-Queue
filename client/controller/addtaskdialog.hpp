@@ -37,15 +37,14 @@ private slots:
 
     void onModelAddDone();
 
-    void on_workDir_textChanged(const QString &);
+    // ui
+    void onInputTextChanged(const QString &);
 
-    void on_programName_textChanged(const QString &);
+    void onAddBtnClicked();
 
-    void on_addBtn_clicked();
+    void onClearBtnClicked();
 
-    void on_clearBtn_clicked();
-
-    void on_closeBtn_clicked();
+    void onCloseBtnClicked();
 
 private:
 
@@ -58,5 +57,7 @@ private:
     void handleCloseWindow();
 
     void checkInputText();
+
+    void connectHook();
 };
 

@@ -64,15 +64,12 @@ QueueList *QueueList::create(QWidget *parent)
         return nullptr;
     }
 
-    ret->connect(ret->m_model,
-                 &QueueListModel::done,
-                 ret,
-                 &QueueList::onModelDone);
+    ret->connectHook();
 
     QHash<QString, QVariant> state;
     if (ret->m_global->state("queueListState", state))
     {
-        ret->on_refreshBtn_clicked();
+        ret->onRefreshBtnClicked();
         return ret;
     }
 
@@ -122,7 +119,7 @@ void QueueList::onModelDone()
 
         m_ui->status->setText(lastError);
         m_ui->deleteBtn->setEnabled(false);
-        on_newName_editingFinished();
+        onNewNameEditingFinished();
         return;
     }
 
@@ -134,14 +131,14 @@ void QueueList::onModelDone()
             QMessageBox::critical(this, "Error", lastError);
             m_ui->status->setText(lastError);
             m_ui->deleteBtn->setEnabled(false);
-            on_newName_editingFinished();
+            onNewNameEditingFinished();
             return;
         }
 
         QMessageBox::critical(this, "Error", lastError);
         m_ui->status->setText(lastError);
         m_ui->deleteBtn->setEnabled(false);
-        on_newName_editingFinished();
+        onNewNameEditingFinished();
         return;
     }
 
@@ -150,44 +147,44 @@ void QueueList::onModelDone()
     {
         m_ui->status->setText("Fail to get result.");
         m_ui->deleteBtn->setEnabled(false);
-        on_newName_editingFinished();
+        onNewNameEditingFinished();
         return;
     }
 
     m_ui->status->setText("Done");
+    m_ui->queueList->clear();
     m_ui->queueList->insertItems(0, result);
     m_ui->queueList->setCurrentIndex(0);
     m_ui->deleteBtn->setEnabled(true);
-    on_newName_editingFinished();
+    onNewNameEditingFinished();
 }
 
-void QueueList::on_deleteBtn_clicked()
+void QueueList::onDeleteBtnClicked()
 {
     setEnabled(false);
     m_model->startDelete(m_ui->queueList->currentText());
 }
 
-void QueueList::on_refreshBtn_clicked()
+void QueueList::onRefreshBtnClicked()
 {
     setEnabled(false);
     m_model->startList();
 }
 
-void QueueList::on_newName_editingFinished()
+void QueueList::onNewNameEditingFinished()
 {
     bool res(!m_ui->newName->text().isEmpty());
     m_ui->renameBtn->setEnabled(res);
     m_ui->createBtn->setEnabled(res);
 }
 
-void QueueList::on_createBtn_clicked()
+void QueueList::onCreateBtnClicked()
 {
     setEnabled(false);
     m_model->startCreate(m_ui->newName->text());
 }
 
-
-void QueueList::on_renameBtn_clicked()
+void QueueList::onRenameBtnClicked()
 {
     setEnabled(false);
     m_model->startRename(m_ui->queueList->currentText(),
@@ -201,3 +198,37 @@ QueueList::QueueList(QWidget *parent) :
     m_global(nullptr),
     m_model(nullptr)
 {}
+
+void QueueList::connectHook()
+{
+    connect(m_model,
+            &QueueListModel::done,
+            this,
+            &QueueList::onModelDone);
+
+    // ui
+    connect(m_ui->deleteBtn,
+            &QPushButton::clicked,
+            this,
+            &QueueList::onDeleteBtnClicked);
+
+    connect(m_ui->refreshBtn,
+            &QPushButton::clicked,
+            this,
+            &QueueList::onRefreshBtnClicked);
+
+    connect(m_ui->newName,
+            &QLineEdit::editingFinished,
+            this,
+            &QueueList::onNewNameEditingFinished);
+
+    connect(m_ui->createBtn,
+            &QPushButton::clicked,
+            this,
+            &QueueList::onCreateBtnClicked);
+
+    connect(m_ui->renameBtn,
+            &QPushButton::clicked,
+            this,
+            &QueueList::onRenameBtnClicked);
+}

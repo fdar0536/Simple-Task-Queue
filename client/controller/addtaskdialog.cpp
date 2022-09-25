@@ -31,9 +31,8 @@ AddTaskDialog *AddTaskDialog::create(PendingListModel *model, QWidget *parent)
 
     ret->m_ui->setupUi(ret);
     ret->m_model = model;
-    connect(ret->m_model, &PendingListModel::addDone,
-            ret, &AddTaskDialog::onModelAddDone);
 
+    ret->connectHook();
     return ret;
 }
 
@@ -80,7 +79,7 @@ void AddTaskDialog::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Return:
     {
         if (!m_ui->addBtn->isEnabled()) return;
-        on_addBtn_clicked();
+        onAddBtnClicked();
         return;
     }
     case Qt::Key_Escape:
@@ -130,17 +129,12 @@ void AddTaskDialog::onModelAddDone()
     checkInputText();
 }
 
-void AddTaskDialog::on_workDir_textChanged(const QString &)
+void AddTaskDialog::onInputTextChanged(const QString &)
 {
     checkInputText();
 }
 
-void AddTaskDialog::on_programName_textChanged(const QString &)
-{
-    checkInputText();
-}
-
-void AddTaskDialog::on_addBtn_clicked()
+void AddTaskDialog::onAddBtnClicked()
 {
     m_ui->addBtn->setEnabled(false);
     std::vector<std::string> args;
@@ -164,7 +158,7 @@ void AddTaskDialog::on_addBtn_clicked()
                       static_cast<uint32_t>(m_ui->priority->currentIndex()));
 }
 
-void AddTaskDialog::on_clearBtn_clicked()
+void AddTaskDialog::onClearBtnClicked()
 {
     m_ui->workDir->clear();
     m_ui->programName->clear();
@@ -175,7 +169,7 @@ void AddTaskDialog::on_clearBtn_clicked()
     m_ui->priority->setCurrentIndex(2);
 }
 
-void AddTaskDialog::on_closeBtn_clicked()
+void AddTaskDialog::onCloseBtnClicked()
 {
     handleCloseWindow();
     QDialog::reject();
@@ -198,4 +192,27 @@ void AddTaskDialog::checkInputText()
 {
     m_ui->addBtn->setEnabled(!m_ui->workDir->text().isEmpty() &&
                              !m_ui->programName->text().isEmpty());
+}
+
+void AddTaskDialog::connectHook()
+{
+    // model
+    connect(m_model, &PendingListModel::addDone,
+            this, &AddTaskDialog::onModelAddDone);
+
+    // ui
+    connect(m_ui->workDir, &QLineEdit::textChanged,
+            this, &AddTaskDialog::onInputTextChanged);
+
+    connect(m_ui->programName, &QLineEdit::textChanged,
+            this, &AddTaskDialog::onInputTextChanged);
+
+    connect(m_ui->addBtn, &QPushButton::clicked,
+            this, &AddTaskDialog::onAddBtnClicked);
+
+    connect(m_ui->clearBtn, &QPushButton::clicked,
+            this, &AddTaskDialog::onClearBtnClicked);
+
+    connect(m_ui->closeBtn, &QPushButton::clicked,
+            this, &AddTaskDialog::onCloseBtnClicked);
 }

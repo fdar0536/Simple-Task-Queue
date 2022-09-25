@@ -38,7 +38,9 @@ std::shared_ptr<Global> Global::m_instance = nullptr;
 
 // public member function
 Global::~Global()
-{}
+{
+    if (m_taskDetailsDialog) delete m_taskDetailsDialog;
+}
 
 std::shared_ptr<Global> Global::instance()
 {
@@ -153,17 +155,17 @@ void Global::setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &in)
     m_channel = in;
 }
 
-std::shared_ptr<QRegularExpressionValidator> Global::ipRegex() const
+QRegularExpressionValidator *Global::ipRegex() const
 {
     return m_ipRegex;
 }
 
-uint8_t Global::taskDetailsDialog(std::shared_ptr<TaskDetailsDialog> &out)
+uint8_t Global::taskDetailsDialog(TaskDetailsDialog **out)
 {
     if (!m_taskDetailsDialogAvailable.load(std::memory_order_relaxed)) return 1;
     m_taskDetailsDialogAvailable.store(false, std::memory_order_relaxed);
 
-    out = m_taskDetailsDialog;
+    *out = m_taskDetailsDialog;
     return 0;
 }
 
@@ -234,7 +236,7 @@ uint8_t Global::initConfigFile()
 
     try
     {
-        m_ipRegex = std::make_shared<QRegularExpressionValidator>(re, this);
+        m_ipRegex = new QRegularExpressionValidator(re, this);
     }
     catch (...)
     {

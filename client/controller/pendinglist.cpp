@@ -25,7 +25,7 @@ PendingList *PendingList::create(QWidget *parent)
         return nullptr;
     }
 
-    if (ret->m_global->taskDetailsDialog(ret->m_taskDetailsDialog))
+    if (ret->m_global->taskDetailsDialog(&ret->m_taskDetailsDialog))
     {
         delete ret;
         return nullptr;
@@ -47,8 +47,7 @@ PendingList *PendingList::create(QWidget *parent)
 
     ret->m_ui->setupUi(ret);
     ret->connectHook();
-    ret->m_taskDetailsDialog->setParent(ret);
-    ret->on_refreshBtn_clicked();
+    ret->onRefreshBtnClicked();
     return ret;
 }
 
@@ -58,7 +57,6 @@ PendingList::~PendingList()
     if (m_addTaskDialog) delete m_addTaskDialog;
     if (m_model) delete m_model;
 
-    m_taskDetailsDialog->setParent(nullptr);
     m_global->freeTaskDetailsDialog();
 }
 
@@ -78,6 +76,7 @@ void PendingList::onModelErrorOccurred()
 
 void PendingList::onModelDetailsDone()
 {
+    qDebug() << "onDetailsDone";
     setEnabled(true);
     TaskDetails taskDetails;
     QString err;
@@ -95,6 +94,8 @@ void PendingList::onModelDetailsDone()
 void PendingList::onModelListDone()
 {
     QString err;
+    setEnabled(true);
+    m_ui->currentDetail->setEnabled(false);
     if (m_model->pendingList(m_list))
     {
         err = "Fail to get pending list.";
@@ -111,6 +112,7 @@ void PendingList::onModelListDone()
         return;
     }
 
+    m_ui->pending->clear();
     if (m_list.size())
     {
         for (auto it = m_list.begin(); it != m_list.end(); ++it)
@@ -120,7 +122,9 @@ void PendingList::onModelListDone()
     }
 
     m_ui->current->setText(QString::fromStdString(m_taskDetails.programName));
-    setEnabled(true);
+    m_ui->currentDetail->setEnabled(!m_taskDetails.programName.empty());
+
+    m_ui->status->setText("Done");
 }
 
 void PendingList::onAddTaskDialogClosed()
@@ -129,32 +133,34 @@ void PendingList::onAddTaskDialogClosed()
             &PendingListModel::errorOccurred,
             this,
             &PendingList::onModelErrorOccurred);
-    on_refreshBtn_clicked();
+    onRefreshBtnClicked();
 }
 
-void PendingList::on_currentDetail_clicked()
+void PendingList::onCurrentDetailClicked()
 {
     m_taskDetailsDialog->openDialog(m_taskDetails, false);
 }
 
-void PendingList::on_pending_itemDoubleClicked(QListWidgetItem *item)
+void PendingList::onPendingItemActivated(QListWidgetItem *item)
 {
+    qDebug() << "PendingItemActivated";
     if (!item) return;
 
     m_model->startDetails(item->text().toUInt());
     setEnabled(false);
 }
 
-void PendingList::on_addBtn_clicked()
+void PendingList::onAddBtnClicked()
 {
     disconnect(m_model,
                &PendingListModel::errorOccurred,
                this,
                &PendingList::onModelErrorOccurred);
+
     m_addTaskDialog->open();
 }
 
-void PendingList::on_deleteBtn_clicked()
+void PendingList::onDeleteBtnClicked()
 {
     auto list = m_ui->pending->selectedItems();
     if (list.empty()) return;
@@ -171,19 +177,20 @@ void PendingList::on_deleteBtn_clicked()
     setEnabled(false);
 }
 
-void PendingList::on_refreshBtn_clicked()
+void PendingList::onRefreshBtnClicked()
 {
     setEnabled(false);
+    m_ui->status->setText("Fetching");
     m_model->startList();
 }
 
-void PendingList::on_startBtn_clicked()
+void PendingList::onStartBtnClicked()
 {
     if (!m_ui->pending->count()) return;
     m_model->startStart();
 }
 
-void PendingList::on_stopBtn_clicked()
+void PendingList::onStopBtnClicked()
 {
     if (m_ui->current->text().isEmpty()) return;
     m_model->startStop();
@@ -194,13 +201,15 @@ PendingList::PendingList(QWidget *parent) :
     QWidget(parent),
     m_ui(nullptr),
     m_model(nullptr),
-    m_addTaskDialog(nullptr)
+    m_addTaskDialog(nullptr),
+    m_taskDetailsDialog(nullptr)
 {
     m_list.reserve(32);
 }
 
 void PendingList::connectHook()
 {
+    // model
     connect(m_model,
             &PendingListModel::errorOccurred,
             this,
@@ -214,8 +223,45 @@ void PendingList::connectHook()
             this,
             &PendingList::onModelDetailsDone);
 
+    // AddTaskDialog
     connect(m_addTaskDialog, &AddTaskDialog::accepted,
             this, &PendingList::onAddTaskDialogClosed);
     connect(m_addTaskDialog, &AddTaskDialog::rejected,
             this, &PendingList::onAddTaskDialogClosed);
+
+    // ui
+    connect(m_ui->currentDetail,
+            &QPushButton::clicked,
+            this,
+            &PendingList::onCurrentDetailClicked);
+
+    connect(m_ui->pending,
+            &QListWidget::itemDoubleClicked,
+            this,
+            &PendingList::onPendingItemActivated);
+
+    connect(m_ui->addBtn,
+            &QPushButton::clicked,
+            this,
+            &PendingList::onAddBtnClicked);
+
+    connect(m_ui->deleteBtn,
+            &QPushButton::clicked,
+            this,
+            &PendingList::onDeleteBtnClicked);
+
+    connect(m_ui->refreshBtn,
+            &QPushButton::clicked,
+            this,
+            &PendingList::onRefreshBtnClicked);
+
+    connect(m_ui->startBtn,
+            &QPushButton::clicked,
+            this,
+            &PendingList::onStartBtnClicked);
+
+    connect(m_ui->stopBtn,
+            &QPushButton::clicked,
+            this,
+            &PendingList::onStopBtnClicked);
 }

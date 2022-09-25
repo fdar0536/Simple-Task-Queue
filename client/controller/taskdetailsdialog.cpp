@@ -14,13 +14,13 @@ TaskDetailsDialog::TaskDetailsDialog(QWidget *parent) :
 {
 }
 
-std::shared_ptr<TaskDetailsDialog> TaskDetailsDialog::create()
+TaskDetailsDialog *TaskDetailsDialog::create(QWidget *parent)
 {
-    std::shared_ptr<TaskDetailsDialog> ret(nullptr);
+    TaskDetailsDialog *ret(nullptr);
 
     try
     {
-        ret = std::make_shared<TaskDetailsDialog>(nullptr);
+        ret = new TaskDetailsDialog(parent);
     }
     catch(...)
     {
@@ -33,10 +33,12 @@ std::shared_ptr<TaskDetailsDialog> TaskDetailsDialog::create()
     }
     catch(...)
     {
+        delete ret;
         return nullptr;
     }
 
-    ret->m_ui->setupUi(ret.get());
+    ret->m_ui->setupUi(ret);
+    ret->connectHook();
     return ret;
 }
 
@@ -75,7 +77,8 @@ void TaskDetailsDialog::openDialog(TaskDetails &task, bool isExitCodeValid)
         m_ui->dlBtn->setEnabled(false);
     }
 
-    open();
+    qDebug() << "open";
+    QDialog::open();
 }
 
 // protected member functions
@@ -96,8 +99,11 @@ void TaskDetailsDialog::keyPressEvent(QKeyEvent *e)
     }
 }
 
-// private slots
-void TaskDetailsDialog::on_closeBtn_clicked()
+// private member functions
+void TaskDetailsDialog::connectHook()
 {
-    reject();
+    connect(m_ui->closeBtn,
+            &QPushButton::clicked,
+            this,
+            &TaskDetailsDialog::reject);
 }

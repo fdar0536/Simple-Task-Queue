@@ -58,9 +58,9 @@ public:
 
     void setGrpcChannel(std::shared_ptr<grpc::ChannelInterface> &);
 
-    std::shared_ptr<QRegularExpressionValidator> ipRegex() const;
+    QRegularExpressionValidator *ipRegex() const;
 
-    uint8_t taskDetailsDialog(std::shared_ptr<TaskDetailsDialog> &);
+    uint8_t taskDetailsDialog(TaskDetailsDialog **);
 
     void freeTaskDetailsDialog();
 
@@ -76,9 +76,9 @@ private:
 
     std::mutex m_channelMutex;
 
-    std::shared_ptr<QRegularExpressionValidator> m_ipRegex;
+    QRegularExpressionValidator *m_ipRegex;
 
-    std::shared_ptr<TaskDetailsDialog> m_taskDetailsDialog;
+    TaskDetailsDialog *m_taskDetailsDialog;
 
     std::atomic<bool> m_taskDetailsDialogAvailable;
 

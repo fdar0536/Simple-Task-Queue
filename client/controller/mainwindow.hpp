@@ -55,13 +55,14 @@ private slots:
     // tray icon
     void iconActivated(QSystemTrayIcon::ActivationReason);
 
-    void on_actionSettings_triggered();
+    // ui
+    void onActionSettingsTriggered();
 
-    void on_actionAboutQt_triggered();
+    void onActionAboutQtTriggered();
 
-    void on_actionQueueList_triggered();
+    void onActionQueueListTriggered();
 
-    void on_actionPending_triggered();
+    void onActionPendingTriggered();
 
 private:
 

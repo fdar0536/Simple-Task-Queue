@@ -202,6 +202,7 @@ void PendingListModel::listImpl()
 
 void PendingListModel::detailsImpl()
 {
+    qDebug() << "detailsImpl";
     stq::TaskDetailsReq req;
     req.set_queuename(m_queueName.toLocal8Bit().toStdString());
     req.set_id(m_reqID);
@@ -214,6 +215,7 @@ void PendingListModel::detailsImpl()
     if (status.ok())
     {
         GrpcCommon::buildTaskDetails(res, m_taskDetailsRes);
+
         emit detailsDone();
         return;
     }
@@ -345,4 +347,5 @@ void PendingListModel::reset()
     m_taskDetailsRes.programName = "";
     m_taskDetailsRes.args.clear();
     m_taskDetailsRes.exitCode = 0;
+    m_taskDetailsRes.priority = 2;
 }

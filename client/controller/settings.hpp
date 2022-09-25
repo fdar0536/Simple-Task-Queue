@@ -47,17 +47,18 @@ private slots:
 
     void onModelDone();
 
-    void on_host_currentIndexChanged(int index);
+    // ui
+    void onHostCurrentIndexChanged(int index);
 
-    void on_alias_editingFinished();
+    void onAliasEditingFinished();
 
-    void on_ip_editingFinished();
+    void onIpEditingFinished();
 
-    void on_deleteBtn_clicked();
+    void onDeleteBtnClicked();
 
-    void on_saveBtn_clicked();
+    void onSaveBtnClicked();
 
-    void on_connectBtn_clicked();
+    void onConnectBtnClicked();
 
 private:
 
@@ -84,6 +85,8 @@ private:
     void updateUI(int, bool = true);
 
     bool checkAllInput();
+
+    void connectHook();
 
 };
 

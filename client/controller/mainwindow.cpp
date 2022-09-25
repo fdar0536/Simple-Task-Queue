@@ -81,7 +81,7 @@ uint8_t MainWindow::init()
     //trayIcon
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
-        m_icon = new (std::nothrow) QSystemTrayIcon(QIcon(":/ui/icon/computer_black_48dp.svg"),
+        m_icon = new (std::nothrow) QSystemTrayIcon(QIcon(":/view/icon/computer_black_48dp.svg"),
                                                     this);
         if (!m_icon)
         {
@@ -175,24 +175,24 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     setCentralWidget(widget); \
     m_currentWidget = targetCode
 
-void MainWindow::on_actionSettings_triggered()
+void MainWindow::onActionSettingsTriggered()
 {
     CREATE_WIDGET(SETTINGS, Settings, "Fail to initialize \"Settings\"");
 }
 
-void MainWindow::on_actionQueueList_triggered()
+void MainWindow::onActionQueueListTriggered()
 {
     CREATE_WIDGET(QUEUELIST, QueueList, "Fail to initialize \"Queue list\"");
 }
 
-void MainWindow::on_actionPending_triggered()
+void MainWindow::onActionPendingTriggered()
 {
     CREATE_WIDGET(PENDING, PendingList, "Fail to initialize \"Pending list\"");
 }
 
 #undef CREATE_WIDGET
 
-void MainWindow::on_actionAboutQt_triggered()
+void MainWindow::onActionAboutQtTriggered()
 {
     QMessageBox::aboutQt(this);
 }
@@ -223,6 +223,27 @@ void MainWindow::connectHook()
                 this,
                 &MainWindow::programExit);
     }
+
+    // ui
+    connect(m_ui->actionSettings,
+            &QAction::triggered,
+            this,
+            &MainWindow::onActionSettingsTriggered);
+
+    connect(m_ui->actionQueueList,
+            &QAction::triggered,
+            this,
+            &MainWindow::onActionQueueListTriggered);
+
+    connect(m_ui->actionPending,
+            &QAction::triggered,
+            this,
+            &MainWindow::onActionPendingTriggered);
+
+    connect(m_ui->actionAboutQt,
+            &QAction::triggered,
+            this,
+            &MainWindow::onActionAboutQtTriggered);
 }
 
 uint8_t MainWindow::cleanCentral(CurrentWidget index)
@@ -241,6 +262,6 @@ uint8_t MainWindow::cleanCentral(CurrentWidget index)
     }
 
     QWidget *widget(takeCentralWidget());
-    widget->deleteLater();
+    delete widget;
     return 0;
 }

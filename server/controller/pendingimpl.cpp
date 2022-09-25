@@ -118,6 +118,7 @@ PendingImpl::Add(::grpc::ServerContext *ctx,
         task.args.push_back(args.at(i));
     }
 
+    task.priority = static_cast<STQPriority>(req->priority());
     if (queue->addTask(&task))
     {
         return ::grpc::Status(::grpc::StatusCode::UNAVAILABLE,
