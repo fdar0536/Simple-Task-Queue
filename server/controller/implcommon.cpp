@@ -31,6 +31,7 @@ void buildTaskRes(::stq::TaskDetailsRes *res, STQTask &task)
     res->set_workdir(task.workDir);
     res->set_programname(task.execName);
     res->set_exitcode(task.exitCode);
+    res->set_priority(static_cast<uint32_t>(task.priority));
     for (auto it = task.args.begin();
          it != task.args.end();
          ++it)

@@ -25,7 +25,7 @@
 
 #include <condition_variable>
 #include <fstream>
-#include <deque>
+#include <queue>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -80,7 +80,7 @@ private:
 
     std::string m_name;
 
-    std::deque<STQTask> m_pending;
+    std::vector<STQTask> m_pending;
 
     std::deque<STQTask> m_finished;
 
@@ -109,11 +109,6 @@ private:
     bool m_terminate = false;
 
     bool m_stopped = true;
-
-    uint8_t listID(std::deque<STQTask> &,
-                   ::grpc::ServerWriter<::stq::ListTaskRes> *);
-
-    uint8_t taskDetails(std::deque<STQTask> &, uint32_t, STQTask *);
 
     void mainLoop();
 

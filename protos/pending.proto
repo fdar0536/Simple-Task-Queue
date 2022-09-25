@@ -19,4 +19,5 @@ message AddTaskReq {
   string workDir = 2;
   string programName = 3;
   repeated string args = 4;
+  uint32 priority = 5;
 }

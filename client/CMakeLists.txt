@@ -15,6 +15,9 @@ set(MODEL_SRC
 )
 
 set(UI_SRC
+    controller/addtaskdialog.cpp
+    controller/addtaskdialog.hpp
+    view/addtaskdialog.ui
     controller/mainwindow.cpp
     controller/mainwindow.hpp
     view/mainwindow.ui
@@ -27,6 +30,9 @@ set(UI_SRC
     controller/settings.cpp
     controller/settings.hpp
     view/settings.ui
+    controller/taskdetailsdialog.cpp
+    controller/taskdetailsdialog.hpp
+    view/taskdetailsdialog.ui
 )
 
 add_executable(STQClient WIN32

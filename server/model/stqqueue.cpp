@@ -28,12 +28,23 @@
 #include "../global.hpp"
 #include "stqqueue.hpp"
 
+struct STQQueueCmp
+{
+    bool operator()(STQTask &a, STQTask &b)
+    {
+        return a.priority < b.priority;
+    }
+};
+
+static struct STQQueueCmp stqQueueCmp = STQQueueCmp();
+
 STQQueue::STQQueue() :
     m_id(0),
     m_process(nullptr),
     m_terminate(false),
     m_stopped(true)
 {
+    std::make_heap(m_pending.begin(), m_pending.end(), stqQueueCmp);
 }
 
 STQQueue::~STQQueue()
@@ -91,22 +102,74 @@ void STQQueue::setName(std::string &name)
 
 uint8_t STQQueue::listPanding(::grpc::ServerWriter<::stq::ListTaskRes> *out)
 {
-    return listID(m_pending, out);
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+
+    if (m_pending.empty()) return 0;
+    ::stq::ListTaskRes res;
+    for (size_t i = 0; i < m_pending.size(); ++i)
+    {
+        res.set_id(m_pending.at(i).id);
+        out->Write(res);
+    }
+
+    return 0;
 }
 
 uint8_t STQQueue::listFinished(::grpc::ServerWriter<::stq::ListTaskRes> *out)
 {
-    return listID(m_finished, out);
+    if (!out) return 1;
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+
+    if (m_finished.empty())
+    {
+        return 0;
+    }
+
+    ::stq::ListTaskRes res;
+    for (auto it = m_finished.begin(); it != m_finished.end(); ++it)
+    {
+        res.set_id(it->id);
+        out->Write(res);
+    }
+
+    return 0;
 }
 
 uint8_t STQQueue::pendingDetails(uint32_t id, STQTask *out)
 {
-    return taskDetails(m_pending, id, out);
+    if (!out) return 1;
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+    STQTask *task(nullptr);
+    for(auto it = m_pending.begin(); it != m_pending.end(); ++it)
+    {
+        if (it->id == id)
+        {
+            task = &(*it);
+            (*out) = *task;
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 uint8_t STQQueue::finishedDetails(uint32_t id, STQTask *out)
 {
-    return taskDetails(m_finished, id, out);
+    if (!out) return 1;
+    std::unique_lock<std::mutex> lock(m_queueMutex);
+
+    STQTask *task(nullptr);
+    for (auto it = m_finished.begin(); it != m_finished.end(); ++it)
+    {
+        if (it->id == id)
+        {
+            task = &(*it);
+            (*out) = *task;
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 void STQQueue::clearFinished()
@@ -134,7 +197,9 @@ uint8_t STQQueue::addTask(STQTask *in)
         std::unique_lock<std::mutex> lock(m_queueMutex);
         (*in).id = m_id;
         ++m_id;
+
         m_pending.push_back(*in);
+        std::push_heap(m_pending.begin(), m_pending.end(), stqQueueCmp);
     }
 
     m_condition.notify_one();
@@ -155,6 +220,8 @@ uint8_t STQQueue::removeTask(uint32_t id)
                 break;
             }
         }
+
+        std::make_heap(m_pending.begin(), m_pending.end(), stqQueueCmp);
     }
 
     m_condition.notify_one();
@@ -205,46 +272,6 @@ void STQQueue::stop()
 }
 
 // private member functions
-uint8_t STQQueue::listID(std::deque<STQTask> &queue,
-                         ::grpc::ServerWriter<::stq::ListTaskRes> *out)
-{
-    if (!out) return 1;
-    std::unique_lock<std::mutex> lock(m_queueMutex);
-
-    if (queue.empty())
-    {
-        return 0;
-    }
-
-    ::stq::ListTaskRes res;
-    for (auto it = queue.begin(); it != queue.end(); ++it)
-    {
-        res.set_id(it->id);
-        out->Write(res);
-    }
-
-    return 0;
-}
-
-uint8_t STQQueue::taskDetails(std::deque<STQTask> &queue, uint32_t id, STQTask *out)
-{
-    if (!out) return 1;
-    std::unique_lock<std::mutex> lock(m_queueMutex);
-
-    STQTask *task(nullptr);
-    for (auto it = queue.begin(); it != queue.end(); ++it)
-    {
-        if (it->id == id)
-        {
-            task = &(*it);
-            (*out) = *task;
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
 void STQQueue::mainLoop()
 {
     if (!m_process)
@@ -282,7 +309,9 @@ void STQQueue::mainLoop()
             }
 
             task = m_pending.front();
-            m_pending.pop_front();
+            std::pop_heap(m_pending.begin(), m_pending.end(), stqQueueCmp);
+            task = m_pending.back();
+            m_pending.pop_back();
         }
 
         {

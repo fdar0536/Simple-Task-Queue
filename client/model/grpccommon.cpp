@@ -81,6 +81,7 @@ void buildTaskDetails(stq::TaskDetailsRes &res, TaskDetails &details)
     }
 
     details.exitCode = res.exitcode();
+    details.priority = res.priority();
 }
 
 } // end namespace GrpcCommon

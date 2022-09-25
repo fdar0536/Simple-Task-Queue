@@ -182,6 +182,17 @@ uint8_t NixProcess::start(const char *name,
         exit(1);
     }
 
+    if (fcntl(m_fd[1], F_SETFL, fcntl(m_fd[1], F_GETFL) | O_NONBLOCK) == -1)
+    {
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " fcntl: ";
+        m_error += strerror(errno);
+        m_logger->write(Logger::Error, m_error.c_str());
+        kill(m_pid, SIGKILL);
+        return 1;
+    }
+
     if (setpgid(m_pid, 0) == -1)
     {
         m_error.clear();
@@ -229,6 +240,16 @@ uint8_t NixProcess::readStdOut(char *buf, size_t *bufSize)
         if (count == -1)
         {
             if (errno == EINTR) continue;
+            else if (errno == EAGAIN)
+            {
+                char errMsg[] = "Output is temporarily unavailable.";
+                size_t len = strlen(errMsg);
+                if (len > (*bufSize)) len = (*bufSize);
+
+                memcpy(buf, errMsg, len);
+                *bufSize = len;
+                return 0;
+            }
             else
             {
                 m_error.clear();

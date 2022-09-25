@@ -85,8 +85,7 @@ PendingImpl::Current(::grpc::ServerContext *ctx,
     STQTask task;
     if (queue->currentTask(&task))
     {
-        return ::grpc::Status(::grpc::StatusCode::INVALID_ARGUMENT,
-                              "No task is running.");
+        task.execName = "";
     }
 
     ImplCommon::buildTaskRes(res, task);

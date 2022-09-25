@@ -8,6 +8,7 @@ TaskDetails& TaskDetails::operator=(const TaskDetails &other)
     programName = other.programName;
     args = other.args;
     exitCode = other.exitCode;
+    priority = other.priority;
 
     return *this;
 }

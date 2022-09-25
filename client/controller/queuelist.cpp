@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include "QMessageBox"
+
 #include "queuelist.hpp"
 #include "../view/ui_queuelist.h"
 
@@ -111,10 +113,14 @@ void QueueList::onModelDone()
     m_ui->queueList->clear();
     setEnabled(true);
     bool hasError;
+    QString lastError;
 
     if (m_model->hasError(hasError))
     {
-        m_ui->status->setText("Fail to get has error or not.");
+        lastError = "Fail to get has error or not.";
+        QMessageBox::critical(this, "Error", lastError);
+
+        m_ui->status->setText(lastError);
         m_ui->deleteBtn->setEnabled(false);
         on_newName_editingFinished();
         return;
@@ -122,15 +128,17 @@ void QueueList::onModelDone()
 
     if (hasError)
     {
-        QString lastError;
         if (m_model->lastError(lastError))
         {
-            m_ui->status->setText("Fail to get last error.");
+            lastError = "Fail to get last error.";
+            QMessageBox::critical(this, "Error", lastError);
+            m_ui->status->setText(lastError);
             m_ui->deleteBtn->setEnabled(false);
             on_newName_editingFinished();
             return;
         }
 
+        QMessageBox::critical(this, "Error", lastError);
         m_ui->status->setText(lastError);
         m_ui->deleteBtn->setEnabled(false);
         on_newName_editingFinished();

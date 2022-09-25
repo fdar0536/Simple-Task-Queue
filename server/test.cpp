@@ -84,17 +84,6 @@ int main(int argc, char **argv)
         goto error;
     }
 
-#ifdef _WIN32
-    if (proc->readStdOut(outBuf, &outBufLen))
-    {
-        std::cerr << "Fail to read stdout." << std::endl;
-        ret = 1;
-        goto error;
-    }
-
-    outBuf[outBufLen] = '\0';
-    std::cout << "outBuf is: " << outBuf << std::endl;
-#else
     for(int i = 0; i < 5 && proc->isRunning(); ++i)
     {
         if (proc->readStdOut(outBuf, &outBufLen))
@@ -117,9 +106,9 @@ int main(int argc, char **argv)
         outBufLen = 4096;
         std::cout << "Sleep for 1 second" << std::endl;
         outBuf[0] = '\0';
+
         sleep(1);
     }
-#endif
 
     proc->stop();
     exitState = proc->exitCode(&childExitCode);

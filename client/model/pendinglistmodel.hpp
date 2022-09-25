@@ -29,13 +29,14 @@ public:
 
     uint8_t startCurrent();
 
-    uint8_t startAdd(std::string &workDir,
-                     std::string &programName,
-                     std::vector<std::string> &args);
+    uint8_t startAdd(const std::string &workDir,
+                     const std::string &programName,
+                     const std::vector<std::string> &args,
+                     const uint32_t priority);
 
     uint8_t resID(uint32_t &);
 
-    uint8_t startRemove(uint32_t);
+    uint8_t startRemove(std::vector<uint32_t> &);
 
     uint8_t startStart();
 
@@ -102,6 +103,8 @@ private:
     std::atomic<bool> m_isRunning;
 
     std::vector<uint32_t> m_pendingList;
+
+    std::vector<uint32_t> m_toRemove;
 
     TaskDetails m_taskDetailsReq;
 

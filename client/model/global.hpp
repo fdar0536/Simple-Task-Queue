@@ -30,6 +30,8 @@
 #include "QHash"
 #include "QRegularExpressionValidator"
 
+#include "controller/taskdetailsdialog.hpp"
+
 class Global : public QObject
 {
     Q_OBJECT
@@ -58,6 +60,10 @@ public:
 
     std::shared_ptr<QRegularExpressionValidator> ipRegex() const;
 
+    uint8_t taskDetailsDialog(std::shared_ptr<TaskDetailsDialog> &);
+
+    void freeTaskDetailsDialog();
+
 private:
 
     static std::shared_ptr<Global> m_instance;
@@ -71,6 +77,10 @@ private:
     std::mutex m_channelMutex;
 
     std::shared_ptr<QRegularExpressionValidator> m_ipRegex;
+
+    std::shared_ptr<TaskDetailsDialog> m_taskDetailsDialog;
+
+    std::atomic<bool> m_taskDetailsDialogAvailable;
 
     uint8_t initConfigFile();
 };

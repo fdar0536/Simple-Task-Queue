@@ -46,6 +46,13 @@ PendingListModel *PendingListModel::create(QObject *parent)
     return ret;
 }
 
+uint8_t PendingListModel::lastError(QString &out)
+{
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+    out = m_lastError;
+    return 0;
+}
+
 uint8_t PendingListModel::startList()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
@@ -87,9 +94,10 @@ uint8_t PendingListModel::startCurrent()
     return 0;
 }
 
-uint8_t PendingListModel::startAdd(std::string &workDir,
-                                   std::string &programName,
-                                   std::vector<std::string> &args)
+uint8_t PendingListModel::startAdd(const std::string &workDir,
+                                   const std::string &programName,
+                                   const std::vector<std::string> &args,
+                                   const uint32_t priority)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -101,6 +109,7 @@ uint8_t PendingListModel::startAdd(std::string &workDir,
     std::copy(args.begin(),
               args.end(),
               m_taskDetailsReq.args.begin());
+    m_taskDetailsReq.priority = priority;
     m_func = Add;
     start();
     return 0;
@@ -116,11 +125,13 @@ uint8_t PendingListModel::resID(uint32_t &out)
     return 0;
 }
 
-uint8_t PendingListModel::startRemove(uint32_t id)
+uint8_t PendingListModel::startRemove(std::vector<uint32_t> &list)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
-    m_reqID = id;
+    if (list.empty()) return 1;
+
+    m_toRemove = list;
     m_func = Remove;
     start();
     return 0;
@@ -159,6 +170,7 @@ PendingListModel::PendingListModel(QObject *parent) :
 {
     m_isRunning.store(false, std::memory_order_relaxed);
     m_pendingList.reserve(128);
+    m_toRemove.reserve(128);
     m_taskDetailsRes.args.reserve(128);
 }
 
@@ -244,6 +256,8 @@ void PendingListModel::addImpl()
         req.add_args(*it);
     }
 
+    req.set_priority(m_taskDetailsReq.priority);
+
     grpc::ClientContext ctx;
     stq::ListTaskRes res;
 
@@ -264,21 +278,26 @@ void PendingListModel::removeImpl()
 {
     stq::TaskDetailsReq req;
     req.set_queuename(m_queueName.toLocal8Bit().toStdString());
-    req.set_id(m_reqID);
 
     grpc::ClientContext ctx;
     stq::Empty res;
 
     GrpcCommon::setupCtx(ctx);
-    grpc::Status status = m_stub->Remove(&ctx, req, &res);
-    if (status.ok())
+    grpc::Status status;
+    for (size_t i = 0; i < m_toRemove.size(); ++i)
     {
-        listImpl();
-        return;
+        req.set_id(m_toRemove.at(i));
+        status = m_stub->Remove(&ctx, req, &res);
+
+        if (!status.ok())
+        {
+            GrpcCommon::buildErrMsg(status, m_lastError);
+            emit errorOccurred();
+            return;
+        }
     }
 
-    GrpcCommon::buildErrMsg(status, m_lastError);
-    emit errorOccurred();
+    listImpl();
 }
 
 void PendingListModel::startImpl()

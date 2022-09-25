@@ -36,13 +36,7 @@
 
 std::shared_ptr<Global> Global::m_instance = nullptr;
 
-// public member functions
-Global::Global() :
-    QObject(),
-    m_channel(nullptr),
-    m_ipRegex(nullptr)
-{}
-
+// public member function
 Global::~Global()
 {}
 
@@ -60,8 +54,14 @@ std::shared_ptr<Global> Global::instance()
         return nullptr;
     }
 
-
     if (m_instance->initConfigFile())
+    {
+        m_instance = nullptr;
+        return nullptr;
+    }
+
+    m_instance->m_taskDetailsDialog = TaskDetailsDialog::create();
+    if (m_instance->m_taskDetailsDialog == nullptr)
     {
         m_instance = nullptr;
         return nullptr;
@@ -158,7 +158,30 @@ std::shared_ptr<QRegularExpressionValidator> Global::ipRegex() const
     return m_ipRegex;
 }
 
+uint8_t Global::taskDetailsDialog(std::shared_ptr<TaskDetailsDialog> &out)
+{
+    if (!m_taskDetailsDialogAvailable.load(std::memory_order_relaxed)) return 1;
+    m_taskDetailsDialogAvailable.store(false, std::memory_order_relaxed);
+
+    out = m_taskDetailsDialog;
+    return 0;
+}
+
+void Global::freeTaskDetailsDialog()
+{
+    m_taskDetailsDialogAvailable.store(true, std::memory_order_relaxed);
+}
+
 // private member functions
+Global::Global() :
+    QObject(),
+    m_channel(nullptr),
+    m_ipRegex(nullptr),
+    m_taskDetailsDialog(nullptr)
+{
+    m_taskDetailsDialogAvailable.store(true, std::memory_order_relaxed);
+}
+
 uint8_t Global::initConfigFile()
 {
     QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
