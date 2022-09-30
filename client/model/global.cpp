@@ -40,6 +40,7 @@ std::shared_ptr<Global> Global::m_instance = nullptr;
 Global::~Global()
 {
     if (m_taskDetailsDialog) delete m_taskDetailsDialog;
+    if (m_ipRegex) delete m_ipRegex;
 }
 
 std::shared_ptr<Global> Global::instance()

@@ -4,6 +4,8 @@ set(MODEL_SRC
 
     model/global.cpp
     model/global.hpp
+    model/donelistmodel.cpp
+    model/donelistmodel.hpp
     model/pendinglistmodel.cpp
     model/pendinglistmodel.hpp
     model/queuelistmodel.cpp
