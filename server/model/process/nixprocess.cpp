@@ -182,7 +182,19 @@ uint8_t NixProcess::start(const char *name,
         exit(1);
     }
 
-    if (fcntl(m_fd[1], F_SETFL, fcntl(m_fd[1], F_GETFL) | O_NONBLOCK) == -1)
+    int fileFlag(fcntl(m_fd[1], F_GETFL));
+    if (fileFlag == -1)
+    {
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " fcntl: ";
+        m_error += strerror(errno);
+        m_logger->write(Logger::Error, m_error.c_str());
+        kill(m_pid, SIGKILL);
+        return 1;
+    }
+
+    if (fcntl(m_fd[1], F_SETFL, fileFlag | O_NONBLOCK) == -1)
     {
         m_error.clear();
         m_error = __FILE__":" + std::to_string(__LINE__);
