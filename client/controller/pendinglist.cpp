@@ -259,7 +259,7 @@ void PendingList::connectHook()
             &PendingList::onCurrentDetailClicked);
 
     connect(m_ui->pending,
-            &QListWidget::itemDoubleClicked,
+            &QListWidget::itemActivated,
             this,
             &PendingList::onPendingItemActivated);
 

@@ -23,85 +23,56 @@
 
 #pragma once
 
-#include <atomic>
+#include "QWidget"
 
-#include "QThread"
+#include "model/donelistmodel.hpp"
+#include "model/global.hpp"
 
-#include "taskdetails.hpp"
+namespace Ui
+{
+class DoneList;
+}
 
-#include "done.grpc.pb.h"
+class QListWidgetItem;
 
-class DoneListModel : public QThread
+class DoneList : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    static DoneListModel *create(QObject * = nullptr);
+    static DoneList *create(QWidget * = nullptr);
 
-    uint8_t lastError(QString &);
+    ~DoneList();
 
-    uint8_t startList();
+private slots:
 
-    uint8_t doneList(std::vector<uint32_t> &);
+    void onModelErrorOccurred();
 
-    uint8_t startDetails(uint32_t);
+    void onModelListDone();
 
-    uint8_t taskDetails(TaskDetails &);
+    void onModelDetailsDone();
 
-    uint8_t startClear();
+    // ui
+    void onDoneListItemActivated(QListWidgetItem *item);
 
-    void run() override;
+    void onRefreshBtnClicked();
 
-signals:
-
-    void errorOccurred();
-
-    void listDone();
-
-    void detailsDone();
+    void onClearBtnClicked();
 
 private:
 
-    DoneListModel(QObject * = nullptr);
+    DoneList(QWidget * = nullptr);
 
-    std::atomic<bool> m_isRunning;
+    Ui::DoneList *m_ui;
 
-    QString m_queueName;
+    DoneListModel *m_model;
 
-    std::unique_ptr<stq::Done::Stub> m_stub;
+    std::shared_ptr<Global> m_global;
 
-    QString m_lastError;
+    TaskDetailsDialog *m_taskDetailsDialog;
 
-    std::vector<uint32_t> m_doneList;
+    std::vector<uint32_t> m_list;
 
-    uint32_t m_reqID;
-
-    TaskDetails m_taskDetailsRes;
-
-    typedef enum funcs
-    {
-        List, Details, Clear
-    } funcs;
-
-    funcs m_func;
-
-    typedef void (DoneListModel::*Handler)();
-
-    void listImpl();
-
-    void detailsImpl();
-
-    void clearImpl();
-
-    Handler m_handler[3] =
-    {
-        &DoneListModel::listImpl,
-        &DoneListModel::detailsImpl,
-        &DoneListModel::clearImpl
-    };
-
-    void reset();
-
+    void connectHook();
 };
-

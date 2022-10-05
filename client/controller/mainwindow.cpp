@@ -25,6 +25,7 @@
 #include "QMenu"
 #include "QMessageBox"
 
+#include "donelist.hpp"
 #include "pendinglist.hpp"
 #include "queuelist.hpp"
 #include "settings.hpp"
@@ -190,6 +191,11 @@ void MainWindow::onActionPendingTriggered()
     CREATE_WIDGET(PENDING, PendingList, "Fail to initialize \"Pending list\"");
 }
 
+void MainWindow::onActionDoneTriggered()
+{
+    CREATE_WIDGET(DONE, DoneList, "Fail to initialize \"Done list\"");
+}
+
 #undef CREATE_WIDGET
 
 void MainWindow::onActionAboutQtTriggered()
@@ -239,6 +245,11 @@ void MainWindow::connectHook()
             &QAction::triggered,
             this,
             &MainWindow::onActionPendingTriggered);
+
+    connect(m_ui->actionDone,
+            &QAction::triggered,
+            this,
+            &MainWindow::onActionDoneTriggered);
 
     connect(m_ui->actionAboutQt,
             &QAction::triggered,

@@ -41,6 +41,10 @@ int main(int argc, char **argv)
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/view/icon/computer_black_48dp.svg"));
 
+    QFont f = a.font();
+    f.setPointSize(12);
+    a.setFont(f);
+
     if (isAdmin())
     {
 #ifdef _WIN32

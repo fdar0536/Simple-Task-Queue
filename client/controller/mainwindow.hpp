@@ -64,6 +64,8 @@ private slots:
 
     void onActionPendingTriggered();
 
+    void onActionDoneTriggered();
+
 private:
 
     Ui::MainWindow *m_ui;

@@ -20,6 +20,9 @@ set(UI_SRC
     controller/addtaskdialog.cpp
     controller/addtaskdialog.hpp
     view/addtaskdialog.ui
+    controller/donelist.cpp
+    controller/donelist.hpp
+    view/donelist.ui
     controller/mainwindow.cpp
     controller/mainwindow.hpp
     view/mainwindow.ui

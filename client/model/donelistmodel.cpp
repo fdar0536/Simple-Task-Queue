@@ -21,12 +21,205 @@
  * SOFTWARE.
  */
 
+#include "global.hpp"
+#include "grpccommon.hpp"
+
 #include "donelistmodel.hpp"
 
-DoneListModel::~DoneListModel()
-{}
+// public member functions
+DoneListModel *DoneListModel::create(QObject *parent)
+{
+    std::shared_ptr<Global> global = Global::instance();
+    if (global == nullptr)
+    {
+        return nullptr;
+    }
+
+    DoneListModel *ret(nullptr);
+
+    try
+    {
+        ret = new DoneListModel(parent);
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+
+    try
+    {
+        ret->m_stub = stq::Done::NewStub(global->grpcChannel());
+        if (ret->m_stub == nullptr)
+        {
+            delete ret;
+            return nullptr;
+        }
+    }
+    catch (...)
+    {
+        delete ret;
+        return nullptr;
+    }
+
+    if (GrpcCommon::getQueueName(global, ret->m_queueName))
+    {
+        delete ret;
+        return nullptr;
+    }
+
+    return ret;
+}
+
+uint8_t DoneListModel::lastError(QString &out)
+{
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+    out = m_lastError;
+    return 0;
+}
+
+uint8_t DoneListModel::startList()
+{
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+
+    m_func = List;
+    start();
+    return 0;
+}
+
+uint8_t DoneListModel::doneList(std::vector<uint32_t> &out)
+{
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+
+    out = m_doneList;
+    return 0;
+}
+
+uint8_t DoneListModel::startDetails(uint32_t in)
+{
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+
+    m_reqID = in;
+    m_func = Details;
+    start();
+    return 0;
+}
+
+uint8_t DoneListModel::taskDetails(TaskDetails &out)
+{
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+
+    out = m_taskDetailsRes;
+    return 0;
+}
+
+uint8_t DoneListModel::startClear()
+{
+    if (m_isRunning.load(std::memory_order_relaxed)) return 1;
+
+    m_func = Clear;
+    start();
+    return 0;
+}
+
+void DoneListModel::run()
+{
+    m_isRunning.store(true, std::memory_order_relaxed);
+    reset();
+    (this->*m_handler[m_func])();
+}
 
 // private member functions
 DoneListModel::DoneListModel(QObject *parent) :
-    QThread(parent)
-{}
+    QThread(parent),
+    m_lastError(""),
+    m_reqID(0)
+{
+    m_isRunning.store(false, std::memory_order_relaxed);
+    m_doneList.reserve(64);
+}
+
+void DoneListModel::listImpl()
+{
+    stq::QueueReq req;
+    req.set_name(m_queueName.toLocal8Bit().toStdString());
+
+    grpc::ClientContext ctx;
+    stq::ListTaskRes res;
+
+    GrpcCommon::setupCtx(ctx);
+    auto reader = m_stub->List(&ctx, req);
+    while(reader->Read(&res))
+    {
+        m_doneList.push_back(res.id());
+    }
+
+    grpc::Status status = reader->Finish();
+    if (status.ok())
+    {
+        m_isRunning.store(false, std::memory_order_relaxed);
+        emit listDone();
+        return;
+    }
+
+    GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
+    emit errorOccurred();
+}
+
+void DoneListModel::detailsImpl()
+{
+    stq::TaskDetailsReq req;
+    req.set_queuename(m_queueName.toLocal8Bit().toStdString());
+    req.set_id(m_reqID);
+
+    grpc::ClientContext ctx;
+    stq::TaskDetailsRes res;
+
+    GrpcCommon::setupCtx(ctx);
+    grpc::Status status = m_stub->Details(&ctx, req, &res);
+    if (status.ok())
+    {
+        GrpcCommon::buildTaskDetails(res, m_taskDetailsRes);
+        m_isRunning.store(false, std::memory_order_relaxed);
+        emit detailsDone();
+        return;
+    }
+
+    GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
+    emit errorOccurred();
+}
+
+void DoneListModel::clearImpl()
+{
+    stq::QueueReq req;
+    req.set_name(m_queueName.toLocal8Bit().toStdString());
+
+    grpc::ClientContext ctx;
+    stq::Empty res;
+
+    GrpcCommon::setupCtx(ctx);
+    grpc::Status status = m_stub->Clear(&ctx, req, &res);
+    if (status.ok())
+    {
+        listImpl();
+        return;
+    }
+
+    GrpcCommon::buildErrMsg(status, m_lastError);
+    m_isRunning.store(false, std::memory_order_relaxed);
+    emit errorOccurred();
+}
+
+void DoneListModel::reset()
+{
+    m_lastError = "";
+    m_doneList.clear();
+
+    // reset task details
+    m_taskDetailsRes.workDir = "";
+    m_taskDetailsRes.programName = "";
+    m_taskDetailsRes.args.clear();
+    m_taskDetailsRes.exitCode = 0;
+    m_taskDetailsRes.priority = 2;
+}
