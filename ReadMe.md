@@ -3,7 +3,7 @@
 ## Introduction
 
 As its name, and just for reference.  
-"STQ.ico" is from [material design](https://material.io/resources/icons/), distributed under [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0) by [Google](https://www.google.com).
+"computer_black_48dp.svg" and "STQ.ico" are from [material design](https://material.io/resources/icons/), distributed under [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0) by [Google](https://www.google.com).
 
 ## Dependency
 
