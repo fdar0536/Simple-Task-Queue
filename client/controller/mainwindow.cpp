@@ -26,6 +26,7 @@
 #include "QMessageBox"
 
 #include "donelist.hpp"
+#include "fakeconsole.hpp"
 #include "pendinglist.hpp"
 #include "queuelist.hpp"
 #include "settings.hpp"
@@ -196,6 +197,11 @@ void MainWindow::onActionDoneTriggered()
     CREATE_WIDGET(DONE, DoneList, "Fail to initialize \"Done list\"");
 }
 
+void MainWindow::onActionConsoleTriggered()
+{
+    CREATE_WIDGET(CONSOLE, FakeConsole, "Fail to initialize \"Console\"");
+}
+
 #undef CREATE_WIDGET
 
 void MainWindow::onActionAboutQtTriggered()
@@ -250,6 +256,11 @@ void MainWindow::connectHook()
             &QAction::triggered,
             this,
             &MainWindow::onActionDoneTriggered);
+
+    connect(m_ui->actionConsole,
+            &QAction::triggered,
+            this,
+            &MainWindow::onActionConsoleTriggered);
 
     connect(m_ui->actionAboutQt,
             &QAction::triggered,

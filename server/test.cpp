@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     args.reserve(argc - 1);
 
     char outBuf[4096];
-    size_t outBufLen(4096);
+    size_t outBufLen(4095);
     int childExitCode(0);
     AbstractProcess::ExitState exitState(AbstractProcess::ExitState::NormalExit);
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
             std::cout << "outBuf is: " << outBuf << std::endl;
         }
 
-        outBufLen = 4096;
+        outBufLen = 4095;
         std::cout << "Sleep for 1 second" << std::endl;
         outBuf[0] = '\0';
 

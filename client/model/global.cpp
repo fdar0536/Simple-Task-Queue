@@ -28,7 +28,6 @@
 #include "QJsonArray"
 #include "QJsonDocument"
 #include "QJsonObject"
-#include "QJSValue"
 #include "QMessageBox"
 #include "QStandardPaths"
 

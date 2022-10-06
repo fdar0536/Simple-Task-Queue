@@ -205,36 +205,54 @@ bool WinProcess::isRunning()
     return (exitCode == STILL_ACTIVE);
 }
 
-uint8_t WinProcess::readStdOut(char *buffer, size_t *bufferLen)
+uint8_t WinProcess::readStdOut(char *buf, size_t *bufSize)
 {
-    DWORD readCount(0);
-    while (1)
+    if (!buf || !bufSize)
     {
-        if (!ReadFile(m_childStdOutRead,
-                      buffer,
-                      (DWORD)(*bufferLen),
-                      &readCount, NULL))
-        {
-            if (GetLastError() == ERROR_IO_PENDING)
-            {
-                continue;
-            }
-
-            writeLastError(__FILE__, __LINE__);
-            return 1;
-        }
-
-        break;
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " Invalid input.";
+        m_logger->write(Logger::Error, m_error.c_str());
+        return 1;
     }
 
+    if (!(*bufSize))
+    {
+        m_error.clear();
+        m_error = __FILE__":" + std::to_string(__LINE__);
+        m_error += " Invalid buffer size.";
+        m_logger->write(Logger::Error, m_error.c_str());
+        return 1;
+    }
+
+    DWORD readCount(0);
+    if (!ReadFile(m_childStdOutRead,
+                  buf,
+                  (DWORD)(*bufSize),
+                  &readCount, NULL))
+    {
+        if (GetLastError() == ERROR_IO_PENDING)
+        {
+            char errMsg[] = "Output is temporarily unavailable.\n";
+            size_t len = strlen(errMsg);
+            if (len > (*bufSize)) len = (*bufSize);
+
+            memcpy(buf, errMsg, len);
+            *bufSize = len;
+            return 0;
+        }
+
+        writeLastError(__FILE__, __LINE__);
+        return 1;
+    }
 
     if (readCount)
     {
-        *bufferLen = readCount;
+        *bufSize = readCount;
     }
     else
     {
-        *bufferLen = 0;
+        *bufSize = 0;
     }
 
     return 0;

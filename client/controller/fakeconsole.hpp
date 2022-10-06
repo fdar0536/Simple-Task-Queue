@@ -23,74 +23,45 @@
 
 #pragma once
 
-#include "model/global.hpp"
-#include "QMainWindow"
-#include "QSystemTrayIcon"
+#include "QWidget"
+
+#include "model/fakeconsolemodel.hpp"
 
 namespace Ui
 {
-class MainWindow;
+class FakeConsole;
 }
 
-class MainWindow : public QMainWindow
+class FakeConsole : public QWidget
 {
     Q_OBJECT
 
 public:
 
-    MainWindow(QWidget * = nullptr);
+    static FakeConsole *create(QWidget * = nullptr);
 
-    ~MainWindow();
-
-    uint8_t init();
-
-protected:
-
-    void closeEvent(QCloseEvent *) override;
+    ~FakeConsole();
 
 private slots:
 
-    void programExit();
+    void onModelErrorOccurred();
 
-    // tray icon
-    void iconActivated(QSystemTrayIcon::ActivationReason);
+    void onModelServerMsg(const QString &);
 
-    // ui
-    void onActionSettingsTriggered();
+    void onStartBtnClicked();
 
-    void onActionQueueListTriggered();
-
-    void onActionPendingTriggered();
-
-    void onActionDoneTriggered();
-
-    void onActionConsoleTriggered();
-
-    void onActionAboutQtTriggered();
+    void onStopBtnClicked();
 
 private:
 
-    Ui::MainWindow *m_ui;
+    FakeConsole(QWidget * = nullptr);
 
-    std::shared_ptr<Global> m_global;
+    Ui::FakeConsole *m_ui;
 
-    QSystemTrayIcon *m_icon;
+    FakeConsoleModel *m_model;
 
-    QMenu *m_iconContextMenu;
-
-    QAction *m_showAction;
-
-    QAction *m_exitAction;
-
-    typedef enum CurrentWidget
-    {
-        SETTINGS, QUEUELIST, PENDING, DONE, CONSOLE
-    } CurrentWidget;
-
-    CurrentWidget m_currentWidget;
+    QString m_prevData;
 
     void connectHook();
-
-    uint8_t cleanCentral(CurrentWidget);
-
 };
+

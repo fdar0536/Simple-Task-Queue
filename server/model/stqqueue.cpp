@@ -288,7 +288,7 @@ void STQQueue::mainLoop()
 
     std::string errorLog;
     errorLog.reserve(4096);
-    size_t bufSize(4096);
+    size_t bufSize(4095);
     std::string fileName;
 
     while (1)
@@ -363,7 +363,7 @@ void STQQueue::mainLoop()
                 if (m_process->readStdOut(m_out, &bufSize))
                 {
                     m_out[0] = '\0';
-                    bufSize = 4096;
+                    bufSize = 4095;
                     errorLog.clear();
                     errorLog += __FILE__;
                     errorLog += ":";
@@ -377,7 +377,7 @@ void STQQueue::mainLoop()
                 if (!f)
                 {
                     m_out[0] = '\0';
-                    bufSize = 4096;
+                    bufSize = 4095;
                     errorLog.clear();
                     errorLog += __FILE__;
                     errorLog += ":";
@@ -390,7 +390,7 @@ void STQQueue::mainLoop()
                 fwrite(m_out, 1, bufSize, f);
                 fclose(f);
                 m_out[bufSize] = '\0';
-                bufSize = 4096;
+                bufSize = 4095;
                 f = nullptr;
             }
         } // end while (m_process->isRunning())

@@ -23,74 +23,44 @@
 
 #pragma once
 
-#include "model/global.hpp"
-#include "QMainWindow"
-#include "QSystemTrayIcon"
+#include <atomic>
 
-namespace Ui
-{
-class MainWindow;
-}
+#include "QThread"
 
-class MainWindow : public QMainWindow
+#include "console.grpc.pb.h"
+
+class FakeConsoleModel : public QThread
 {
     Q_OBJECT
 
 public:
 
-    MainWindow(QWidget * = nullptr);
+    static FakeConsoleModel *create(QObject *);
 
-    ~MainWindow();
+    uint8_t lastError(QString &);
 
-    uint8_t init();
+    uint8_t startConsole();
 
-protected:
+    uint8_t stopConsole();
 
-    void closeEvent(QCloseEvent *) override;
+    void run() override;
 
-private slots:
+signals:
 
-    void programExit();
+    void errorOccurred();
 
-    // tray icon
-    void iconActivated(QSystemTrayIcon::ActivationReason);
-
-    // ui
-    void onActionSettingsTriggered();
-
-    void onActionQueueListTriggered();
-
-    void onActionPendingTriggered();
-
-    void onActionDoneTriggered();
-
-    void onActionConsoleTriggered();
-
-    void onActionAboutQtTriggered();
+    void serverMsg(const QString &);
 
 private:
 
-    Ui::MainWindow *m_ui;
+    FakeConsoleModel(QObject * = nullptr);
 
-    std::shared_ptr<Global> m_global;
+    QString m_lastError;
 
-    QSystemTrayIcon *m_icon;
+    QString m_queueName;
 
-    QMenu *m_iconContextMenu;
+    std::atomic<bool> m_runningFlag;
 
-    QAction *m_showAction;
-
-    QAction *m_exitAction;
-
-    typedef enum CurrentWidget
-    {
-        SETTINGS, QUEUELIST, PENDING, DONE, CONSOLE
-    } CurrentWidget;
-
-    CurrentWidget m_currentWidget;
-
-    void connectHook();
-
-    uint8_t cleanCentral(CurrentWidget);
-
+    std::unique_ptr<stq::Console::Stub> m_stub;
 };
+

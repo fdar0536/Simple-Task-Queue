@@ -6,6 +6,8 @@ set(MODEL_SRC
     model/global.hpp
     model/donelistmodel.cpp
     model/donelistmodel.hpp
+    model/fakeconsolemodel.cpp
+    model/fakeconsolemodel.hpp
     model/pendinglistmodel.cpp
     model/pendinglistmodel.hpp
     model/queuelistmodel.cpp
@@ -16,27 +18,33 @@ set(MODEL_SRC
     model/taskdetails.hpp
 )
 
-set(UI_SRC
+set(CONTROLLER_SRC
     controller/addtaskdialog.cpp
     controller/addtaskdialog.hpp
-    view/addtaskdialog.ui
     controller/donelist.cpp
     controller/donelist.hpp
-    view/donelist.ui
+    controller/fakeconsole.cpp
+    controller/fakeconsole.hpp
     controller/mainwindow.cpp
     controller/mainwindow.hpp
-    view/mainwindow.ui
     controller/pendinglist.cpp
     controller/pendinglist.hpp
-    view/pendinglist.ui
     controller/queuelist.cpp
     controller/queuelist.hpp
-    view/queuelist.ui
     controller/settings.cpp
     controller/settings.hpp
-    view/settings.ui
     controller/taskdetailsdialog.cpp
     controller/taskdetailsdialog.hpp
+)
+
+set(VIEW_SRC
+    view/addtaskdialog.ui
+    view/donelist.ui
+    view/fakeconsole.ui
+    view/mainwindow.ui
+    view/pendinglist.ui
+    view/queuelist.ui
+    view/settings.ui
     view/taskdetailsdialog.ui
 )
 
@@ -45,7 +53,8 @@ add_executable(STQClient WIN32
     resources.qrc
 
     ${MODEL_SRC}
-    ${UI_SRC}
+    ${VIEW_SRC}
+    ${CONTROLLER_SRC}
 )
 
 add_dependencies(STQClient grpc_common)
@@ -56,7 +65,4 @@ target_link_libraries(STQClient
     gRPC::grpc
     gRPC::grpc++
     Qt6::Widgets
-    Qt6::Quick
-    Qt6::Qml
-    Qt6::QuickControls2
 )

@@ -254,7 +254,7 @@ uint8_t NixProcess::readStdOut(char *buf, size_t *bufSize)
             if (errno == EINTR) continue;
             else if (errno == EAGAIN)
             {
-                char errMsg[] = "Output is temporarily unavailable.";
+                char errMsg[] = "Output is temporarily unavailable.\n";
                 size_t len = strlen(errMsg);
                 if (len > (*bufSize)) len = (*bufSize);
 

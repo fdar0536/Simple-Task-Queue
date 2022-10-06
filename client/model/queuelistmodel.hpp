@@ -26,7 +26,6 @@
 #include <atomic>
 #include <vector>
 
-#include "QJSValue"
 #include "QThread"
 
 #include "queue.grpc.pb.h"

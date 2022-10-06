@@ -223,6 +223,15 @@ void QueueListModel::listImpl()
     grpc::ClientContext ctx;
 
     auto reader = m_stub->ListQueue(&ctx, req);
+    if (reader == nullptr)
+    {
+        m_lastError = QString("%1:%2 reader is nullptr.").arg(__FILE__).arg(__LINE__);
+        m_hasError = true;
+        m_isRunning.store(false, std::memory_order_relaxed);
+        emit done();
+        return;
+    }
+
     while (reader->Read(&res))
     {
         m_res.push_back(QString::fromStdString(res.name()));

@@ -206,6 +206,14 @@ void PendingListModel::listImpl()
 
     GrpcCommon::setupCtx(ctx);
     auto reader = m_stub->List(&ctx, req);
+    if (reader == nullptr)
+    {
+        m_lastError = QString("%1:%2 reader is nullptr.").arg(__FILE__).arg(__LINE__);
+        m_isRunning.store(false, std::memory_order_relaxed);
+        emit errorOccurred();
+        return;
+    }
+
     while(reader->Read(&res))
     {
         m_pendingList.push_back(res.id());
