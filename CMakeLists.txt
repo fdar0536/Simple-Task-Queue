@@ -103,24 +103,3 @@ endif(BUILD_SERVER)
 if (BUILD_CLIENT)
     add_subdirectory(client)
 endif(BUILD_CLIENT)
-
-# add_executable(
-#     SimpleTaskQueue WIN32
-#     main.cpp
-#     main.qrc
-#     mainwindow.cpp
-#     mainwindow.hpp
-#     mainwindow.ui
-#     tasktab.cpp
-#     tasktab.hpp
-#     tasktab.ui
-#     inputdialog.cpp
-#     inputdialog.hpp
-#     inputdialog.ui
-# )
-#
-# target_link_libraries(SimpleTaskQueue PRIVATE Qt6::Widgets)
-# install(
-#     TARGETS SimpleTaskQueue
-#     DESTINATION ${CMAKE_INSTALL_BINDIR}
-# )
