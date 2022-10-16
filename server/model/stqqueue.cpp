@@ -25,8 +25,16 @@
 
 #include <cstring>
 
+#ifdef _WIN32
+#include "process/winprocess.hpp"
+#else
+#include "process/nixprocess.hpp"
+#endif
+
 #include "../global.hpp"
 #include "stqqueue.hpp"
+
+#define CHILD_STDOUT_BUFFER_SIZE (STQ_SERVER_CHILD_STDOUT_BUFFER_SIZE - 1)
 
 struct STQQueueCmp
 {
@@ -232,7 +240,7 @@ uint8_t STQQueue::readCurrentOutput(char *in, size_t size)
 {
     if (m_stopped) return 1;
 
-    if (!in || size < 4096) return 1;
+    if (!in || size < STQ_SERVER_CHILD_STDOUT_BUFFER_SIZE) return 1;
     {
         std::unique_lock<std::mutex> lock(m_outMutex);
         size_t len = strlen(m_out);
@@ -288,7 +296,7 @@ void STQQueue::mainLoop()
 
     std::string errorLog;
     errorLog.reserve(4096);
-    size_t bufSize(4095);
+    size_t bufSize(CHILD_STDOUT_BUFFER_SIZE);
     std::string fileName;
 
     while (1)
@@ -363,7 +371,7 @@ void STQQueue::mainLoop()
                 if (m_process->readStdOut(m_out, &bufSize))
                 {
                     m_out[0] = '\0';
-                    bufSize = 4095;
+                    bufSize = CHILD_STDOUT_BUFFER_SIZE;
                     errorLog.clear();
                     errorLog += __FILE__;
                     errorLog += ":";
@@ -377,7 +385,7 @@ void STQQueue::mainLoop()
                 if (!f)
                 {
                     m_out[0] = '\0';
-                    bufSize = 4095;
+                    bufSize = CHILD_STDOUT_BUFFER_SIZE;
                     errorLog.clear();
                     errorLog += __FILE__;
                     errorLog += ":";
@@ -390,7 +398,7 @@ void STQQueue::mainLoop()
                 fwrite(m_out, 1, bufSize, f);
                 fclose(f);
                 m_out[bufSize] = '\0';
-                bufSize = 4095;
+                bufSize = CHILD_STDOUT_BUFFER_SIZE;
                 f = nullptr;
             }
         } // end while (m_process->isRunning())

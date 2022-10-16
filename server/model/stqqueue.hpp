@@ -32,15 +32,13 @@
 
 #include <cinttypes>
 
-#ifdef _WIN32
-#include "process/winprocess.hpp"
-#else
-#include "process/nixprocess.hpp"
-#endif
-
 #include "stqtask.hpp"
 
 #include "pending.grpc.pb.h"
+
+#include "config.h"
+
+class AbstractProcess;
 
 class STQQueue
 {
@@ -92,7 +90,7 @@ private:
 
     std::mutex m_outMutex;
 
-    char m_out[4096] = {};
+    char m_out[STQ_SERVER_CHILD_STDOUT_BUFFER_SIZE] = {};
 
     std::fstream m_file;
 
