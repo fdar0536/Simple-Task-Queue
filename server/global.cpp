@@ -25,11 +25,12 @@
 #include <mutex>
 #include <regex>
 
-#include "nlohmann/json.hpp"
+#include "rapidjson/document.h"
+#include "rapidjson/istreamwrapper.h"
 
 #include "global.hpp"
 
-using json = nlohmann::json;
+namespace json = rapidjson;
 
 namespace Global
 {
@@ -44,25 +45,17 @@ std::string ip;
 
 std::string port;
 
+#ifdef BUILD_RESTFUL_SERVER
+
+int restfulPort;
+
+std::string webContextPath;
+
+#endif
+
 STQQueueList queueList;
 
 std::promise<void> exit_requested;
-
-template<class T>
-static uint8_t getConfigItem(T &dst, json &config, const char *entry)
-{
-    try
-    {
-        dst = config[entry];
-    }
-    catch (nlohmann::detail::type_error &e)
-    {
-        std::cerr << e.what() << std::endl;
-        return 1;
-    }
-
-    return 0;
-}
 
 static uint8_t verifyPath(std::string &path)
 {
@@ -93,6 +86,48 @@ static uint8_t verifyPath(std::string &path)
     return 0;
 }
 
+static uint8_t verifyPort(std::string &input, int *dst = nullptr)
+{
+    int tmpInt;
+    if (sscanf(input.c_str(), "%d", &tmpInt) != 1)
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Invalid port." << std::endl;
+        return 1;
+    }
+
+    if (tmpInt < 0 || tmpInt > 65535)
+    {
+        std::cerr << __FILE__ << ":" << __LINE__;
+        std::cerr << " Invalid port." << std::endl;
+        return 1;
+    }
+
+    if (dst) *dst = tmpInt;
+    return 0;
+}
+
+static uint8_t getJSONString(std::string &dst,
+                             json::Document &doc,
+                             const char *key)
+{
+    if (!key)
+    {
+        std::cout << __FILE__ << ":" << __LINE__;
+        std::cout << " key is null." << std::endl;
+        return 1;
+    }
+
+    if (!doc[key].IsString())
+    {
+        std::cout << key << " is not string" << std::endl;
+        return 1;
+    }
+
+    dst = doc[key].GetString();
+    return 0;
+}
+
 uint8_t init(const char *configFile)
 {
     if (!configFile)
@@ -103,17 +138,14 @@ uint8_t init(const char *configFile)
     }
 
     std::ifstream i(configFile);
-    json j = json::parse(i, nullptr, false);
-    if (j.is_discarded())
-    {
-        std::cerr << __FILE__ << ":" << __LINE__;
-        std::cerr << " Fail to parse json." << std::endl;
-        return 1;
-    }
-
+    json::IStreamWrapper isw(i);
+    json::Document j;
+    j.ParseStream(isw);
     i.close();
 
-    if (getConfigItem(fileSavePath, j, "file save path"))
+    fileSavePath = j["file save path"].GetString();
+
+    if (getJSONString(fileSavePath, j, "file save path"))
     {
         return 1;
     }
@@ -123,7 +155,7 @@ uint8_t init(const char *configFile)
         return 1;
     }
 
-    if (getConfigItem(outFilePath, j, "output file path"))
+    if (getJSONString(outFilePath, j, "output file path"))
     {
         return 1;
     }
@@ -134,7 +166,7 @@ uint8_t init(const char *configFile)
     }
 
     std::string tmpString;
-    if (getConfigItem(tmpString, j, "log path"))
+    if (getJSONString(tmpString, j, "log path"))
     {
         return 1;
     }
@@ -146,7 +178,7 @@ uint8_t init(const char *configFile)
 
     logger.setSavePath(tmpString);
 
-    if (getConfigItem(ip, j, "ip"))
+    if (getJSONString(ip, j, "ip"))
     {
         return 1;
     }
@@ -161,25 +193,34 @@ uint8_t init(const char *configFile)
         return 1;
     }
 
-    if (getConfigItem(port, j, "port"))
+    if (getJSONString(port, j, "port"))
     {
         return 1;
     }
 
-    int actualPort(0);
-    if (sscanf(port.c_str(), "%d", &actualPort) != 1)
+    if (verifyPort(port))
     {
-        std::cerr << __FILE__ << ":" << __LINE__;
-        std::cerr << " Invalid port." << std::endl;
         return 1;
     }
 
-    if (actualPort < 0 || actualPort > 65535)
+#ifdef BUILD_RESTFUL_SERVER
+
+    if (getJSONString(tmpString, j, "restful server port"))
     {
-        std::cerr << __FILE__ << ":" << __LINE__;
-        std::cerr << " Invalid port." << std::endl;
         return 1;
     }
+
+    if (verifyPort(tmpString, &restfulPort))
+    {
+        return 1;
+    }
+
+    if (getJSONString(webContextPath, j, "web context path"))
+    {
+        return 1;
+    }
+
+#endif
 
     return 0;
 }

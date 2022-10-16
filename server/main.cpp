@@ -47,11 +47,11 @@
 #include "global.hpp"
 
 // controllers
-#include "controller/accessimpl.hpp"
-#include "controller/consoleimpl.hpp"
-#include "controller/doneimpl.hpp"
-#include "controller/pendingimpl.hpp"
-#include "controller/queueimpl.hpp"
+#include "controller/grpc/accessimpl.hpp"
+#include "controller/grpc/consoleimpl.hpp"
+#include "controller/grpc/doneimpl.hpp"
+#include "controller/grpc/pendingimpl.hpp"
+#include "controller/grpc/queueimpl.hpp"
 
 static void printHelp(char **);
 

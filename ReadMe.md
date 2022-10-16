@@ -11,7 +11,7 @@ As its name, and just for reference.
   - C++17
   - [gRPC](https://grpc.io)
 - Server
-  - [nlohmann/json](https://github.com/nlohmann/json)
+  - [RapidJSON](https://github.com/Tencent/rapidjson)
 - Client
   - [Qt](https://www.qt.io) 6.0 or later
 

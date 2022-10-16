@@ -1,5 +1,3 @@
-option(BUILD_SERVER_DEV "build binary for server develop" ON)
-
 set(PROCESS_SRC
     model/process/abstractprocess.cpp
     model/process/abstractprocess.hpp
@@ -33,18 +31,18 @@ set(SERVER_SRC
     ${PROCESS_SRC}
     ${GET_OPT_SRC}
 
-    controller/accessimpl.cpp
-    controller/accessimpl.hpp
-    controller/consoleimpl.cpp
-    controller/consoleimpl.hpp
-    controller/doneimpl.cpp
-    controller/doneimpl.hpp
-    controller/implcommon.cpp
-    controller/implcommon.hpp
-    controller/pendingimpl.cpp
-    controller/pendingimpl.hpp
-    controller/queueimpl.cpp
-    controller/queueimpl.hpp
+    controller/grpc/accessimpl.cpp
+    controller/grpc/accessimpl.hpp
+    controller/grpc/consoleimpl.cpp
+    controller/grpc/consoleimpl.hpp
+    controller/grpc/doneimpl.cpp
+    controller/grpc/doneimpl.hpp
+    controller/grpc/implcommon.cpp
+    controller/grpc/implcommon.hpp
+    controller/grpc/pendingimpl.cpp
+    controller/grpc/pendingimpl.hpp
+    controller/grpc/queueimpl.cpp
+    controller/grpc/queueimpl.hpp
 
     model/stqqueue.cpp
     model/stqqueue.hpp
@@ -74,7 +72,7 @@ target_link_libraries(STQServer
     gRPC::grpc++_reflection
     absl::synchronization
     grpc_common
-    nlohmann_json::nlohmann_json
+    rapidjson
 )
 
 if(BUILD_SERVER_DEV)

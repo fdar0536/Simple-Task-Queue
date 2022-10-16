@@ -63,6 +63,11 @@ if ((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
     set(BUILD_CLIENT ON)
 endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
 
+option(BUILD_SERVER_DEV "build binary for server develop" ON)
+if(BUILD_SERVER_DEV)
+    option(BUILD_RESTFUL_SERVER "build legacy restful server" ON)
+endif(BUILD_SERVER_DEV)
+
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 
@@ -70,7 +75,7 @@ set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
 include(cmake/protoc.cmake)
 
 if (BUILD_SERVER)
-    find_package(nlohmann_json 3.10.5 REQUIRED)
+    find_package(RapidJSON REQUIRED)
     find_package(OpenSSL 1.1.1 REQUIRED)
     find_package(absl REQUIRED)
 endif(BUILD_SERVER)

@@ -30,6 +30,8 @@
 #include "logger.hpp"
 #include "model/stqqueuelist.hpp"
 
+#include "config.h"
+
 namespace Global
 {
 
@@ -42,6 +44,14 @@ extern std::string outFilePath;
 extern std::string ip;
 
 extern std::string port;
+
+#ifdef BUILD_RESTFUL_SERVER
+
+extern int restfulPort;
+
+extern std::string webContextPath;
+
+#endif
 
 extern STQQueueList queueList;
 

@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#include "../common.hpp"
-#include "../global.hpp"
+#include "../../common.hpp"
+#include "../../global.hpp"
 
 #include "accessimpl.hpp"
 
