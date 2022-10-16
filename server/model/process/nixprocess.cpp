@@ -182,7 +182,7 @@ uint8_t NixProcess::start(const char *name,
         exit(1);
     }
 
-    int fileFlag(fcntl(m_fd[1], F_GETFL));
+    int fileFlag(fcntl(m_fd[0], F_GETFL));
     if (fileFlag == -1)
     {
         m_error.clear();
@@ -194,7 +194,7 @@ uint8_t NixProcess::start(const char *name,
         return 1;
     }
 
-    if (fcntl(m_fd[1], F_SETFL, fileFlag | O_NONBLOCK) == -1)
+    if (fcntl(m_fd[0], F_SETFL, fileFlag | O_NONBLOCK) == -1)
     {
         m_error.clear();
         m_error = __FILE__":" + std::to_string(__LINE__);

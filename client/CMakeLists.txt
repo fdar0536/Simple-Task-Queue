@@ -66,3 +66,5 @@ target_link_libraries(STQClient
     gRPC::grpc++
     Qt6::Widgets
 )
+
+install(TARGETS STQClient)

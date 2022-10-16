@@ -147,7 +147,6 @@ void FakeConsoleModel::run()
             break;
         }
 
-
         emit serverMsg(msg.msg().c_str());
         sleep(3);
     }

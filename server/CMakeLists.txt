@@ -85,3 +85,5 @@ if(BUILD_SERVER_DEV)
         test.cpp
     )
 endif(BUILD_SERVER_DEV)
+
+install(TARGETS STQServer)
