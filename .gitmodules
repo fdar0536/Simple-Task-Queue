@@ -1,0 +1,6 @@
+[submodule "server/restfulserver/rax"]
+	path = server/restfulserver/rax
+	url = https://github.com/antirez/rax.git
+[submodule "server/restfulserver/picohttpparser"]
+	path = server/restfulserver/picohttpparser
+	url = https://github.com/h2o/picohttpparser
