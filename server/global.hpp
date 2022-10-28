@@ -47,6 +47,8 @@ extern std::string port;
 
 #ifdef BUILD_RESTFUL_SERVER
 
+extern std::string restfulHostName;
+
 extern int restfulPort;
 
 extern std::string webContextPath;

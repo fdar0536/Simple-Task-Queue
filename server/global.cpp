@@ -47,6 +47,8 @@ std::string port;
 
 #ifdef BUILD_RESTFUL_SERVER
 
+std::string restfulHostName;
+
 int restfulPort;
 
 std::string webContextPath;
@@ -204,6 +206,11 @@ uint8_t init(const char *configFile)
     }
 
 #ifdef BUILD_RESTFUL_SERVER
+
+    if (getJSONString(restfulHostName, j, "restful host name"))
+    {
+        restfulHostName = "";
+    }
 
     if (getJSONString(tmpString, j, "restful server port"))
     {

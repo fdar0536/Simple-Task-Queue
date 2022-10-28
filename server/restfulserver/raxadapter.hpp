@@ -52,4 +52,3 @@ private:
 
     rax *m_rax;
 };
-

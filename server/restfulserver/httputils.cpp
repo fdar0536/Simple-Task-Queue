@@ -23,6 +23,8 @@
 
 #include <unordered_map>
 
+#include "../global.hpp""
+
 #include "httputils.hpp"
 
 namespace HttpUtils
@@ -104,6 +106,19 @@ uint8_t patchHead(const char *code,
     {
         return 1;
     }
+
+    if (!Global::restfulHostName.empty())
+    {
+        if (patchField("Host",
+                       4,
+                       Global::restfulHostName.c_str(),
+                       Global::restfulHostName.size(),
+                       out))
+        {
+            return 1;
+        }
+    }
+
 
     return 0;
 }

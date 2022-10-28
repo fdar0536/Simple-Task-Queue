@@ -4,6 +4,7 @@
     "log path": "/tmp",
     "ip": "0.0.0.0",
     "port": "12345",
+    "restful host name": "",
     "restful server port": "23456",
     "web context path": "/tmp"
 }
