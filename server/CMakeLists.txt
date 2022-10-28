@@ -59,6 +59,32 @@ set(SERVER_SRC
     main.cpp
 )
 
+if (BUILD_RESTFUL_SERVER)
+    list(APPEND SERVER_SRC
+
+        restfulserver/picohttpparser/picohttpparser.c
+        restfulserver/picohttpparser/picohttpparser.h
+
+        restfulserver/rax/rax.c
+        restfulserver/rax/rax.h
+        restfulserver/rax/rax_malloc.h
+
+        restfulserver/abstractserver.cpp
+        restfulserver/abstractserver.hpp
+        restfulserver/httputils.cpp
+        restfulserver/httputils.hpp
+        restfulserver/raxadapter.cpp
+        restfulserver/raxadapter.hpp
+    )
+
+    if (WIN32)
+        list(APPEND SERVER_SRC
+            restfulserver/winserver.cpp
+            restfulserver/winserver.hpp
+        )
+    endif (WIN32)
+endif (BUILD_RESTFUL_SERVER)
+
 add_executable(STQServer
     ${SERVER_SRC}
 )
