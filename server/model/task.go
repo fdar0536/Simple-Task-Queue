@@ -55,9 +55,9 @@ func (t *Task) Print() {
 
 	fmt.Printf("Args: %s\n", out)
 	fmt.Printf("WorkDir: %s\n", t.WorkDir)
-	fmt.Printf("Priority: %d", t.Priority)
-	fmt.Printf("ExitCode: %d", t.ExitCode)
-	fmt.Printf("IsSuccess: %t", t.IsSuccess)
+	fmt.Printf("Priority: %d\n", t.Priority)
+	fmt.Printf("ExitCode: %d\n", t.ExitCode)
+	fmt.Printf("IsSuccess: %t\n", t.IsSuccess)
 }
 
 func (t *Task) DeepCopy(other *Task) error {
