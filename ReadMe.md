@@ -7,13 +7,12 @@ As its name, and just for reference.
 
 ## Dependency
 
-- Common
-  - C++17
-  - [gRPC](https://grpc.io)
 - Server
-  - [RapidJSON](https://github.com/Tencent/rapidjson)
+  - [Go](https://go.dev)
 - Client
+  - C++17
   - [Qt](https://www.qt.io) 6.0 or later
+  - [gRPC](https://grpc.io)
 
 ## Licence
 
