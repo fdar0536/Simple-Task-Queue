@@ -1,0 +1,149 @@
+package grpc
+
+import (
+	"STQ/model"
+	pb "STQ/protos"
+	"container/list"
+	"context"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type pendingImpl struct {
+	pb.UnimplementedPendingServer
+}
+
+func (p *pendingImpl) List(req *pb.QueueReq, res pb.Pending_ListServer) error {
+	var name = req.GetName()
+	var tq, err = global.QueueList.GetQueue(name)
+	if err != nil {
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	var listRes *list.List
+	listRes, err = tq.ListPending()
+	if err != nil {
+		return status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	var pendingRes = pb.ListTaskRes{}
+	for i := listRes.Front(); i != nil; i = i.Next() {
+		pendingRes.ID = i.Value.(uint32)
+		err = res.Send(&pendingRes)
+		if err != nil {
+			status.Error(codes.Internal, err.Error())
+		}
+	}
+
+	return nil
+}
+
+func (p *pendingImpl) Details(_ context.Context, req *pb.TaskDetailsReq) (*pb.TaskDetailsRes, error) {
+	var tq, err = global.QueueList.GetQueue(req.GetQueueName())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	var task = model.Task{}
+	err = tq.PendingDetails(req.GetID(), &task)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	var res = pb.TaskDetailsRes{}
+	err = buildTaskDetailsRes(&task, &res)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &res, nil
+}
+
+func (p *pendingImpl) Current(_ context.Context, req *pb.QueueReq) (*pb.TaskDetailsRes, error) {
+	var tq, err = global.QueueList.GetQueue(req.GetName())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	var task = model.Task{}
+	err = tq.CurrentTask(&task)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	var res = pb.TaskDetailsRes{}
+	err = buildTaskDetailsRes(&task, &res)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &res, nil
+}
+
+func (p *pendingImpl) Add(_ context.Context, req *pb.AddTaskReq) (*pb.ListTaskRes, error) {
+	var tq, err = global.QueueList.GetQueue(req.GetQueueName())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	var task = model.Task{}
+	err = model.TaskInit(&task)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	task.Args = req.GetArgs()
+	task.ExecName = req.GetProgramName()
+	task.Priority = model.TaskPriority(req.GetPriority())
+	task.WorkDir = req.WorkDir
+	var id uint32
+	id, err = tq.AddTask(&task)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &pb.ListTaskRes{ID: id}, nil
+}
+
+func (p *pendingImpl) Remove(_ context.Context, req *pb.TaskDetailsReq) (*pb.Empty, error) {
+	var tq, err = global.QueueList.GetQueue(req.GetQueueName())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = tq.RemoveTask(req.GetID())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &pb.Empty{}, nil
+}
+
+func (p *pendingImpl) Start(_ context.Context, req *pb.QueueReq) (*pb.Empty, error) {
+	var tq, err = global.QueueList.GetQueue(req.GetName())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = tq.Start()
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &pb.Empty{}, nil
+}
+
+func (p *pendingImpl) Stop(_ context.Context, req *pb.QueueReq) (*pb.Empty, error) {
+	var tq, err = global.QueueList.GetQueue(req.GetName())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	err = tq.Stop()
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &pb.Empty{}, nil
+}

@@ -171,7 +171,7 @@ void AddTaskDialog::onAddBtnClicked()
         args.reserve(argSize);
         for (size_t i = 0; i < argSize; ++i)
         {
-            args.push_back(argList.at(i).toStdString());
+            args.push_back(argList.at(i).toUtf8().toStdString());
         }
     }
 

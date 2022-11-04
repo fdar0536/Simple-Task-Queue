@@ -129,9 +129,11 @@ uint8_t PendingListModel::startAdd(const std::string &workDir,
 
     m_taskDetailsReq.args.clear();
     m_taskDetailsReq.args.reserve(args.size());
-    std::copy(args.begin(),
-              args.end(),
-              m_taskDetailsReq.args.begin());
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        m_taskDetailsReq.args.push_back(args.at(i));
+    }
+
     m_taskDetailsReq.priority = priority;
     m_func = Add;
     start();
@@ -219,16 +221,8 @@ void PendingListModel::listImpl()
         m_pendingList.push_back(res.id());
     }
 
-    grpc::Status status = reader->Finish();
-    if (status.ok())
-    {
-        currentImpl();
-        return;
-    }
-
-    GrpcCommon::buildErrMsg(status, m_lastError);
-    m_isRunning.store(false, std::memory_order_relaxed);
-    emit errorOccurred();
+    Q_UNUSED(reader->Finish());
+    currentImpl();
 }
 
 void PendingListModel::detailsImpl()
@@ -274,8 +268,9 @@ void PendingListModel::currentImpl()
     }
 
     GrpcCommon::buildErrMsg(status, m_lastError);
+    m_taskDetailsRes.programName = "";
     m_isRunning.store(false, std::memory_order_relaxed);
-    emit errorOccurred();
+    emit listDone();
 }
 
 void PendingListModel::addImpl()

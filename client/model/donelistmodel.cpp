@@ -162,16 +162,13 @@ void DoneListModel::listImpl()
     }
 
     grpc::Status status = reader->Finish();
-    if (status.ok())
+    if (!status.ok())
     {
-        m_isRunning.store(false, std::memory_order_relaxed);
-        emit listDone();
-        return;
+        m_doneList.clear();
     }
 
-    GrpcCommon::buildErrMsg(status, m_lastError);
     m_isRunning.store(false, std::memory_order_relaxed);
-    emit errorOccurred();
+    emit listDone();
 }
 
 void DoneListModel::detailsImpl()

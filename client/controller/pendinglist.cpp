@@ -145,7 +145,6 @@ void PendingList::onModelListDone()
 
     m_ui->current->setText(QString::fromStdString(m_taskDetails.programName));
     m_ui->currentDetail->setEnabled(!m_taskDetails.programName.empty());
-
     m_ui->status->setText("Done");
 }
 
@@ -155,7 +154,7 @@ void PendingList::onAddTaskDialogClosed()
             &PendingListModel::errorOccurred,
             this,
             &PendingList::onModelErrorOccurred);
-    onStartBtnClicked();
+    onRefreshBtnClicked();
 }
 
 void PendingList::onCurrentDetailClicked()

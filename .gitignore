@@ -6,3 +6,8 @@
 /*.json
 /.vs
 /*.exe
+
+/server/*.exe
+/server/STQ
+/server/protos
+/server/protos/*

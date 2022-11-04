@@ -44,45 +44,16 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
     set(CLIENT_TIMEOUT 31)
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
-if(NOT DEFINED SERVER_CHILD_STDOUT_BUFFER_SIZE)
-    set(SERVER_CHILD_STDOUT_BUFFER_SIZE 4096)
-endif(NOT DEFINED SERVER_CHILD_STDOUT_BUFFER_SIZE)
-
-if(SERVER_CHILD_STDOUT_BUFFER_SIZE LESS 2)
-    set(SERVER_CHILD_STDOUT_BUFFER_SIZE 4096)
-endif(SERVER_CHILD_STDOUT_BUFFER_SIZE LESS 2)
-
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)
 
-option(BUILD_SERVER "build server" ON)
-option(BUILD_CLIENT "build client" ON)
-
-if ((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
-    set(BUILD_CLIENT ON)
-endif((NOT BUILD_SERVER) AND (NOT BUILD_CLIENT))
-
-option(BUILD_SERVER_DEV "build binary for server develop" ON)
-if(BUILD_SERVER_DEV)
-    option(BUILD_RESTFUL_SERVER "build legacy restful server" ON)
-endif(BUILD_SERVER_DEV)
-
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
 include(cmake/protoc.cmake)
-
-if (BUILD_SERVER)
-    find_package(RapidJSON REQUIRED)
-    find_package(OpenSSL 1.1.1 REQUIRED)
-    find_package(absl REQUIRED)
-endif(BUILD_SERVER)
-
-if (BUILD_CLIENT)
-    find_package(Qt6 COMPONENTS Widgets REQUIRED)
-endif(BUILD_CLIENT)
 
 set(PROTOS
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/access.proto
@@ -109,10 +80,4 @@ target_link_libraries(grpc_common
     gRPC::grpc++
 )
 
-if (BUILD_SERVER)
-    add_subdirectory(server)
-endif(BUILD_SERVER)
-
-if (BUILD_CLIENT)
-    add_subdirectory(client)
-endif(BUILD_CLIENT)
+add_subdirectory(client)

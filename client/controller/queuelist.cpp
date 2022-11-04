@@ -66,10 +66,10 @@ QueueList *QueueList::create(QWidget *parent)
 
     ret->connectHook();
 
+    ret->onRefreshBtnClicked();
     QHash<QString, QVariant> state;
     if (ret->m_global->state("queueListState", state))
     {
-        ret->onRefreshBtnClicked();
         return ret;
     }
 
