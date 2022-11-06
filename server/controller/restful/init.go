@@ -21,45 +21,65 @@
  * SOFTWARE.
  */
 
-package controller
+package restful
 
 import (
-	"STQ/controller/grpc"
-	"STQ/controller/restful"
+	"STQ/controller/restful/access"
+	"STQ/controller/restful/console"
+	"STQ/controller/restful/done"
+	"STQ/controller/restful/pending"
+	"STQ/controller/restful/queue"
+	"STQ/model"
 	"STQ/utils"
 	"fmt"
 	"os"
 	"runtime"
+
+	"github.com/labstack/echo/v4"
+	"github.com/ziflex/lecho/v3"
 )
 
-type Controller struct {
-	Grpc    grpc.GPRCController
-	Restful restful.RestController
+var global = &model.Global
+
+type RestController struct {
+	Server *echo.Echo
 }
 
-func Init(config *utils.ConfigParam, c *Controller) int {
-	if config == nil || c == nil {
+func Init(s *RestController, config *utils.ConfigParam) int {
+	if s == nil || config == nil {
 		var _, file, line, _ = runtime.Caller(0)
 		fmt.Fprintf(os.Stderr, "%s:%d invalid input\n", file, line)
 		return 1
 	}
 
-	var code = grpc.Init(config, &c.Grpc)
-	if code != 0 {
-		var _, file, line, _ = runtime.Caller(0)
-		fmt.Fprintf(os.Stderr, "%s:%d grpc.Init failed\n", file, line)
-		return 1
-	}
+	s.Server.Logger = lecho.From(global.Logger)
 
-	if config.RestfulServer {
-		fmt.Fprintln(os.Stderr, "Warning: Restful server is on.")
-		code = restful.Init(&c.Restful, config)
-		if code != 0 {
-			var _, file, line, _ = runtime.Caller(0)
-			fmt.Fprintf(os.Stderr, "%s:%d restful.Init failed\n", file, line)
-			return 1
-		}
-	}
+	// access
+	s.Server.GET("/access/echo", access.Echo)
+	s.Server.POST("/access/stop", access.Stop)
+
+	// queue list
+	s.Server.POST("/queue/create", queue.Create)
+	s.Server.POST("/queue/rename", queue.Rename)
+	s.Server.DELETE("/queue/delete", queue.Delete)
+	s.Server.GET("/queue/list", queue.List)
+
+	// pending list
+	s.Server.GET("/pending/list", pending.List)
+	s.Server.GET("/pending/details", pending.Details)
+	s.Server.GET("/pending/current", pending.Current)
+	s.Server.POST("/pending/add", pending.Add)
+	s.Server.POST("/pending/remove", pending.Remove)
+	s.Server.POST("/pending/start", pending.Start)
+	s.Server.POST("/pending/stop", pending.Stop)
+
+	//console
+	s.Server.GET("/console", console.Output)
+
+	// done list
+	s.Server.GET("/done/list", done.List)
+	s.Server.GET("/done/details", done.Details)
+	s.Server.POST("/done/clear", done.Clear)
 
 	return 0
 }

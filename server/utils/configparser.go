@@ -38,7 +38,6 @@ type ConfigParam struct {
 	IP                string `json:"ip"`
 	Port              uint16 `json:"port"`
 	RestfulServer     bool   `json:"restful server"`
-	RestfulHostName   string `json:"restful host name"`
 	ResrfulServerPort uint16 `json:"restful server port"`
 	WebContextPath    string `json:"web context path"`
 	Debug             bool   `json:"debug"`

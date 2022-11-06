@@ -21,45 +21,23 @@
  * SOFTWARE.
  */
 
-package controller
+package access
 
 import (
-	"STQ/controller/grpc"
-	"STQ/controller/restful"
-	"STQ/utils"
-	"fmt"
-	"os"
-	"runtime"
+	"STQ/model"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
-type Controller struct {
-	Grpc    grpc.GPRCController
-	Restful restful.RestController
+var global = &model.Global
+
+func Echo(c echo.Context) error {
+	return c.NoContent(http.StatusOK)
 }
 
-func Init(config *utils.ConfigParam, c *Controller) int {
-	if config == nil || c == nil {
-		var _, file, line, _ = runtime.Caller(0)
-		fmt.Fprintf(os.Stderr, "%s:%d invalid input\n", file, line)
-		return 1
-	}
-
-	var code = grpc.Init(config, &c.Grpc)
-	if code != 0 {
-		var _, file, line, _ = runtime.Caller(0)
-		fmt.Fprintf(os.Stderr, "%s:%d grpc.Init failed\n", file, line)
-		return 1
-	}
-
-	if config.RestfulServer {
-		fmt.Fprintln(os.Stderr, "Warning: Restful server is on.")
-		code = restful.Init(&c.Restful, config)
-		if code != 0 {
-			var _, file, line, _ = runtime.Caller(0)
-			fmt.Fprintf(os.Stderr, "%s:%d restful.Init failed\n", file, line)
-			return 1
-		}
-	}
-
-	return 0
+func Stop(c echo.Context) error {
+	global.Logger.Info().Msg("Received stop signal from restful server. stopping...")
+	global.StopChan <- true
+	return c.NoContent(http.StatusOK)
 }

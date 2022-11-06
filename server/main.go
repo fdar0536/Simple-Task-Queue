@@ -28,7 +28,9 @@ import (
 	"STQ/model"
 	"STQ/utils"
 	"STQ/view/cli"
+	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -92,6 +94,16 @@ func main() {
 		}
 	}()
 
+	if config.RestfulServer {
+		go func() {
+			var err = ctrler.Restful.Server.Start(fmt.Sprintf(":%d",
+				config.ResrfulServerPort))
+			if err != nil && err != http.ErrServerClosed {
+				ctrler.Restful.Server.Logger.Fatal("shutting down the server")
+			}
+		}()
+	}
+
 	fmt.Printf("gRPC server is listen on %s:%d\n", config.IP, config.Port)
 	var cancelChan = make(chan os.Signal, 2)
 	signal.Notify(cancelChan, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
@@ -113,4 +125,12 @@ func main() {
 
 exit:
 	ctrler.Grpc.Server.GracefulStop()
+
+	if config.RestfulServer {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := ctrler.Restful.Server.Shutdown(ctx); err != nil {
+			ctrler.Restful.Server.Logger.Fatal(err)
+		}
+	}
 }
