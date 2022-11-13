@@ -57,6 +57,8 @@ type TaskQueue struct {
 
 	id         uint32
 	currentPid int32
+
+	cmd *exec.Cmd
 }
 
 func taskQueueInit(t *TaskQueue, name string) error {
@@ -350,19 +352,19 @@ func (t *TaskQueue) mainLoop() {
 		t.current = task
 		t.currentMutex.Unlock()
 
-		var cmd = exec.Command(task.ExecName, task.Args...)
-		if cmd.Err != nil {
+		t.cmd = exec.Command(task.ExecName, task.Args...)
+		if t.cmd.Err != nil {
 			t.mainLoopCleanUp(false)
 			continue
 		}
 
 		var outBuf bytes.Buffer
 
-		cmd.Dir = task.WorkDir
-		cmd.Stdout = &outBuf
-		cmd.Stderr = &outBuf
+		t.cmd.Dir = task.WorkDir
+		t.cmd.Stdout = &outBuf
+		t.cmd.Stderr = &outBuf
 
-		var err = cmd.Start()
+		var err = t.cmd.Start()
 		if err != nil {
 			var _, file, line, _ = runtime.Caller(0)
 			var msg = fmt.Sprintf("%s:%d %s", file, line, err.Error())
@@ -371,21 +373,21 @@ func (t *TaskQueue) mainLoop() {
 			continue
 		}
 
-		err = flagPid(cmd.Process.Pid)
+		err = flagPid(t.cmd.Process.Pid)
 		if err != nil {
 			var _, file, line, _ = runtime.Caller(0)
 			Global.Logger.Error().Msgf("%s:%d %s", file, line, err.Error())
-			killPid(cmd.Process.Pid, false)
+			killPid(t.cmd.Process.Pid, false)
 			t.mainLoopCleanUp(false)
 			continue
 		}
 
 		var monitor *process.Process
-		monitor, err = process.NewProcess(int32(cmd.Process.Pid))
+		monitor, err = process.NewProcess(int32(t.cmd.Process.Pid))
 		if err != nil {
 			var _, file, line, _ = runtime.Caller(0)
 			Global.Logger.Error().Msgf("%s:%d %s", file, line, err.Error())
-			killPid(cmd.Process.Pid, true)
+			killPid(t.cmd.Process.Pid, true)
 			t.mainLoopCleanUp(false)
 			continue
 		}
@@ -393,7 +395,7 @@ func (t *TaskQueue) mainLoop() {
 		var isChildRunning bool = true
 		var bufChan = make(chan string, 8)
 		var quitChan = make(chan uint8, 8)
-		atomic.StoreInt32(&t.currentPid, int32(cmd.Process.Pid))
+		atomic.StoreInt32(&t.currentPid, int32(t.cmd.Process.Pid))
 
 		go func() {
 			var buf = make([]byte, 4096)
@@ -403,7 +405,7 @@ func (t *TaskQueue) mainLoop() {
 				if err != nil {
 					var _, file, line, _ = runtime.Caller(0)
 					Global.Logger.Error().Msgf("%s:%d %s", file, line, err.Error())
-					killPid(cmd.Process.Pid, true)
+					killPid(t.cmd.Process.Pid, true)
 					quitChan <- 2
 					return
 				}
@@ -415,7 +417,7 @@ func (t *TaskQueue) mainLoop() {
 
 				stopFlag = atomic.LoadUint32(&t.stopFlag) > 0
 				if stopFlag {
-					killPid(cmd.Process.Pid, true)
+					killPid(t.cmd.Process.Pid, true)
 					quitChan <- 1
 					return
 				}
@@ -467,6 +469,8 @@ func (t *TaskQueue) mainLoopCleanUp(stopped bool) {
 
 	t.finishedMutex.Lock()
 	if t.current != nil {
+		t.current.ExitCode = t.cmd.ProcessState.ExitCode()
+		t.current.IsSuccess = (t.current.ExitCode == 0)
 		t.finished.PushBack(t.current)
 	}
 	t.finishedMutex.Unlock()
