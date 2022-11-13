@@ -52,6 +52,8 @@ func cliQueueInit(in *cliQueue) int {
 	in.cmdList["delete"] = in.delete
 	in.cmdList["listPanding"] = in.listPending
 	in.cmdList["listFinished"] = in.listFinished
+	in.cmdList["pandingDetails"] = in.pandingDetails
+	in.cmdList["finishedDetails"] = in.finishedDetails
 	in.cmdList["clearPanding"] = in.clearPanding
 	in.cmdList["clearFinished"] = in.clearFinished
 	in.cmdList["console"] = in.console
@@ -110,6 +112,8 @@ func (c *cliQueue) help() {
 	fmt.Println("delete: delete(cancel) a task by id")
 	fmt.Println("listPanding: list all tasks in panding list in id")
 	fmt.Println("listFinished: list all tasks in finished list in id")
+	fmt.Println("pandingDetails: show details of task in panding list by id")
+	fmt.Println("finishedDetails: show details of task in finished list by id")
 	fmt.Println("clearPanding: clear(cancel) all task in panding list")
 	fmt.Println("clearFinished: clear all task in finished list")
 	fmt.Println("console: print current child process' stdout")
@@ -196,7 +200,7 @@ func (c *cliQueue) listPending() {
 	}
 
 	for i := res.Front(); i != nil; i = i.Next() {
-		fmt.Printf("%d\n", i.Value.(uint))
+		fmt.Printf("%d\n", i.Value.(uint32))
 	}
 }
 
@@ -209,8 +213,40 @@ func (c *cliQueue) listFinished() {
 	}
 
 	for i := res.Front(); i != nil; i = i.Next() {
-		fmt.Printf("%d\n", i.Value.(uint))
+		fmt.Printf("%d\n", i.Value.(uint32))
 	}
+}
+
+func (c *cliQueue) pandingDetails() {
+	var id uint32 = 0
+	fmt.Print("id: ")
+	fmt.Scanf("%d\n", &id)
+
+	var task = model.Task{}
+	var err = c.queue.PendingDetails(id, &task)
+	if err != nil {
+		var _, file, line, _ = runtime.Caller(0)
+		fmt.Fprintf(os.Stderr, "%s:%d c.queue.PendingDetails failed\n", file, line)
+		return
+	}
+
+	task.Print()
+}
+
+func (c *cliQueue) finishedDetails() {
+	var id uint32 = 0
+	fmt.Print("id: ")
+	fmt.Scanf("%d\n", &id)
+
+	var task = model.Task{}
+	var err = c.queue.FinishedDetails(id, &task)
+	if err != nil {
+		var _, file, line, _ = runtime.Caller(0)
+		fmt.Fprintf(os.Stderr, "%s:%d c.queue.PendingDetails failed\n", file, line)
+		return
+	}
+
+	task.Print()
 }
 
 func (c *cliQueue) clearPanding() {
