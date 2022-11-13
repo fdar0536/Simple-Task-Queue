@@ -82,7 +82,7 @@ void TaskDetailsDialog::openDialog(TaskDetails &task, bool isExitCodeValid)
     {
         for (size_t i = 0; i < size; ++i)
         {
-            args += QString::fromUtf8(task.args.at(i).c_str());
+            args += QString::fromUtf8(task.args.at(i));
             args += '\n';
         }
     }
