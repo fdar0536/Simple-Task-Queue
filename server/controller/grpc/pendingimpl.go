@@ -110,18 +110,19 @@ func (p *pendingImpl) Add(_ context.Context, req *pb.AddTaskReq) (*pb.ListTaskRe
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	var task = model.Task{}
-	err = model.TaskInit(&task)
+	var task = new(model.Task)
+	err = model.TaskInit(task)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	task.Args = req.GetArgs()
+	task.Args = make([]string, len(req.GetArgs()))
+	copy(task.Args, req.GetArgs())
 	task.ExecName = req.GetProgramName()
 	task.Priority = model.TaskPriority(req.GetPriority())
 	task.WorkDir = req.WorkDir
 	var id uint32
-	id, err = tq.AddTask(&task)
+	id, err = tq.AddTask(task)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

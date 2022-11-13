@@ -158,14 +158,15 @@ func Add(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, &errMsg)
 	}
 
-	var task = model.Task{}
-	task.Args = req.Args
+	var task = new(model.Task)
+	task.Args = make([]string, len(req.Args))
+	copy(task.Args, req.Args)
 	task.ExecName = req.ProgramName
 	task.Priority = model.TaskPriority(req.Priority)
 	task.WorkDir = req.WorkDir
 
 	var id uint32 = 0
-	id, err = tq.AddTask(&task)
+	id, err = tq.AddTask(task)
 	if err != nil {
 		var errMsg = types.ErrMsg{}
 		errMsg.Msg = err.Error()

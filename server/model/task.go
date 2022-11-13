@@ -92,7 +92,8 @@ func (t *Task) DeepCopy(other *Task) error {
 
 	other.ID = t.ID
 	other.ExecName = t.ExecName
-	other.Args = t.Args
+	other.Args = make([]string, len(t.Args))
+	copy(other.Args, t.Args)
 	other.WorkDir = t.WorkDir
 	other.Priority = t.Priority
 	other.ExitCode = t.ExitCode
