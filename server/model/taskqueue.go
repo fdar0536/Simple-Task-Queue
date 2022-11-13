@@ -469,8 +469,13 @@ func (t *TaskQueue) mainLoopCleanUp(stopped bool) {
 
 	t.finishedMutex.Lock()
 	if t.current != nil {
-		t.current.ExitCode = t.cmd.ProcessState.ExitCode()
-		t.current.IsSuccess = (t.current.ExitCode == 0)
+		if (t.cmd.Err != nil) {
+			t.current.ExitCode = t.cmd.ProcessState.ExitCode()
+			t.current.IsSuccess = (t.current.ExitCode == 0)
+		} else {
+			t.current.IsSuccess = false
+		}
+		
 		t.finished.PushBack(t.current)
 	}
 	t.finishedMutex.Unlock()
