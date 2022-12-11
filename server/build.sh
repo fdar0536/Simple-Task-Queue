@@ -1,6 +1,6 @@
 #!/bin/sh
 
-rm -rf *.protos
+rm -rf protos
 mkdir -p protos
 cd ../protos
 
