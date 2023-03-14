@@ -159,7 +159,7 @@ int_fast32_t help(std::shared_ptr<Model::DAO::IQueue<T>> &)
     Utils::writeConsole("start: start this queue\n");
     Utils::writeConsole("stop: stop this queue\n");
 
-    Utils::writeConsole("help: print_fast32_t this message\n");
+    Utils::writeConsole("help: print this message\n");
     Utils::writeConsole("exit: exit this loop\n");
     return 0;
 }
