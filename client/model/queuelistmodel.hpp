@@ -40,19 +40,19 @@ public:
 
     ~QueueListModel();
 
-    uint8_t hasError(bool &);
+    uint_fast8_t hasError(bool &);
 
-    uint8_t lastError(QString &);
+    uint_fast8_t lastError(QString &);
 
-    uint8_t result(QStringList &);
+    uint_fast8_t result(QStringList &);
 
-    uint8_t startCreate(const QString &);
+    uint_fast8_t startCreate(const QString &);
 
-    uint8_t startRename(const QString &, const QString &);
+    uint_fast8_t startRename(const QString &, const QString &);
 
-    uint8_t startDelete(const QString &);
+    uint_fast8_t startDelete(const QString &);
 
-    uint8_t startList();
+    uint_fast8_t startList();
 
     void run() override;
 

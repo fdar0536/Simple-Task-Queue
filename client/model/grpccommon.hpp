@@ -38,7 +38,7 @@ void setupCtx(grpc::ClientContext &);
 
 void buildErrMsg(grpc::Status &, QString &);
 
-uint8_t getQueueName(std::shared_ptr<Global> &, QString &);
+uint_fast8_t getQueueName(std::shared_ptr<Global> &, QString &);
 
 void buildTaskDetails(stq::TaskDetailsRes &res, TaskDetails &details);
 

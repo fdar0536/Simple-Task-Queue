@@ -70,14 +70,14 @@ DoneListModel *DoneListModel::create(QObject *parent)
     return ret;
 }
 
-uint8_t DoneListModel::lastError(QString &out)
+uint_fast8_t DoneListModel::lastError(QString &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_lastError;
     return 0;
 }
 
-uint8_t DoneListModel::startList()
+uint_fast8_t DoneListModel::startList()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -86,7 +86,7 @@ uint8_t DoneListModel::startList()
     return 0;
 }
 
-uint8_t DoneListModel::doneList(std::vector<uint32_t> &out)
+uint_fast8_t DoneListModel::doneList(std::vector<uint32_t> &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -94,7 +94,7 @@ uint8_t DoneListModel::doneList(std::vector<uint32_t> &out)
     return 0;
 }
 
-uint8_t DoneListModel::startDetails(uint32_t in)
+uint_fast8_t DoneListModel::startDetails(uint32_t in)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -104,7 +104,7 @@ uint8_t DoneListModel::startDetails(uint32_t in)
     return 0;
 }
 
-uint8_t DoneListModel::taskDetails(TaskDetails &out)
+uint_fast8_t DoneListModel::taskDetails(TaskDetails &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -112,7 +112,7 @@ uint8_t DoneListModel::taskDetails(TaskDetails &out)
     return 0;
 }
 
-uint8_t DoneListModel::startClear()
+uint_fast8_t DoneListModel::startClear()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 

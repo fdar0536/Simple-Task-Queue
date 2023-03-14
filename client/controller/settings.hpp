@@ -48,7 +48,7 @@ private slots:
     void onModelDone();
 
     // ui
-    void onHostCurrentIndexChanged(int index);
+    void onHostCurrentIndexChanged(int_fast32_t index);
 
     void onAliasEditingFinished();
 

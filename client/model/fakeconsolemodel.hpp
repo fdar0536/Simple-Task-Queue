@@ -37,11 +37,11 @@ public:
 
     static FakeConsoleModel *create(QObject *);
 
-    uint8_t lastError(QString &);
+    uint_fast8_t lastError(QString &);
 
-    uint8_t startConsole();
+    uint_fast8_t startConsole();
 
-    uint8_t stopConsole();
+    uint_fast8_t stopConsole();
 
     void run() override;
 

@@ -65,7 +65,7 @@ FakeConsoleModel *FakeConsoleModel::create(QObject *parent)
     return ret;
 }
 
-uint8_t FakeConsoleModel::lastError(QString &out)
+uint_fast8_t FakeConsoleModel::lastError(QString &out)
 {
     if (m_runningFlag.load(std::memory_order_relaxed))
     {
@@ -77,7 +77,7 @@ uint8_t FakeConsoleModel::lastError(QString &out)
     return 0;
 }
 
-uint8_t FakeConsoleModel::startConsole()
+uint_fast8_t FakeConsoleModel::startConsole()
 {
     if (m_runningFlag.load(std::memory_order_relaxed))
     {
@@ -90,7 +90,7 @@ uint8_t FakeConsoleModel::startConsole()
     return 0;
 }
 
-uint8_t FakeConsoleModel::stopConsole()
+uint_fast8_t FakeConsoleModel::stopConsole()
 {
     if (!m_runningFlag.load(std::memory_order_relaxed))
     {

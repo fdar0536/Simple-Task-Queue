@@ -69,14 +69,14 @@ PendingListModel *PendingListModel::create(QObject *parent)
     return ret;
 }
 
-uint8_t PendingListModel::lastError(QString &out)
+uint_fast8_t PendingListModel::lastError(QString &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_lastError;
     return 0;
 }
 
-uint8_t PendingListModel::startList()
+uint_fast8_t PendingListModel::startList()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_func = List;
@@ -84,14 +84,14 @@ uint8_t PendingListModel::startList()
     return 0;
 }
 
-uint8_t PendingListModel::pendingList(std::vector<uint32_t> &out)
+uint_fast8_t PendingListModel::pendingList(std::vector<uint32_t> &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_pendingList;
     return 0;
 }
 
-uint8_t PendingListModel::startDetails(uint32_t id)
+uint_fast8_t PendingListModel::startDetails(uint32_t id)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -101,7 +101,7 @@ uint8_t PendingListModel::startDetails(uint32_t id)
     return 0;
 }
 
-uint8_t PendingListModel::taskDetails(TaskDetails &out)
+uint_fast8_t PendingListModel::taskDetails(TaskDetails &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -109,7 +109,7 @@ uint8_t PendingListModel::taskDetails(TaskDetails &out)
     return 0;
 }
 
-uint8_t PendingListModel::startCurrent()
+uint_fast8_t PendingListModel::startCurrent()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_func = Current;
@@ -117,7 +117,7 @@ uint8_t PendingListModel::startCurrent()
     return 0;
 }
 
-uint8_t PendingListModel::startAdd(const std::string &workDir,
+uint_fast8_t PendingListModel::startAdd(const std::string &workDir,
                                    const std::string &programName,
                                    const std::vector<std::string> &args,
                                    const uint32_t priority)
@@ -142,7 +142,7 @@ uint8_t PendingListModel::startAdd(const std::string &workDir,
     return 0;
 }
 
-uint8_t PendingListModel::resID(uint32_t &out)
+uint_fast8_t PendingListModel::resID(uint32_t &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -150,7 +150,7 @@ uint8_t PendingListModel::resID(uint32_t &out)
     return 0;
 }
 
-uint8_t PendingListModel::startRemove(std::vector<uint32_t> &list)
+uint_fast8_t PendingListModel::startRemove(std::vector<uint32_t> &list)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -162,7 +162,7 @@ uint8_t PendingListModel::startRemove(std::vector<uint32_t> &list)
     return 0;
 }
 
-uint8_t PendingListModel::startStart()
+uint_fast8_t PendingListModel::startStart()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -171,7 +171,7 @@ uint8_t PendingListModel::startStart()
     return 0;
 }
 
-uint8_t PendingListModel::startStop()
+uint_fast8_t PendingListModel::startStop()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
 
@@ -343,7 +343,7 @@ void PendingListModel::stopImpl()
     startStopImpl(0);
 }
 
-void PendingListModel::startStopImpl(uint8_t shouldStart)
+void PendingListModel::startStopImpl(uint_fast8_t shouldStart)
 {
     stq::QueueReq req;
     req.set_name(m_queueName.toLocal8Bit().toStdString());

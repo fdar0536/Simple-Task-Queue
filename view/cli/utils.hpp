@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,28 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _VIEW_CLI_UTILS_HPP_
+#define _VIEW_CLI_UTILS_HPP_
 
-#include <atomic>
+#include <string>
 
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace View
 {
-    Q_OBJECT
 
-public:
+namespace CLI
+{
 
-    static SettingsModel *create(QObject * = nullptr);
+namespace Utils
+{
 
-    ~SettingsModel();
+std::string getInput(const std::string &);
 
-    uint_fast8_t startConnect(const QString &, int);
+void writeConsole(const std::string &);
 
-    uint_fast8_t hasError(bool &);
+} // end namespace Utils
 
-    uint_fast8_t lastError(QString &);
+} // end namespace CLI
 
-    void run() override;
+} // end namespace View
 
-signals:
-
-    void done();
-
-private:
-
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _VIEW_CLI_UTILS_HPP_

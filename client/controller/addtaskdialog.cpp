@@ -71,7 +71,7 @@ void AddTaskDialog::accept()
     QDialog::accept();
 }
 
-void AddTaskDialog::done(int i)
+void AddTaskDialog::done(int_fast32_t i)
 {
     if (!m_ui->closeBtn->isEnabled()) return;
     handleCloseWindow();

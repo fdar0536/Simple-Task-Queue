@@ -53,7 +53,7 @@ SettingsModel *SettingsModel::create(QObject *parent)
 SettingsModel::~SettingsModel()
 {}
 
-uint8_t SettingsModel::startConnect(const QString &ip, int port)
+uint_fast8_t SettingsModel::startConnect(const QString &ip, int_fast32_t port)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     std::shared_ptr<grpc::ChannelInterface> null(nullptr);
@@ -66,14 +66,14 @@ uint8_t SettingsModel::startConnect(const QString &ip, int port)
     return 0;
 }
 
-uint8_t SettingsModel::hasError(bool &out)
+uint_fast8_t SettingsModel::hasError(bool &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_hasError;
     return 0;
 }
 
-uint8_t SettingsModel::lastError(QString &out)
+uint_fast8_t SettingsModel::lastError(QString &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_lastError;

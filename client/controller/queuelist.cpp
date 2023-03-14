@@ -90,7 +90,7 @@ QueueList::~QueueList()
         state["index"] = m_ui->queueList->currentIndex();
         QStringList list;
         list.reserve(m_ui->queueList->count());
-        for (int i = 0; i < m_ui->queueList->count(); ++i)
+        for (int_fast32_t i = 0; i < m_ui->queueList->count(); ++i)
         {
             m_ui->queueList->setCurrentIndex(i);
             list.append(m_ui->queueList->currentText());

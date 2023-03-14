@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,65 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_WINPROCESS_HPP_
+#define _MODEL_WINPROCESS_HPP_
 
 #include <atomic>
+#include <mutex>
 
-#include "QThread"
+#include "windows.h"
 
-#include "global.hpp"
+#if WINVER < 0x0A00
+#error "windows 10 or later only"
+#endif
 
-class SettingsModel : public QThread
+#include "iprocess.hpp"
+
+namespace Model
 {
-    Q_OBJECT
 
+class WinProcess : public IProcess
+{
 public:
 
-    static SettingsModel *create(QObject * = nullptr);
+    WinProcess();
 
-    ~SettingsModel();
+    ~WinProcess();
 
-    uint_fast8_t startConnect(const QString &, int);
+    virtual uint_fast8_t init() override;
 
-    uint_fast8_t hasError(bool &);
+    virtual uint_fast8_t start(const Task &task) override;
 
-    uint_fast8_t lastError(QString &);
+    virtual void stop() override;
 
-    void run() override;
+    virtual bool isRunning() override;
 
-signals:
+    virtual uint_fast8_t readCurrentOutput(std::string &out) override;
 
-    void done();
+    virtual uint_fast8_t exitCode(int_fast32_t &out) override;
 
 private:
 
-    SettingsModel(QObject * = nullptr);
+    HANDLE m_childStdinRead;
 
-    std::shared_ptr<Global> m_global;
+    HANDLE m_childStdinWrite;
+    
+    HANDLE m_childStdoutRead;
+    
+    HANDLE m_childStdoutWrite;
 
-    QString m_ip;
+    PROCESS_INFORMATION m_procInfo;
 
-    uint16_t m_port;
+    std::atomic<int_fast32_t> m_exitCode;
 
-    bool m_hasError;
+    uint_fast8_t CreateChildProcess(const Task &);
 
-    QString m_lastError;
+    void resetHandle();
 
-    std::atomic<bool> m_isRunning;
+    void stopImpl();
+
 };
+
+} // end namespace Model
+
+#endif // _MODEL_WINPROCESS_HPP_

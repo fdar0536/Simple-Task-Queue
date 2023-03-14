@@ -60,7 +60,7 @@ MainWindow::~MainWindow()
     }
 }
 
-uint8_t MainWindow::init()
+uint_fast8_t MainWindow::init()
 {
     try
     {
@@ -268,7 +268,7 @@ void MainWindow::connectHook()
             &MainWindow::onActionAboutQtTriggered);
 }
 
-uint8_t MainWindow::cleanCentral(CurrentWidget index)
+uint_fast8_t MainWindow::cleanCentral(CurrentWidget index)
 {
     if (index == m_currentWidget)
     {

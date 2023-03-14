@@ -36,7 +36,7 @@
 
 static bool isAdmin();
 
-int main(int argc, char **argv)
+int_fast32_t main(int_fast32_t argc, char **argv)
 {
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/view/icon/computer_black_48dp.svg"));

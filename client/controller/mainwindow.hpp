@@ -42,7 +42,7 @@ public:
 
     ~MainWindow();
 
-    uint8_t init();
+    uint_fast8_t init();
 
 protected:
 
@@ -91,6 +91,6 @@ private:
 
     void connectHook();
 
-    uint8_t cleanCentral(CurrentWidget);
+    uint_fast8_t cleanCentral(CurrentWidget);
 
 };

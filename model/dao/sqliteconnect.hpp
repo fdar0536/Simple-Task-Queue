@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,52 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_DAO_SQLITECONNECT_HPP_
+#define _MODEL_DAO_SQLITECONNECT_HPP_
 
-#include <atomic>
+#include <mutex>
 
-#include "QThread"
+#include "sqlite3.h"
 
-#include "global.hpp"
+#include "iconnect.hpp"
 
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
+namespace DAO
+{
+
+class SQLiteToken
+{
 public:
 
-    static SettingsModel *create(QObject * = nullptr);
+    ~SQLiteToken();
 
-    ~SettingsModel();
+    sqlite3 *db = nullptr;
 
-    uint_fast8_t startConnect(const QString &, int);
+    sqlite3_stmt *stmt = nullptr;
 
-    uint_fast8_t hasError(bool &);
+    std::mutex mutex;
 
-    uint_fast8_t lastError(QString &);
+}; // end class SQLiteToken
 
-    void run() override;
+class SQLiteConnect: public IConnect<SQLiteToken>
+{
+public:
 
-signals:
+    SQLiteConnect();
 
-    void done();
+    ~SQLiteConnect();
 
-private:
+    virtual uint_fast8_t init() override;
 
-    SettingsModel(QObject * = nullptr);
+    virtual uint_fast8_t startConnect(const std::string &target,
+                                 const int_fast32_t port = 0) override;
 
-    std::shared_ptr<Global> m_global;
+}; // end class DirConnect
 
-    QString m_ip;
+} // end namespace DAO
 
-    uint16_t m_port;
+} // end namespace Model
 
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _MODEL_DAO_SQLITECONNECT_HPP_

@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,29 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_UTILS_HPP_
+#define _MODEL_UTILS_HPP_
 
-#include <atomic>
+#include <string>
 
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
-public:
+namespace Utils
+{
 
-    static SettingsModel *create(QObject * = nullptr);
+uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t **out);
 
-    ~SettingsModel();
+uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t **out);
 
-    uint_fast8_t startConnect(const QString &, int);
+uint_fast8_t utf16ToUtf8(const std::wstring &in, char **out);
 
-    uint_fast8_t hasError(bool &);
+uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char **out);
 
-    uint_fast8_t lastError(QString &);
+void writeLastError(const char *file, int line);
 
-    void run() override;
+} // end namespace Utils
 
-signals:
+} // end namespace Model
 
-    void done();
-
-private:
-
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _MODEL_UTILS_HPP_

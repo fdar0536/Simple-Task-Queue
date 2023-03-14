@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,52 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_DAO_SQLITEQUEUELIST_HPP_
+#define _MODEL_DAO_SQLITEQUEUELIST_HPP_
 
-#include <atomic>
+#include <unordered_map>
 
-#include "QThread"
+#include "sqliteconnect.hpp"
+#include "iqueuelist.hpp"
 
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
+namespace DAO
+{
+
+class SQLiteQueueList: public IQueueList<SQLiteToken>
+{
 public:
 
-    static SettingsModel *create(QObject * = nullptr);
+    SQLiteQueueList();
 
-    ~SettingsModel();
+    ~SQLiteQueueList();
 
-    uint_fast8_t startConnect(const QString &, int);
+    virtual uint_fast8_t
+    init(std::shared_ptr<IConnect<SQLiteToken>> &connect) override;
 
-    uint_fast8_t hasError(bool &);
+    virtual uint_fast8_t createQueue(const std::string &name) override;
 
-    uint_fast8_t lastError(QString &);
+    virtual uint_fast8_t listQueue(std::vector<std::string> &out) override;
 
-    void run() override;
+    virtual uint_fast8_t deleteQueue(const std::string &name) override;
 
-signals:
+    virtual uint_fast8_t renameQueue(const std::string &oldName,
+                                const std::string &newName) override;
 
-    void done();
+    virtual std::shared_ptr<IQueue<SQLiteToken>>
+    getQueue(const std::string &name) override;
 
 private:
 
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
+    std::unordered_map<std::string,
+    std::shared_ptr<IQueue<SQLiteToken>>> m_queueList;
 };
+
+} // end namespace DAO
+
+} // end namespace Model
+
+#endif // _MODEL_DAO_SQLITEQUEUELIST_HPP_
+

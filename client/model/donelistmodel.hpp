@@ -39,17 +39,17 @@ public:
 
     static DoneListModel *create(QObject * = nullptr);
 
-    uint8_t lastError(QString &);
+    uint_fast8_t lastError(QString &);
 
-    uint8_t startList();
+    uint_fast8_t startList();
 
-    uint8_t doneList(std::vector<uint32_t> &);
+    uint_fast8_t doneList(std::vector<uint32_t> &);
 
-    uint8_t startDetails(uint32_t);
+    uint_fast8_t startDetails(uint32_t);
 
-    uint8_t taskDetails(TaskDetails &);
+    uint_fast8_t taskDetails(TaskDetails &);
 
-    uint8_t startClear();
+    uint_fast8_t startClear();
 
     void run() override;
 

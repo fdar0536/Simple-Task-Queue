@@ -7,12 +7,12 @@ As its name, and just for reference.
 
 ## Dependency
 
-- Server
-  - [Go](https://go.dev)
-- Client
-  - C++17
-  - [Qt](https://www.qt.io) 6.0 or later
-  - [gRPC](https://grpc.io)
+- C++20
+- [gRPC](https://grpc.io)
+- [Qt](https://www.qt.io) 6.0 or later
+- [spdlog](https://github.com/gabime/spdlog)
+- [SQLite](https://www.sqlite.org)
+- Windows 10 1903 or later with UTF-8 enabled
 
 ## Licence
 

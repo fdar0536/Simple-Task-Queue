@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,11 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include "iprocess.hpp"
 
-#include <atomic>
-
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
-public:
+IProcess::~IProcess() {}
 
-    static SettingsModel *create(QObject * = nullptr);
-
-    ~SettingsModel();
-
-    uint_fast8_t startConnect(const QString &, int);
-
-    uint_fast8_t hasError(bool &);
-
-    uint_fast8_t lastError(QString &);
-
-    void run() override;
-
-signals:
-
-    void done();
-
-private:
-
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+} // end namespace Model

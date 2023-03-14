@@ -72,7 +72,7 @@ std::shared_ptr<Global> Global::instance()
     return m_instance;
 }
 
-uint8_t Global::state(const QString &key, QHash<QString, QVariant> &out)
+uint_fast8_t Global::state(const QString &key, QHash<QString, QVariant> &out)
 {
     std::unique_lock<std::mutex> lock(m_stateMutex);
     auto it = m_stateStore.find(key);
@@ -160,7 +160,7 @@ QRegularExpressionValidator *Global::ipRegex() const
     return m_ipRegex;
 }
 
-uint8_t Global::taskDetailsDialog(TaskDetailsDialog **out)
+uint_fast8_t Global::taskDetailsDialog(TaskDetailsDialog **out)
 {
     if (!m_taskDetailsDialogAvailable.load(std::memory_order_relaxed)) return 1;
     m_taskDetailsDialogAvailable.store(false, std::memory_order_relaxed);
@@ -184,7 +184,7 @@ Global::Global() :
     m_taskDetailsDialogAvailable.store(true, std::memory_order_relaxed);
 }
 
-uint8_t Global::initConfigFile()
+uint_fast8_t Global::initConfigFile()
 {
     QString configPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     if (configPath.isEmpty())
@@ -243,11 +243,11 @@ uint8_t Global::initConfigFile()
         return 1;
     }
 
-    int pos = 0;
+    int_fast32_t pos = 0;
 
     // note:
     // array.prototype.push is not working here
-    for (int i = 0; i < arr.size(); ++i)
+    for (int_fast32_t i = 0; i < arr.size(); ++i)
     {
         QJsonObject obj = arr[i].toObject();
         QHash<QString, QVariant> out;

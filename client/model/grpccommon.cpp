@@ -41,7 +41,7 @@ void buildErrMsg(grpc::Status &status, QString &reason)
     reason += QString::fromStdString(status.error_message());
 }
 
-uint8_t getQueueName(std::shared_ptr<Global> &global, QString &output)
+uint_fast8_t getQueueName(std::shared_ptr<Global> &global, QString &output)
 {
     if (global == nullptr) return 1;
 
@@ -57,7 +57,7 @@ uint8_t getQueueName(std::shared_ptr<Global> &global, QString &output)
         return 1;
     }
 
-    int listIndex(listState["index"].toInt());
+    int_fast32_t listIndex(listState["index"].toInt());
     if (listIndex < 0 || listIndex >= queueList.size())
     {
         return 1;
@@ -75,7 +75,7 @@ void buildTaskDetails(stq::TaskDetailsRes &res, TaskDetails &details)
     details.programName = res.programname();
 
     details.args.reserve(res.args_size());
-    for (int i = 0; i < res.args_size(); ++i)
+    for (int_fast32_t i = 0; i < res.args_size(); ++i)
     {
         details.args.push_back(res.args().at(i));
     }

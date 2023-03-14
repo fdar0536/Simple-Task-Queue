@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,32 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_TASK_HPP_
+#define _MODEL_TASK_HPP_
 
-#include <atomic>
+#include <string>
+#include <vector>
 
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
+class Task
+{
 public:
 
-    static SettingsModel *create(QObject * = nullptr);
+    Task();
 
-    ~SettingsModel();
+    std::string execName;
+    std::vector<std::string> args;
+    std::string workDir;
+    int_fast32_t ID;
+    int_fast32_t exitCode;
+    bool isSuccess;
+    std::string postHanlder;
 
-    uint_fast8_t startConnect(const QString &, int);
+    void print();
+}; // end class Task
 
-    uint_fast8_t hasError(bool &);
+} // end namespace Model
 
-    uint_fast8_t lastError(QString &);
-
-    void run() override;
-
-signals:
-
-    void done();
-
-private:
-
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _MODEL_TASK_HPP_

@@ -44,7 +44,7 @@ public:
 
     static std::shared_ptr<Global> instance();
 
-    uint8_t state(const QString &, QHash<QString, QVariant> &);
+    uint_fast8_t state(const QString &, QHash<QString, QVariant> &);
 
     void setState(const QString &, QHash<QString, QVariant> &);
 
@@ -60,7 +60,7 @@ public:
 
     QRegularExpressionValidator *ipRegex() const;
 
-    uint8_t taskDetailsDialog(TaskDetailsDialog **);
+    uint_fast8_t taskDetailsDialog(TaskDetailsDialog **);
 
     void freeTaskDetailsDialog();
 
@@ -82,5 +82,5 @@ private:
 
     std::atomic<bool> m_taskDetailsDialogAvailable;
 
-    uint8_t initConfigFile();
+    uint_fast8_t initConfigFile();
 };

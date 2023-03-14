@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,51 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_DAO_ICONNECT_HPP_
+#define _MODEL_DAO_ICONNECT_HPP_
 
-#include <atomic>
+#include <string>
+#include <memory>
 
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
+
+namespace DAO
+{
+
+template<class T>
+class IConnect
+{
 
 public:
 
-    static SettingsModel *create(QObject * = nullptr);
+    virtual ~IConnect() {}
 
-    ~SettingsModel();
+    virtual uint_fast8_t init() = 0;
 
-    uint_fast8_t startConnect(const QString &, int);
+    virtual uint_fast8_t startConnect(const std::string &target,
+                                 const int_fast32_t port = 0) = 0;
 
-    uint_fast8_t hasError(bool &);
+    std::shared_ptr<T> connectToken() const
+    {
+        return m_connectToken;
+    }
 
-    uint_fast8_t lastError(QString &);
+    std::string targetPath() const
+    {
+        return m_targetPath;
+    }
 
-    void run() override;
+protected:
 
-signals:
+    std::shared_ptr<T> m_connectToken;
 
-    void done();
+    std::string m_targetPath;
 
-private:
+}; // end class IConnect
 
-    SettingsModel(QObject * = nullptr);
+} // end namespace DAO
 
-    std::shared_ptr<Global> m_global;
+} // end namespace Model
 
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _MODEL_DAO_ICONNECT_HPP_

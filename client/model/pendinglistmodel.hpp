@@ -40,30 +40,30 @@ public:
 
     static PendingListModel *create(QObject * = nullptr);
 
-    uint8_t lastError(QString &);
+    uint_fast8_t lastError(QString &);
 
-    uint8_t startList();
+    uint_fast8_t startList();
 
-    uint8_t pendingList(std::vector<uint32_t> &);
+    uint_fast8_t pendingList(std::vector<uint32_t> &);
 
-    uint8_t startDetails(uint32_t id);
+    uint_fast8_t startDetails(uint32_t id);
 
-    uint8_t taskDetails(TaskDetails &);
+    uint_fast8_t taskDetails(TaskDetails &);
 
-    uint8_t startCurrent();
+    uint_fast8_t startCurrent();
 
-    uint8_t startAdd(const std::string &workDir,
+    uint_fast8_t startAdd(const std::string &workDir,
                      const std::string &programName,
                      const std::vector<std::string> &args,
                      const uint32_t priority);
 
-    uint8_t resID(uint32_t &);
+    uint_fast8_t resID(uint32_t &);
 
-    uint8_t startRemove(std::vector<uint32_t> &);
+    uint_fast8_t startRemove(std::vector<uint32_t> &);
 
-    uint8_t startStart();
+    uint_fast8_t startStart();
 
-    uint8_t startStop();
+    uint_fast8_t startStop();
 
     void run() override;
 
@@ -106,7 +106,7 @@ private:
 
     void stopImpl();
 
-    void startStopImpl(uint8_t);
+    void startStopImpl(uint_fast8_t);
 
     Handler m_handler[7] =
     {

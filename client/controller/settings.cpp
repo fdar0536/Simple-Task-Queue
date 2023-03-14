@@ -148,7 +148,7 @@ void Settings::onModelDone()
     setEnabled(true);
 }
 
-void Settings::onHostCurrentIndexChanged(int index)
+void Settings::onHostCurrentIndexChanged(int_fast32_t index)
 {
     if (index == -1) return;
     updateUI(index, false);
@@ -165,7 +165,7 @@ void Settings::onAliasEditingFinished()
 void Settings::onIpEditingFinished()
 {
     // m_ipRegex->validate(tmpString, pos) != QValidator::Acceptable
-    int pos(0);
+    int_fast32_t pos(0);
     QString text = m_ui->ip->text();
     m_ipAccepted = (m_global->ipRegex()->validate(text, pos) ==
                     QValidator::Acceptable);
@@ -233,7 +233,7 @@ void Settings::updateHostList()
     }
 }
 
-void Settings::updateUI(int index, bool isNotSlot)
+void Settings::updateUI(int_fast32_t index, bool isNotSlot)
 {
     auto config = m_configs[index].toHash();
     if (isNotSlot)

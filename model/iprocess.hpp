@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,34 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_IPROCESS_HPP_
+#define _MODEL_IPROCESS_HPP_
 
-#include <atomic>
+#include "task.hpp"
 
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
+class IProcess
+{
 public:
 
-    static SettingsModel *create(QObject * = nullptr);
+    virtual ~IProcess();
 
-    ~SettingsModel();
+    virtual uint_fast8_t init() = 0;
 
-    uint_fast8_t startConnect(const QString &, int);
+    virtual uint_fast8_t start(const Task &task) = 0;
 
-    uint_fast8_t hasError(bool &);
+    virtual void stop() = 0;
 
-    uint_fast8_t lastError(QString &);
+    virtual bool isRunning() = 0;
 
-    void run() override;
+    virtual uint_fast8_t readCurrentOutput(std::string &out) = 0;
 
-signals:
+    virtual uint_fast8_t exitCode(int_fast32_t &out) = 0;
 
-    void done();
+}; // end class IProcess
 
-private:
+} // end namespace Model
 
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _MODEL_IPROCESS_HPP_

@@ -67,28 +67,28 @@ QueueListModel *QueueListModel::create(QObject *parent)
 QueueListModel::~QueueListModel()
 {}
 
-uint8_t QueueListModel::hasError(bool &out)
+uint_fast8_t QueueListModel::hasError(bool &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_hasError;
     return 0;
 }
 
-uint8_t QueueListModel::lastError(QString &out)
+uint_fast8_t QueueListModel::lastError(QString &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_lastError;
     return 0;
 }
 
-uint8_t QueueListModel::result(QStringList &out)
+uint_fast8_t QueueListModel::result(QStringList &out)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     out = m_res;
     return 0;
 }
 
-uint8_t QueueListModel::startCreate(const QString &name)
+uint_fast8_t QueueListModel::startCreate(const QString &name)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_name = name;
@@ -98,7 +98,7 @@ uint8_t QueueListModel::startCreate(const QString &name)
     return 0;
 }
 
-uint8_t QueueListModel::startRename(const QString &oldName, const QString &newName)
+uint_fast8_t QueueListModel::startRename(const QString &oldName, const QString &newName)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_oldName = oldName;
@@ -110,7 +110,7 @@ uint8_t QueueListModel::startRename(const QString &oldName, const QString &newNa
     return 0;
 }
 
-uint8_t QueueListModel::startDelete(const QString &name)
+uint_fast8_t QueueListModel::startDelete(const QString &name)
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     m_name = name;
@@ -120,7 +120,7 @@ uint8_t QueueListModel::startDelete(const QString &name)
     return 0;
 }
 
-uint8_t QueueListModel::startList()
+uint_fast8_t QueueListModel::startList()
 {
     if (m_isRunning.load(std::memory_order_relaxed)) return 1;
     reset();

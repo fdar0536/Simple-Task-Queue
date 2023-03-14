@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,49 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_DAO_IQUEUELIST_HPP_
+#define _MODEL_DAO_IQUEUELIST_HPP_
 
-#include <atomic>
+#include <string>
+#include <vector>
 
-#include "QThread"
+#include "iconnect.hpp"
+#include "iqueue.hpp"
 
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
+namespace DAO
+{
+
+template<class T>
+class IQueueList
+{
 public:
 
-    static SettingsModel *create(QObject * = nullptr);
+    virtual ~IQueueList() {}
 
-    ~SettingsModel();
+    virtual uint_fast8_t init(std::shared_ptr<IConnect<T>> &connect) = 0;
 
-    uint_fast8_t startConnect(const QString &, int);
+    virtual uint_fast8_t createQueue(const std::string &name) = 0;
 
-    uint_fast8_t hasError(bool &);
+    virtual uint_fast8_t listQueue(std::vector<std::string> &out) = 0;
 
-    uint_fast8_t lastError(QString &);
+    virtual uint_fast8_t deleteQueue(const std::string &name) = 0;
 
-    void run() override;
+    virtual uint_fast8_t renameQueue(const std::string &oldName,
+                                const std::string &newName) = 0;
 
-signals:
+    virtual std::shared_ptr<IQueue<T>> getQueue(const std::string &name) = 0;
 
-    void done();
+protected:
 
-private:
+    std::shared_ptr<IConnect<T>> m_conn;
 
-    SettingsModel(QObject * = nullptr);
+}; // end class IQueueList
 
-    std::shared_ptr<Global> m_global;
+} // end namespace DAO
 
-    QString m_ip;
+} // end namespace Model
 
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _MODEL_DAO_IQUEUELIST_HPP_

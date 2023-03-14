@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,32 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _MODEL_DAO_DIRUTILS_HPP_
+#define _MODEL_DAO_DIRUTILS_HPP_
 
-#include <atomic>
+#include <string>
 
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
-public:
+namespace DAO
+{
 
-    static SettingsModel *create(QObject * = nullptr);
+namespace DirUtils
+{
 
-    ~SettingsModel();
+uint_fast8_t verifyDir(const std::string &path);
 
-    uint_fast8_t startConnect(const QString &, int);
+uint_fast8_t verifyFile(const std::string &path);
 
-    uint_fast8_t hasError(bool &);
+void deleteDirectoryContents(const std::string& dir_path);
 
-    uint_fast8_t lastError(QString &);
+void convertPath(std::string &toConvert);
 
-    void run() override;
+} // end namespace DirUtils
 
-signals:
+} // end namespace DAO
 
-    void done();
+} // end namespace Model
 
-private:
-
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+#endif // _MODEL_DAO_DIRUTILS_HPP_

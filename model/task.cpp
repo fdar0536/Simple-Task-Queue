@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,39 @@
  * SOFTWARE.
  */
 
-#pragma once
+#include <ostream>
 
-#include <atomic>
+#include "task.hpp"
+#include "view/cli/utils.hpp"
 
-#include "QThread"
-
-#include "global.hpp"
-
-class SettingsModel : public QThread
+namespace Model
 {
-    Q_OBJECT
 
-public:
+Task::Task() :
+    execName(""),
+    args(std::vector<std::string>()),
+    workDir(""),
+    ID(0),
+    exitCode(0),
+    isSuccess(false),
+    postHanlder("")
+{}
 
-    static SettingsModel *create(QObject * = nullptr);
+void Task::print()
+{
+    View::CLI::Utils::writeConsole("execName: " + execName + "\n");
+    View::CLI::Utils::writeConsole("args: ");
+    for (auto it = args.begin(); it != args.end(); ++it)
+    {
+        View::CLI::Utils::writeConsole(*it + "\n");
+    }
+    View::CLI::Utils::writeConsole("\n");
 
-    ~SettingsModel();
+    View::CLI::Utils::writeConsole("workDir: " + workDir + "\n");
+    View::CLI::Utils::writeConsole("ID: " + std::to_string(ID) + "\n");
+    View::CLI::Utils::writeConsole("exitCode: " + std::to_string(exitCode) + "\n");
+    View::CLI::Utils::writeConsole("isSuccess: " + std::to_string(isSuccess) + "\n");
+    View::CLI::Utils::writeConsole("postHanlder: " + postHanlder + "\n");
+}
 
-    uint_fast8_t startConnect(const QString &, int);
-
-    uint_fast8_t hasError(bool &);
-
-    uint_fast8_t lastError(QString &);
-
-    void run() override;
-
-signals:
-
-    void done();
-
-private:
-
-    SettingsModel(QObject * = nullptr);
-
-    std::shared_ptr<Global> m_global;
-
-    QString m_ip;
-
-    uint16_t m_port;
-
-    bool m_hasError;
-
-    QString m_lastError;
-
-    std::atomic<bool> m_isRunning;
-};
+} // end namespace Model
