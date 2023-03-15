@@ -55,6 +55,12 @@ uint_fast8_t WinProcess::init()
 
 uint_fast8_t WinProcess::start(const Task &task)
 {
+    if (isRunning())
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, "Process is running");
+        return 1;
+    }
+
     resetHandle();
     SECURITY_ATTRIBUTES saAttr;
 

@@ -13,18 +13,18 @@ message QueueReq {
 }
 
 message ListTaskRes {
-  string ID = 1;
+  int32 ID = 1;
 }
 
 message TaskDetailsReq {
   string queueName = 1;
-  string ID = 2;
+  int32 ID = 2;
 }
 
 message TaskDetailsRes {
   string workDir = 1;
-  string programName = 2;
+  string execName = 2;
   repeated string args = 3;
-  uint32 exitCode = 4;
-  string ID = 5;
+  int32 exitCode = 4;
+  int32 ID = 5;
 }

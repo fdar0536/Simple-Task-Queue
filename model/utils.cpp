@@ -97,6 +97,7 @@ uint_fast8_t utf16ToUtf8(const std::wstring &in, char **out)
     return utf16ToUtf8(in.c_str(), in.length(), out);
 #else
     static_cast<void>(in);
+    static_cast<void>(out);
     return 0;
 #endif
 }

@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2020 fdar0536
+ * Copyright (c) 2020-2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,15 @@
  * SOFTWARE.
  */
 
-#pragma once
+#ifndef _CONFIG_H_
+#define _CONFIG_H_
 
 #define STQ_VERSION "@STQ_VERSION@"
 #define STQ_NAME "@STQ_NAME@"
 #define STQ_CLIENT_TIMEOUT @CLIENT_TIMEOUT@
+
+#cmakedefine STQ_CLI
+#cmakedefine STQ_GUI
+#cmakedefine STQ_GRPC_SERVER
+
+#endif // _CONFIG_H_

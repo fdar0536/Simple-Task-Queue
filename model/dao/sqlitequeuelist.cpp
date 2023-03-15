@@ -33,7 +33,7 @@
 #ifdef _WIN32
 #include "model/winprocess.hpp"
 #else
-#include "model/boostprocess.hpp"
+#include "model/posixprocess.hpp"
 #endif
 
 namespace Model
@@ -118,7 +118,7 @@ uint_fast8_t SQLiteQueueList::createQueue(const std::string &name)
 #ifdef _WIN32
     WinProcess *proc = new ( std::nothrow ) WinProcess();
 #else
-    BoostProcess *proc = new (std::nothrow) BoostProcess();
+    PosixProcess *proc = new (std::nothrow) PosixProcess();
 #endif
     if (!proc)
     {

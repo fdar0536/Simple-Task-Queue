@@ -100,7 +100,6 @@ uint_fast8_t SQLiteQueue::init(std::shared_ptr<IConnect<SQLiteToken>> &connect,
             dbColumnName["ID"] = "INT";
             dbColumnName["exitCode"] = "INT";
             dbColumnName["isSuccess"] = "INT";
-            dbColumnName["postHanlder"] = "TEXT";
             isDBColumnNameInit = true;
         }
     }
@@ -302,8 +301,7 @@ uint_fast8_t SQLiteQueue::createTable(const std::string &name)
         "workDir text NOT NULL, "
         "ID INT NOT NULL PRIMARY KEY, "
         "exitCode INT NOT NULL, "
-        "isSuccess INT NOT NULL, "
-        "postHanlder text NOT NULL"
+        "isSuccess INT NOT NULL"
         ");";
 
     if (sqlite3_prepare_v2(m_token->db,
@@ -674,8 +672,6 @@ uint_fast8_t SQLiteQueue::clearTable(const std::string &name)
         goto exit;
     }
 
-  
-
     if (sqlite3_step(m_token->stmt) != SQLITE_DONE)
     {
         spdlog::error("{}:{} Fail to clear table: {}", __FILE__, __LINE__,
@@ -777,7 +773,6 @@ uint_fast8_t SQLiteQueue::taskDetails(const std::string &name, const int_fast32_
             out.ID = sqlite3_column_int(m_token->stmt, 3);
             out.exitCode = sqlite3_column_int(m_token->stmt, 4);
             out.isSuccess = sqlite3_column_int(m_token->stmt, 5);
-            out.postHanlder = reinterpret_cast<const char *>(sqlite3_column_text(m_token->stmt, 6));
 
             ++rowCount;
         }
@@ -814,7 +809,7 @@ uint_fast8_t SQLiteQueue::addTaskToTable(const std::string &name, const Task &in
     uint_fast8_t ret(0);
     std::string args = "";
     std::string sql = "insert into " + name + " ";
-    sql += "values(?,?,?,?,?,?,?);";
+    sql += "values(?,?,?,?,?,?);";
 
     if (sqlite3_prepare_v2(m_token->db,
         sql.c_str(), sql.length(),
@@ -868,14 +863,6 @@ uint_fast8_t SQLiteQueue::addTaskToTable(const std::string &name, const Task &in
     }
 
     if (sqlite3_bind_int(m_token->stmt, 6, in.isSuccess))
-    {
-        spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
-            sqlite3_errmsg(m_token->db));
-        ret = 1;
-        goto exit;
-    }
-
-    if (sqlite3_bind_text(m_token->stmt, 7, in.postHanlder.c_str(), in.postHanlder.length(), NULL))
     {
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
@@ -1125,7 +1112,6 @@ uint_fast8_t SQLiteQueue::mainLoopInit()
         m_currentTask.ID = sqlite3_column_int(m_token->stmt, 3);
         m_currentTask.exitCode = sqlite3_column_int(m_token->stmt, 4);
         m_currentTask.isSuccess = sqlite3_column_int(m_token->stmt, 5);
-        m_currentTask.postHanlder = reinterpret_cast<const char *>(sqlite3_column_text(m_token->stmt, 6));
         break;
     }
     case SQLITE_DONE:

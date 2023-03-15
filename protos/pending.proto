@@ -19,7 +19,7 @@ service Pending {
 message AddTaskReq {
   string queueName = 1;
   string workDir = 2;
-  string programName = 3;
+  string execName = 3;
   repeated string args = 4;
-  string ID = 5;
+  int32 ID = 5;
 }

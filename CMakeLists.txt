@@ -44,13 +44,37 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
     set(CLIENT_TIMEOUT 31)
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
+option(ENABLE_CLI "enable debug console" on)
+option(ENABLE_GUI "enable GUI shell" on)
+option(ENABLE_GRPC_SERVER "enable GRPC server" on)
+
+if ((NOT ENABLE_CLI) AND (NOT ENABLE_GUI) AND (ENABLE_GRPC_SERVER))
+    set(ENABLE_GUI 1)
+endif ((NOT ENABLE_CLI) AND (NOT ENABLE_GUI) AND (ENABLE_GRPC_SERVER))
+
+if (ENABLE_CLI)
+    set(STQ_CLI 1)
+endif (ENABLE_CLI)
+
+if (ENABLE_GUI)
+    set(STQ_GUI 1)
+endif (ENABLE_GUI)
+
+if (ENABLE_GRPC_SERVER)
+    set(STQ_GRPC_SERVER 1)
+endif (ENABLE_GRPC_SERVER)
+
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)
 
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
-find_package(Qt6 COMPONENTS Widgets REQUIRED)
+
+if (ENABLE_GUI)
+    find_package(Qt6 COMPONENTS Widgets REQUIRED)
+endif (ENABLE_GUI)
+
 find_package(spdlog REQUIRED)
 find_package(SQLite3 REQUIRED)
 
@@ -115,22 +139,39 @@ if (WIN32)
         model/winprocess.cpp
         model/winprocess.hpp
     )
+else(WIN32)
+    list(APPEND MODEL_SRC
+        model/posixprocess.cpp
+        model/posixprocess.hpp
+    )
 endif (WIN32)
 
-set(VIEW_SRC
+if (ENABLE_CLI)
+    set(VIEW_SRC
     
-    # cli
-    view/cli/main.cpp
-    view/cli/main.hpp
-    view/cli/queue.hpp
-    view/cli/queuelist.hpp
-    view/cli/utils.cpp
-    view/cli/utils.hpp
-)
+        # cli
+        view/cli/main.cpp
+        view/cli/main.hpp
+        view/cli/queue.hpp
+        view/cli/queuelist.hpp
+        view/cli/utils.cpp
+        view/cli/utils.hpp
+    )
+endif (ENABLE_CLI)
+
+if (ENABLE_GRPC_SERVER)
+    set(CONTROLLER_SRC
+    
+        # grpc
+        controller/grpcserver/accessimpl.cpp
+        controller/grpcserver/accessimpl.hpp
+    )
+endif (ENABLE_GRPC_SERVER)
 
 add_executable(STQ
     ${MODEL_SRC}
     ${VIEW_SRC}
+    ${CONTROLLER_SRC}
 
     main.cpp
     main.hpp

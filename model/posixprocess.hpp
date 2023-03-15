@@ -21,31 +21,54 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_TASK_HPP_
-#define _MODEL_TASK_HPP_
+#ifndef _MODEL_POSIXPROCESS_HPP_
+#define _MODEL_POSIXPROCESS_HPP_
 
-#include <string>
-#include <vector>
+#include <atomic>
+
+#include "unistd.h"
+
+#include "iprocess.hpp"
 
 namespace Model
 {
 
-class Task
+class PosixProcess : public IProcess
 {
 public:
 
-    Task();
+    PosixProcess();
 
-    std::string execName;
-    std::vector<std::string> args;
-    std::string workDir;
-    int_fast32_t ID;
-    int_fast32_t exitCode;
-    bool isSuccess;
+    ~PosixProcess();
 
-    void print();
-}; // end class Task
+    virtual uint_fast8_t init() override;
+
+    virtual uint_fast8_t start(const Task &task) override;
+
+    virtual void stop() override;
+
+    virtual bool isRunning() override;
+
+    virtual uint_fast8_t readCurrentOutput(std::string &out) override;
+
+    virtual uint_fast8_t exitCode(int_fast32_t &out) override;
+
+private:
+
+    pid_t m_pid;
+
+    int m_fd[2];
+
+    std::atomic<int_fast32_t> m_exitCode;
+
+    void startChild(const Task &);
+
+    char **buildChildArgv(const Task &);
+
+    void stopImpl();
+
+};
 
 } // end namespace Model
 
-#endif // _MODEL_TASK_HPP_
+#endif // _MODEL_POSIXPROCESS_HPP_

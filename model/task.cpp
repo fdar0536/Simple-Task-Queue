@@ -35,8 +35,7 @@ Task::Task() :
     workDir(""),
     ID(0),
     exitCode(0),
-    isSuccess(false),
-    postHanlder("")
+    isSuccess(false)
 {}
 
 void Task::print()
@@ -53,7 +52,6 @@ void Task::print()
     View::CLI::Utils::writeConsole("ID: " + std::to_string(ID) + "\n");
     View::CLI::Utils::writeConsole("exitCode: " + std::to_string(exitCode) + "\n");
     View::CLI::Utils::writeConsole("isSuccess: " + std::to_string(isSuccess) + "\n");
-    View::CLI::Utils::writeConsole("postHanlder: " + postHanlder + "\n");
 }
 
 } // end namespace Model
