@@ -21,39 +21,25 @@
  * SOFTWARE.
  */
 
-#ifndef _MAIN_HPP_
-#define _MAIN_HPP_
+#ifndef _MODEL_GLOBAL_INIT_HPP_
+#define _MODEL_GLOBAL_INIT_HPP_
 
-#include <iostream>
+#include <inttypes.h>
 
-#include <stdio.h>
+#include "defines.hpp"
 
-#ifdef _WIN32
-#include "windows.h"
-#include "io.h"
-#include "fcntl.h"
-#endif
-
-#include "spdlog/spdlog.h"
-
-#include "model/utils.hpp"
-#include "view/cli/main.hpp"
-
-namespace Main
+namespace Model
 {
 
-#ifdef _WIN32
-static uint_fast8_t init(UINT &, UINT &);
-#else
-static uint_fast8_t init();
-#endif
+namespace Global
+{
 
-#ifdef _WIN32
-static void fin(UINT &, UINT &);
-#else
-static void fin();
-#endif
+uint_fast8_t init(int argc, char **argv);
 
-} // end namespace Main
+void fin();
 
-#endif // _MAIN_HPP_
+} // end namespace Global
+
+} // end namespace Model
+
+#endif // _MODEL_GLOBAL_INIT_HPP_

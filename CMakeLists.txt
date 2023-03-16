@@ -49,19 +49,19 @@ option(ENABLE_GUI "enable GUI shell" on)
 option(ENABLE_GRPC_SERVER "enable GRPC server" on)
 
 if ((NOT ENABLE_CLI) AND (NOT ENABLE_GUI) AND (ENABLE_GRPC_SERVER))
-    set(ENABLE_GUI 1)
+    set(ENABLE_GUI ON)
 endif ((NOT ENABLE_CLI) AND (NOT ENABLE_GUI) AND (ENABLE_GRPC_SERVER))
 
 if (ENABLE_CLI)
-    set(STQ_CLI 1)
+    set(STQ_CLI ON)
 endif (ENABLE_CLI)
 
 if (ENABLE_GUI)
-    set(STQ_GUI 1)
+    set(STQ_GUI ON)
 endif (ENABLE_GUI)
 
 if (ENABLE_GRPC_SERVER)
-    set(STQ_GRPC_SERVER 1)
+    set(STQ_GRPC_SERVER ON)
 endif (ENABLE_GRPC_SERVER)
 
 configure_file(config.h.in config.h @ONLY)
@@ -125,19 +125,31 @@ set(MODEL_SRC
     model/dao/dirutils.cpp
     model/dao/dirutils.hpp
 
-    model/iprocess.cpp
-    model/iprocess.hpp
+    # global
+    model/global/defines.hpp
+    model/global/config.cpp
+    model/global/config.hpp
+    model/global/init.cpp
+    model/global/init.hpp
 
-    model/task.cpp
-    model/task.hpp
+    # proc
+    model/proc/iproc.cpp
+    model/proc/iproc.hpp
+    model/proc/task.cpp
+    model/proc/task.hpp
+
     model/utils.cpp
     model/utils.hpp
 )
 
 if (WIN32)
     list(APPEND MODEL_SRC
-        model/winprocess.cpp
-        model/winprocess.hpp
+        model/proc/winproc.cpp
+        model/proc/winproc.hpp
+
+        model/win32-code/getopt.c
+        model/win32-code/getopt.h
+        model/win32-code/getopt_long.c
     )
 else(WIN32)
     list(APPEND MODEL_SRC
@@ -174,8 +186,7 @@ add_executable(STQ
     ${CONTROLLER_SRC}
 
     main.cpp
-    main.hpp
-)
+ "model/global/ocnfig.cpp")
 
 add_dependencies(STQ grpc_common)
 

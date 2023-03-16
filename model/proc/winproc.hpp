@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2022-2023 fdar0536
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,70 @@
  * SOFTWARE.
  */
 
-#include "spdlog/spdlog.h"
+#ifndef _MODEL_PROC_WINPROC_HPP_
+#define _MODEL_PROC_WINPROC_HPP_
 
-#include "model/global/init.hpp"
-#include "view/cli/main.hpp"
+#include <atomic>
+#include <mutex>
 
-int main(int argc, char **argv)
+#include "windows.h"
+
+#if WINVER < 0x0A00
+#error "windows 10 or later only"
+#endif
+
+#include "iproc.hpp"
+
+namespace Model
 {
-    if (Model::Global::init(argc, argv))
-    {
-        spdlog::error("{}:{} Fail to initialize", __FILE__, __LINE__);
-        return 1;
-    }
 
-    const int ret(View::CLI::main());
-    Model::Global::fin();
-    return ret;
-}
+namespace Proc
+{
+
+class WinProc : public IProc
+{
+public:
+
+    WinProc();
+
+    ~WinProc();
+
+    virtual uint_fast8_t init() override;
+
+    virtual uint_fast8_t start(const Task &task) override;
+
+    virtual void stop() override;
+
+    virtual bool isRunning() override;
+
+    virtual uint_fast8_t readCurrentOutput(std::string &out) override;
+
+    virtual uint_fast8_t exitCode(int_fast32_t &out) override;
+
+private:
+
+    HANDLE m_childStdinRead;
+
+    HANDLE m_childStdinWrite;
+
+    HANDLE m_childStdoutRead;
+
+    HANDLE m_childStdoutWrite;
+
+    PROCESS_INFORMATION m_procInfo;
+
+    std::atomic<int_fast32_t> m_exitCode;
+
+    uint_fast8_t CreateChildProcess(const Task &);
+
+    void resetHandle();
+
+    void stopImpl();
+
+};
+
+} // end namespace Proc
+
+} // end namespace Model
+
+#endif // _MODEL_PROC_WINPROC_HPP_

@@ -25,14 +25,17 @@
 
 #include "spdlog/spdlog.h"
 
-#include "winprocess.hpp"
+#include "winproc.hpp"
 #include "tlhelp32.h"
 #include "utils.hpp"
 
 namespace Model
 {
 
-WinProcess::WinProcess() :
+namespace Proc
+{
+
+WinProc::WinProc() :
     m_childStdinRead(nullptr),
     m_childStdinWrite(nullptr),
     m_childStdoutRead(nullptr),
@@ -40,12 +43,12 @@ WinProcess::WinProcess() :
     m_procInfo(PROCESS_INFORMATION())
 {}
 
-WinProcess::~WinProcess()
+WinProc::~WinProc()
 {
     stopImpl();
 }
 
-uint_fast8_t WinProcess::init()
+uint_fast8_t WinProc::init()
 {
     m_procInfo.hProcess = NULL;
     m_procInfo.hThread = NULL;
@@ -53,7 +56,7 @@ uint_fast8_t WinProcess::init()
     return 0;
 }
 
-uint_fast8_t WinProcess::start(const Task &task)
+uint_fast8_t WinProc::start(const Task &task)
 {
     if (isRunning())
     {
@@ -110,12 +113,12 @@ uint_fast8_t WinProcess::start(const Task &task)
     return 0;
 }
 
-void WinProcess::stop()
+void WinProc::stop()
 {
     stopImpl();
 }
 
-bool WinProcess::isRunning()
+bool WinProc::isRunning()
 {
     int_fast32_t exitCode = m_exitCode.load(std::memory_order_relaxed);
     if (exitCode != STILL_ACTIVE)
@@ -130,10 +133,10 @@ bool WinProcess::isRunning()
     }
 
     m_exitCode.store(exitCode, std::memory_order_relaxed);
-    return (exitCode == STILL_ACTIVE);
+    return ( exitCode == STILL_ACTIVE );
 }
 
-uint_fast8_t WinProcess::readCurrentOutput(std::string &out)
+uint_fast8_t WinProc::readCurrentOutput(std::string &out)
 {
     if (!isRunning())
     {
@@ -163,7 +166,7 @@ uint_fast8_t WinProcess::readCurrentOutput(std::string &out)
     return 0;
 }
 
-uint_fast8_t WinProcess::exitCode(int_fast32_t &out)
+uint_fast8_t WinProc::exitCode(int_fast32_t &out)
 {
     if (isRunning())
     {
@@ -176,7 +179,7 @@ uint_fast8_t WinProcess::exitCode(int_fast32_t &out)
 }
 
 // private member functions
-uint_fast8_t WinProcess::CreateChildProcess(const Task &task)
+uint_fast8_t WinProc::CreateChildProcess(const Task &task)
 {
     if (task.execName.empty())
     {
@@ -198,7 +201,7 @@ uint_fast8_t WinProcess::CreateChildProcess(const Task &task)
         cmdLine += task.args.at(lastIndex + 1);
     }
 
-    char *cmdPtr = new (std::nothrow)char[cmdLine.length() + 1]();
+    char *cmdPtr = new ( std::nothrow )char[cmdLine.length() + 1]();
     if (!cmdPtr)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to allocate memory");
@@ -254,7 +257,7 @@ uint_fast8_t WinProcess::CreateChildProcess(const Task &task)
     return ret;
 }
 
-void WinProcess::resetHandle()
+void WinProc::resetHandle()
 {
     if (m_childStdinRead)
     {
@@ -295,7 +298,7 @@ void WinProcess::resetHandle()
     memset(&m_procInfo, 0, sizeof(PROCESS_INFORMATION));
 }
 
-void WinProcess::stopImpl()
+void WinProc::stopImpl()
 {
     PROCESSENTRY32 pe;
 
@@ -338,5 +341,7 @@ void WinProcess::stopImpl()
         }
     }
 }
+
+} // end namespace Proc
 
 } // end namespace Model

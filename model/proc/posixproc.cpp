@@ -29,26 +29,29 @@
 
 #include "spdlog/spdlog.h"
 
-#include "posixprocess.hpp"
+#include "posixproc.hpp"
 
 namespace Model
 {
 
-PosixProcess::PosixProcess() :
+namespace Proc
+{
+
+PosixProc::PosixProc() :
     m_pid(0)
 {}
 
-PosixProcess::~PosixProcess()
+PosixProc::~PosixProc()
 {}
 
-uint_fast8_t PosixProcess::init()
+uint_fast8_t PosixProc::init()
 {
     memset(m_fd, 0, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
     return 0;
 }
 
-uint_fast8_t PosixProcess::start(const Task &task)
+uint_fast8_t PosixProc::start(const Task &task)
 {
     if (isRunning())
     {
@@ -105,12 +108,12 @@ uint_fast8_t PosixProcess::start(const Task &task)
     return 0;
 }
 
-void PosixProcess::stop()
+void PosixProc::stop()
 {
     stopImpl();
 }
 
-bool PosixProcess::isRunning()
+bool PosixProc::isRunning()
 {
     int status;
     pid_t ret = waitpid(m_pid, &status, WNOHANG);
@@ -134,7 +137,7 @@ bool PosixProcess::isRunning()
     }
 }
 
-uint_fast8_t PosixProcess::readCurrentOutput(std::string &out)
+uint_fast8_t PosixProc::readCurrentOutput(std::string &out)
 {
     ssize_t count(0);
     char buf[4096] = {};
@@ -165,7 +168,7 @@ uint_fast8_t PosixProcess::readCurrentOutput(std::string &out)
     }
 }
 
-uint_fast8_t PosixProcess::exitCode(int_fast32_t &out)
+uint_fast8_t PosixProc::exitCode(int_fast32_t &out)
 {
     if (isRunning())
     {
@@ -178,10 +181,10 @@ uint_fast8_t PosixProcess::exitCode(int_fast32_t &out)
 }
 
 // private member functions
-void PosixProcess::startChild(const Task &task)
+void PosixProc::startChild(const Task &task)
 {
-    while ((dup2(m_fd[1], STDOUT_FILENO) == -1) && (errno == EINTR)) {}
-    while ((dup2(STDOUT_FILENO, STDERR_FILENO) == -1) && (errno == EINTR)) {}
+    while (( dup2(m_fd[1], STDOUT_FILENO) == -1 ) && ( errno == EINTR )) {}
+    while (( dup2(STDOUT_FILENO, STDERR_FILENO) == -1 ) && ( errno == EINTR )) {}
     close(m_fd[0]);
 
     if (chdir(task.workDir.c_str()) == -1)
@@ -203,16 +206,16 @@ void PosixProcess::startChild(const Task &task)
     exit(1);
 }
 
-char **PosixProcess::buildChildArgv(const Task &task)
+char **PosixProc::buildChildArgv(const Task &task)
 {
     char **argv(nullptr);
     if (task.args.size())
     {
-        argv = new (std::nothrow) char *[task.args.size() + 2](); // process name + null for tail
+        argv = new ( std::nothrow ) char *[task.args.size() + 2](); // process name + null for tail
     }
     else
     {
-        argv = new (std::nothrow) char *[2]();
+        argv = new ( std::nothrow ) char *[2]();
     }
 
     if (!argv)
@@ -222,7 +225,7 @@ char **PosixProcess::buildChildArgv(const Task &task)
     }
 
     size_t nameLen = task.execName.length() + 1;
-    argv[0] = new (std::nothrow) char[nameLen]();
+    argv[0] = new ( std::nothrow ) char[nameLen]();
     if (!argv[0])
     {
         delete[] argv;
@@ -237,7 +240,7 @@ char **PosixProcess::buildChildArgv(const Task &task)
         for (size_t i = 0; i < task.args.size(); ++i)
         {
             index = i + 1;
-            argv[index] = new (std::nothrow) char[task.args[i].size() + 1](); // +1 for '\0'
+            argv[index] = new ( std::nothrow ) char[task.args[i].size() + 1](); // +1 for '\0'
             if (!argv[index])
             {
                 for (size_t j = 0; j < index; ++j)
@@ -264,7 +267,7 @@ char **PosixProcess::buildChildArgv(const Task &task)
     return argv;
 }
 
-void PosixProcess::stopImpl()
+void PosixProc::stopImpl()
 {
     if (kill(m_pid * -1, SIGKILL) == -1)
     {
@@ -272,7 +275,9 @@ void PosixProcess::stopImpl()
         return;
     }
 
-    sleep(1);
+    sleep(2);
 }
+
+} // end namespace Proc
 
 } // end namespace Model

@@ -21,11 +21,36 @@
  * SOFTWARE.
  */
 
-#include "iprocess.hpp"
+#ifndef _MODEL_PROC_TASK_HPP_
+#define _MODEL_PROC_TASK_HPP_
+
+#include <string>
+#include <vector>
 
 namespace Model
 {
 
-IProcess::~IProcess() {}
+namespace Proc
+{
+
+class Task
+{
+public:
+
+    Task();
+
+    std::string execName;
+    std::vector<std::string> args;
+    std::string workDir;
+    int_fast32_t ID;
+    int_fast32_t exitCode;
+    bool isSuccess;
+
+    void print();
+}; // end class Task
+
+} // end namespace Proc
 
 } // end namespace Model
+
+#endif // _MODEL_PROC_TASK_HPP_

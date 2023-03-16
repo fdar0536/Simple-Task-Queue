@@ -21,37 +21,16 @@
  * SOFTWARE.
  */
 
-#include <ostream>
-
-#include "task.hpp"
-#include "view/cli/utils.hpp"
+#include "iproc.hpp"
 
 namespace Model
 {
 
-Task::Task() :
-    execName(""),
-    args(std::vector<std::string>()),
-    workDir(""),
-    ID(0),
-    exitCode(0),
-    isSuccess(false)
-{}
-
-void Task::print()
+namespace Proc
 {
-    View::CLI::Utils::writeConsole("execName: " + execName + "\n");
-    View::CLI::Utils::writeConsole("args: ");
-    for (auto it = args.begin(); it != args.end(); ++it)
-    {
-        View::CLI::Utils::writeConsole(*it + "\n");
-    }
-    View::CLI::Utils::writeConsole("\n");
 
-    View::CLI::Utils::writeConsole("workDir: " + workDir + "\n");
-    View::CLI::Utils::writeConsole("ID: " + std::to_string(ID) + "\n");
-    View::CLI::Utils::writeConsole("exitCode: " + std::to_string(exitCode) + "\n");
-    View::CLI::Utils::writeConsole("isSuccess: " + std::to_string(isSuccess) + "\n");
-}
+IProc::~IProc() {}
+
+} // end namespace Proc
 
 } // end namespace Model

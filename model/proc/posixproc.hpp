@@ -21,25 +21,28 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_POSIXPROCESS_HPP_
-#define _MODEL_POSIXPROCESS_HPP_
+#ifndef _MODEL_PROC_POSIXPROC_HPP_
+#define _MODEL_PROC_POSIXPROC_HPP_
 
 #include <atomic>
 
 #include "unistd.h"
 
-#include "iprocess.hpp"
+#include "iproc.hpp"
 
 namespace Model
 {
 
-class PosixProcess : public IProcess
+namespace Proc
+{
+
+class PosixProc : public IProc
 {
 public:
 
-    PosixProcess();
+    PosixProc();
 
-    ~PosixProcess();
+    ~PosixProc();
 
     virtual uint_fast8_t init() override;
 
@@ -69,6 +72,8 @@ private:
 
 };
 
+} // end namespace Proc
+
 } // end namespace Model
 
-#endif // _MODEL_POSIXPROCESS_HPP_
+#endif // _MODEL_PROC_POSIXPROC_HPP_

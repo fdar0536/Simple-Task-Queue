@@ -46,24 +46,24 @@ public:
     ~SQLiteQueue();
 
     virtual uint_fast8_t init(std::shared_ptr<IConnect<SQLiteToken>> &connect,
-                         std::shared_ptr<Model::IProcess> &process,
+                         std::shared_ptr<Proc::IProc> &process,
                          const std::string &name) override;
 
     virtual uint_fast8_t listPending(std::vector<int> &out) override;
 
     virtual uint_fast8_t listFinished(std::vector<int> &out) override;
 
-    virtual uint_fast8_t pendingDetails(const int_fast32_t id, Task &out) override;
+    virtual uint_fast8_t pendingDetails(const int_fast32_t id, Proc::Task &out) override;
 
-    virtual uint_fast8_t finishedDetails(const int_fast32_t id, Task &out) override;
+    virtual uint_fast8_t finishedDetails(const int_fast32_t id, Proc::Task &out) override;
 
     virtual uint_fast8_t clearPending() override;
 
     virtual uint_fast8_t clearFinished() override;
 
-    virtual uint_fast8_t currentTask(Task &out) override;
+    virtual uint_fast8_t currentTask(Proc::Task &out) override;
 
-    virtual uint_fast8_t addTask(Task &in) override;
+    virtual uint_fast8_t addTask(Proc::Task &in) override;
 
     virtual uint_fast8_t removeTask(const int_fast32_t in) override;
 
@@ -81,7 +81,7 @@ private:
 
     std::mutex m_currentTaskMutex;
 
-    Task m_currentTask;
+    Proc::Task m_currentTask;
 
     std::atomic<bool> m_isRunning;
 
@@ -101,9 +101,9 @@ private:
 
     uint_fast8_t listIDInTable(const std::string &, std::vector<int> &);
 
-    uint_fast8_t taskDetails(const std::string &, const int_fast32_t, Task &);
+    uint_fast8_t taskDetails(const std::string &, const int_fast32_t, Proc::Task &);
 
-    uint_fast8_t addTaskToTable(const std::string &, const Task &);
+    uint_fast8_t addTaskToTable(const std::string &, const Proc::Task &);
 
     uint_fast8_t removeTaskFromPending(const int_fast32_t, const bool);
 

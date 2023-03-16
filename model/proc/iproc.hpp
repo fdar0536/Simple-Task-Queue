@@ -21,19 +21,22 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_IPROCESS_HPP_
-#define _MODEL_IPROCESS_HPP_
+#ifndef _MODEL_PROC_IPROC_HPP_
+#define _MODEL_PROC_IPROC_HPP_
 
 #include "task.hpp"
 
 namespace Model
 {
 
-class IProcess
+namespace Proc
+{
+
+class IProc
 {
 public:
 
-    virtual ~IProcess();
+    virtual ~IProc();
 
     virtual uint_fast8_t init() = 0;
 
@@ -47,8 +50,10 @@ public:
 
     virtual uint_fast8_t exitCode(int_fast32_t &out) = 0;
 
-}; // end class IProcess
+}; // end class IProc
+
+} // end namespace Proc
 
 } // end namespace Model
 
-#endif // _MODEL_IPROCESS_HPP_
+#endif // _MODEL_PROC_IPROC_HPP_

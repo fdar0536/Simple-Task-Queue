@@ -324,7 +324,6 @@ int_fast32_t addTask(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     }
 
     in.workDir = Utils::getInput("workDir:");
-    in.postHanlder = Utils::getInput("postHanlder:");
     
     Utils::writeConsole("Your input:\n");
     Utils::writeConsole("\n");

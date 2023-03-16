@@ -21,65 +21,26 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_WINPROCESS_HPP_
-#define _MODEL_WINPROCESS_HPP_
+#ifndef _MODEL_GLOBAL_DEFINES_HPP_
+#define _MODEL_GLOBAL_DEFINES_HPP_
 
-#include <atomic>
-#include <mutex>
+#include "config.h"
 
-#include "windows.h"
-
-#if WINVER < 0x0A00
-#error "windows 10 or later only"
-#endif
-
-#include "iprocess.hpp"
+#define UNUSED(x) static_cast<void>(x)
 
 namespace Model
 {
 
-class WinProcess : public IProcess
+namespace Global
 {
-public:
 
-    WinProcess();
+typedef enum class EventLoopType
+{
+    Server, CLI, GUI
+} EventLoopType;
 
-    ~WinProcess();
-
-    virtual uint_fast8_t init() override;
-
-    virtual uint_fast8_t start(const Task &task) override;
-
-    virtual void stop() override;
-
-    virtual bool isRunning() override;
-
-    virtual uint_fast8_t readCurrentOutput(std::string &out) override;
-
-    virtual uint_fast8_t exitCode(int_fast32_t &out) override;
-
-private:
-
-    HANDLE m_childStdinRead;
-
-    HANDLE m_childStdinWrite;
-    
-    HANDLE m_childStdoutRead;
-    
-    HANDLE m_childStdoutWrite;
-
-    PROCESS_INFORMATION m_procInfo;
-
-    std::atomic<int_fast32_t> m_exitCode;
-
-    uint_fast8_t CreateChildProcess(const Task &);
-
-    void resetHandle();
-
-    void stopImpl();
-
-};
+} // end namespace Global
 
 } // end namespace Model
 
-#endif // _MODEL_WINPROCESS_HPP_
+#endif // _MODEL_GLOBAL_DEFINES_HPP_

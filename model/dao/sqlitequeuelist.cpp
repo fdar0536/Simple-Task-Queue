@@ -31,9 +31,9 @@
 #include "dirutils.hpp"
 
 #ifdef _WIN32
-#include "model/winprocess.hpp"
+#include "model/proc/winproc.hpp"
 #else
-#include "model/posixprocess.hpp"
+#include "model/proc/posixproc.hpp"
 #endif
 
 namespace Model
@@ -116,9 +116,9 @@ SQLiteQueueList::init(std::shared_ptr<IConnect<SQLiteToken>> &connect)
 uint_fast8_t SQLiteQueueList::createQueue(const std::string &name)
 {
 #ifdef _WIN32
-    WinProcess *proc = new ( std::nothrow ) WinProcess();
+    Proc::WinProc *proc = new ( std::nothrow ) Proc::WinProc();
 #else
-    PosixProcess *proc = new (std::nothrow) PosixProcess();
+    PosixProc *proc = new (std::nothrow) Proc::PosixProc();
 #endif
     if (!proc)
     {
@@ -141,7 +141,7 @@ uint_fast8_t SQLiteQueueList::createQueue(const std::string &name)
         return 1;
     }
 
-    std::shared_ptr<IProcess> procPtr = std::shared_ptr<IProcess>(proc);
+    std::shared_ptr<Proc::IProc> procPtr = std::shared_ptr<Proc::IProc>(proc);
 
     if (queue->init(m_conn, procPtr, name))
     {

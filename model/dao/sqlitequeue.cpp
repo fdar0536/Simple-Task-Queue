@@ -63,7 +63,7 @@ SQLiteQueue::~SQLiteQueue()
 }
 
 uint_fast8_t SQLiteQueue::init(std::shared_ptr<IConnect<SQLiteToken>> &connect,
-                          std::shared_ptr<Model::IProcess> &process,
+                          std::shared_ptr<Proc::IProc> &process,
                           const std::string &name)
 {
     static_cast<void>(connect);
@@ -132,13 +132,13 @@ uint_fast8_t SQLiteQueue::listFinished(std::vector<int> &out)
     return listIDInTable("done", out);
 }
 
-uint_fast8_t SQLiteQueue::pendingDetails(const int_fast32_t id, Task &out)
+uint_fast8_t SQLiteQueue::pendingDetails(const int_fast32_t id, Proc::Task &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
     return taskDetails("pending", id, out);
 }
 
-uint_fast8_t SQLiteQueue::finishedDetails(const int_fast32_t id, Task &out)
+uint_fast8_t SQLiteQueue::finishedDetails(const int_fast32_t id, Proc::Task &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
     return taskDetails("done", id, out);
@@ -157,7 +157,7 @@ uint_fast8_t SQLiteQueue::clearFinished()
     return clearTable("done");
 }
 
-uint_fast8_t SQLiteQueue::currentTask(Task &out)
+uint_fast8_t SQLiteQueue::currentTask(Proc::Task &out)
 {
     if (!isRunning())
     {
@@ -170,7 +170,7 @@ uint_fast8_t SQLiteQueue::currentTask(Task &out)
     return 0;
 }
 
-uint_fast8_t SQLiteQueue::addTask(Task &in)
+uint_fast8_t SQLiteQueue::addTask(Proc::Task &in)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
     if (getID(in.ID))
@@ -436,7 +436,7 @@ uint_fast8_t SQLiteQueue::verifyTable(const std::string &name)
         }
     }
 
-    if (rowCount != 7)
+    if (rowCount != 6)
     {
         spdlog::error("{}:{} Invalid table", __FILE__, __LINE__);
         ret = 1;
@@ -734,7 +734,7 @@ exit:
     return ret;
 }
 
-uint_fast8_t SQLiteQueue::taskDetails(const std::string &name, const int_fast32_t id, Task &out)
+uint_fast8_t SQLiteQueue::taskDetails(const std::string &name, const int_fast32_t id, Proc::Task &out)
 {
     uint_fast8_t ret(0);
     int_fast32_t rc(0);
@@ -804,7 +804,7 @@ exit:
     return ret;
 }
 
-uint_fast8_t SQLiteQueue::addTaskToTable(const std::string &name, const Task &in)
+uint_fast8_t SQLiteQueue::addTaskToTable(const std::string &name, const Proc::Task &in)
 {
     uint_fast8_t ret(0);
     std::string args = "";
@@ -1149,7 +1149,7 @@ void SQLiteQueue::mainLoopFin()
         {
             spdlog::error("{}:{} Fail to get exit code.", __FILE__, __LINE__);
             m_start.store(false, std::memory_order_relaxed);
-            m_currentTask = Task();
+            m_currentTask = Proc::Task();
             return;
         }
 
@@ -1161,7 +1161,7 @@ void SQLiteQueue::mainLoopFin()
             // Because that may be removed by clearing the pending list
             spdlog::error("{}:{} Fail to remove task from pending", __FILE__, __LINE__);
             m_start.store(false, std::memory_order_relaxed);
-            m_currentTask = Task();
+            m_currentTask = Proc::Task();
             return;
         }
 
@@ -1169,11 +1169,11 @@ void SQLiteQueue::mainLoopFin()
         {
             spdlog::error("{}:{} Fail to add task to done list", __FILE__, __LINE__);
             m_start.store(false, std::memory_order_relaxed);
-            m_currentTask = Task();
+            m_currentTask = Proc::Task();
             return;
         }
 
-        m_currentTask = Task();
+        m_currentTask = Proc::Task();
     }
 }
 

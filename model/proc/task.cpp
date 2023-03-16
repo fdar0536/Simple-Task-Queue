@@ -21,31 +21,42 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_TASK_HPP_
-#define _MODEL_TASK_HPP_
+#include <ostream>
 
-#include <string>
-#include <vector>
+#include "task.hpp"
+#include "view/cli/utils.hpp"
 
 namespace Model
 {
 
-class Task
+namespace Proc
 {
-public:
 
-    Task();
+Task::Task() :
+    execName(""),
+    args(std::vector<std::string>()),
+    workDir(""),
+    ID(0),
+    exitCode(0),
+    isSuccess(false)
+{}
 
-    std::string execName;
-    std::vector<std::string> args;
-    std::string workDir;
-    int_fast32_t ID;
-    int_fast32_t exitCode;
-    bool isSuccess;
+void Task::print()
+{
+    View::CLI::Utils::writeConsole("execName: " + execName + "\n");
+    View::CLI::Utils::writeConsole("args: ");
+    for (auto it = args.begin(); it != args.end(); ++it)
+    {
+        View::CLI::Utils::writeConsole(*it + "\n");
+    }
+    View::CLI::Utils::writeConsole("\n");
 
-    void print();
-}; // end class Task
+    View::CLI::Utils::writeConsole("workDir: " + workDir + "\n");
+    View::CLI::Utils::writeConsole("ID: " + std::to_string(ID) + "\n");
+    View::CLI::Utils::writeConsole("exitCode: " + std::to_string(exitCode) + "\n");
+    View::CLI::Utils::writeConsole("isSuccess: " + std::to_string(isSuccess) + "\n");
+}
+
+} // end namespace Proc
 
 } // end namespace Model
-
-#endif // _MODEL_TASK_HPP_

@@ -26,8 +26,8 @@
 
 #include <vector>
 
-#include "model/iprocess.hpp"
-#include "model/task.hpp"
+#include "model/proc/iproc.hpp"
+#include "model/proc/task.hpp"
 #include "iconnect.hpp"
 
 namespace Model
@@ -44,24 +44,24 @@ public:
     virtual ~IQueue() {}
 
     virtual uint_fast8_t init(std::shared_ptr<IConnect<T>> &connect,
-                         std::shared_ptr<Model::IProcess> &process,
+                         std::shared_ptr<Proc::IProc> &process,
                          const std::string &name) = 0;
 
     virtual uint_fast8_t listPending(std::vector<int> &out) = 0;
 
     virtual uint_fast8_t listFinished(std::vector<int> &out) = 0;
 
-    virtual uint_fast8_t pendingDetails(const int_fast32_t id, Task &out) = 0;
+    virtual uint_fast8_t pendingDetails(const int_fast32_t id, Proc::Task &out) = 0;
 
-    virtual uint_fast8_t finishedDetails(const int_fast32_t id, Task &out) = 0;
+    virtual uint_fast8_t finishedDetails(const int_fast32_t id, Proc::Task &out) = 0;
 
     virtual uint_fast8_t clearPending() = 0;
 
     virtual uint_fast8_t clearFinished() = 0;
 
-    virtual uint_fast8_t currentTask(Task &out) = 0;
+    virtual uint_fast8_t currentTask(Proc::Task &out) = 0;
 
-    virtual uint_fast8_t addTask(Task &in) = 0;
+    virtual uint_fast8_t addTask(Proc::Task &in) = 0;
 
     virtual uint_fast8_t removeTask(const int_fast32_t in) = 0;
 
@@ -75,7 +75,7 @@ public:
 
 protected:
 
-    std::shared_ptr<Model::IProcess> m_process;
+    std::shared_ptr<Model::Proc::IProc> m_process;
 
 }; // end class IQueue
 
