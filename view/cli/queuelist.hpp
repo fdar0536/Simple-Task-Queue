@@ -29,6 +29,7 @@
 #include <unordered_map>
 
 #include "model/dao/iqueuelist.hpp"
+#include "model/utils.hpp"
 #include "queue.hpp"
 #include "utils.hpp"
 
@@ -99,7 +100,7 @@ int_fast32_t run(Model::DAO::IQueueList<T> &queueList)
         auto queue = queueList.getQueue(cmd);
         if (queue == nullptr)
         {
-            Utils::writeConsole("No such queue: " + cmd + "\n");
+            Model::Utils::writeConsole("No such queue: " + cmd + "\n");
             lastExitCode = 1;
             continue;
         }
@@ -124,8 +125,8 @@ uint_fast8_t exit()
     std::string input;
     while (1)
     {
-        Utils::writeConsole("Are you sure to exit?\n");
-        Utils::writeConsole("Current queue list will be clean up.\n");
+        Model::Utils::writeConsole("Are you sure to exit?\n");
+        Model::Utils::writeConsole("Current queue list will be clean up.\n");
         input = Utils::getInput("Your answer (yes/no):");
         if (input == "yes")
         {
@@ -136,21 +137,21 @@ uint_fast8_t exit()
             return 0;
         }
 
-        Utils::writeConsole("Please enter \"yes\" or \"no\"\n");
+        Model::Utils::writeConsole("Please enter \"yes\" or \"no\"\n");
     }
 }
 
 template<class T>
 int_fast32_t help(Model::DAO::IQueueList<T> &)
 {
-    Utils::writeConsole("create: create the new queue\n");
-        Utils::writeConsole("list: list all queue(s)\n");
-    Utils::writeConsole("delete: delete the queue\n");
-    Utils::writeConsole("rename: rename the queue\n");
-    Utils::writeConsole("help: print this message\n");
-    Utils::writeConsole("exit: exit this loop\n");
+    Model::Utils::writeConsole("create: create the new queue\n");
+    Model::Utils::writeConsole("list: list all queue(s)\n");
+    Model::Utils::writeConsole("delete: delete the queue\n");
+    Model::Utils::writeConsole("rename: rename the queue\n");
+    Model::Utils::writeConsole("help: print this message\n");
+    Model::Utils::writeConsole("exit: exit this loop\n");
 
-    Utils::writeConsole("cannot interpret: enter the queue you typed.\n");
+    Model::Utils::writeConsole("cannot interpret: enter the queue you typed.\n");
 
     return 0;
 }
@@ -161,7 +162,7 @@ int_fast32_t create(Model::DAO::IQueueList<T> &queueList)
     std::string cmd = Utils::getInput("Enter the name:");
     if (queueList.createQueue(cmd))
     {
-        Utils::writeConsole("Fail to create queue.\n");
+        Model::Utils::writeConsole("Fail to create queue.\n");
         return 1;
     }
 
@@ -174,13 +175,13 @@ int_fast32_t list(Model::DAO::IQueueList<T> &queueList)
     std::vector<std::string> out;
     if (queueList.listQueue(out))
     {
-        Utils::writeConsole("Fail to list queue or queue is empty.\n");
+        Model::Utils::writeConsole("Fail to list queue or queue is empty.\n");
         return 1;
     }
 
     for (auto &i : out)
     {
-        Utils::writeConsole(i + "\n");
+        Model::Utils::writeConsole(i + "\n");
     }
 
     return 0;
@@ -192,7 +193,7 @@ int_fast32_t deleteQueue(Model::DAO::IQueueList<T> &queueList)
     std::string cmd = Utils::getInput("Enter the name:");
     if (queueList.deleteQueue(cmd))
     {
-        Utils::writeConsole("Fail to delete queue or no such queue\n");
+        Model::Utils::writeConsole("Fail to delete queue or no such queue\n");
         return 1;
     }
 
@@ -206,7 +207,7 @@ int_fast32_t rename(Model::DAO::IQueueList<T> &queueList)
     std::string newName = Utils::getInput("Enter the new name:");
     if (queueList.renameQueue(oldName, newName))
     {
-        Utils::writeConsole("Fail to rename queue or no such queue\n");
+        Model::Utils::writeConsole("Fail to rename queue or no such queue\n");
         return 1;
     }
 

@@ -34,7 +34,6 @@
 
 #include "model/dao/dirutils.hpp"
 #include "model/utils.hpp"
-#include "view/cli/utils.hpp"
 #include "config.hpp"
 
 namespace json = rapidjson;
@@ -297,9 +296,9 @@ void Config::printHelp(char **argv)
         return;
     }
 
-    View::CLI::Utils::writeConsole(argv[0]);
-    View::CLI::Utils::writeConsole(" usage:\n");
-    View::CLI::Utils::writeConsole("--config-file <file>, -c <file>: set config file\n");
+    Utils::writeConsole(argv[0]);
+    Utils::writeConsole(" usage:\n");
+    Utils::writeConsole("--config-file <file>, -c <file>: set config file\n");
 }
 
 } // end namespace Global

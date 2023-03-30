@@ -27,7 +27,7 @@
 
 #include "winproc.hpp"
 #include "tlhelp32.h"
-#include "utils.hpp"
+#include "model/utils.hpp"
 
 namespace Model
 {
@@ -86,7 +86,7 @@ uint_fast8_t WinProc::start(const Task &task)
         return 1;
     }
 
-    // Create a pipe for the child process's STDIN. 
+    // Create a pipe for the child process's STDIN.
     if (!CreatePipe(&m_childStdinRead, &m_childStdinWrite, &saAttr, 0))
     {
         Utils::writeLastError(__FILE__, __LINE__);
@@ -94,7 +94,7 @@ uint_fast8_t WinProc::start(const Task &task)
         return 1;
     }
 
-    // Ensure the write handle to the pipe for STDIN is not inherited. 
+    // Ensure the write handle to the pipe for STDIN is not inherited.
     if (!SetHandleInformation(m_childStdinWrite, HANDLE_FLAG_INHERIT, 0))
     {
         Utils::writeLastError(__FILE__, __LINE__);
@@ -102,7 +102,7 @@ uint_fast8_t WinProc::start(const Task &task)
         return 1;
     }
 
-    // Create the child process. 
+    // Create the child process.
     if (CreateChildProcess(task))
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to start process");
@@ -213,7 +213,7 @@ uint_fast8_t WinProc::CreateChildProcess(const Task &task)
     STARTUPINFO siStartInfo;
     BOOL bSuccess = FALSE;
 
-    // Set up members of the STARTUPINFO structure. 
+    // Set up members of the STARTUPINFO structure.
     // This structure specifies the STDIN and STDOUT handles for redirection.
     ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
     siStartInfo.cb = sizeof(STARTUPINFO);
@@ -222,21 +222,21 @@ uint_fast8_t WinProc::CreateChildProcess(const Task &task)
     siStartInfo.hStdInput = m_childStdinRead;
     siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
-    // Create the child process. 
+    // Create the child process.
     bSuccess = CreateProcessA(NULL,
-        cmdPtr,        // command line 
-        NULL,          // process security attributes 
-        NULL,          // primary thread security attributes 
-        TRUE,          // handles are inherited 
-        0,             // creation flags 
-        NULL,          // use parent's environment 
+        cmdPtr,        // command line
+        NULL,          // process security attributes
+        NULL,          // primary thread security attributes
+        TRUE,          // handles are inherited
+        0,             // creation flags
+        NULL,          // use parent's environment
         task.workDir.c_str(),
-        &siStartInfo,  // STARTUPINFO pointer 
-        &m_procInfo);  // receives PROCESS_INFORMATION 
+        &siStartInfo,  // STARTUPINFO pointer
+        &m_procInfo);  // receives PROCESS_INFORMATION
 
     uint_fast8_t ret(0);
 
-    // If an error occurs, exit the application. 
+    // If an error occurs, exit the application.
     if (!bSuccess)
     {
         Utils::writeLastError(__FILE__, __LINE__);

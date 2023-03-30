@@ -26,6 +26,7 @@
 
 #include "model/dao/sqlitequeue.hpp"
 #include "model/dao/sqlitequeuelist.hpp"
+#include "model/utils.hpp"
 
 #include "queuelist.hpp"
 #include "utils.hpp"
@@ -65,14 +66,14 @@ int_fast32_t main()
         auto connPtr = new (std::nothrow) Model::DAO::SQLiteConnect();
         if (!connPtr)
         {
-            Utils::writeConsole("Fail to allocate memory\n");
+            Model::Utils::writeConsole("Fail to allocate memory\n");
             lastExitCode = 1;
             continue;
         }
 
         if (connPtr->init())
         {
-            Utils::writeConsole("Fail to initialize conn\n");
+            Model::Utils::writeConsole("Fail to initialize conn\n");
             lastExitCode = 1;
             continue;
         }
@@ -81,7 +82,7 @@ int_fast32_t main()
         if (lastExitCode)
         {
             delete connPtr;
-            Utils::writeConsole("Fail to connect to database\n");
+            Model::Utils::writeConsole("Fail to connect to database\n");
             continue;
         }
 
@@ -90,7 +91,7 @@ int_fast32_t main()
         lastExitCode = queueList.init(conn);
         if (lastExitCode)
         {
-            Utils::writeConsole("Fail to initialize queue list\n");
+            Model::Utils::writeConsole("Fail to initialize queue list\n");
             continue;
         }
 
@@ -100,8 +101,8 @@ int_fast32_t main()
 
 int_fast32_t help()
 {
-    Utils::writeConsole("Please enter the path of database\n");
-    Utils::writeConsole("or type \"exit\" to exit the program\n");
+    Model::Utils::writeConsole("Please enter the path of database\n");
+    Model::Utils::writeConsole("or type \"exit\" to exit the program\n");
     return 0;
 }
 

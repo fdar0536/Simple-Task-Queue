@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+#include <iostream>
 #include <regex>
 
 #ifdef _WIN32
@@ -176,6 +177,22 @@ void writeLastError(const char *file, int line)
 #else
     static_cast<void>(file);
     static_cast<void>(line);
+#endif
+}
+
+void writeConsole(const std::string &in)
+{
+#ifdef _WIN32
+    wchar_t buf[4096] = {};
+    if (utf8ToUtf16(in, buf, 4096))
+    {
+        spdlog::error("{}:{} Fail to input", __FILE__, __LINE__);
+        return;
+    }
+
+    std::wcout << buf;
+#else
+    std::cout << in;
 #endif
 }
 

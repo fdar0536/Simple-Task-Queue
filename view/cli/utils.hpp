@@ -37,8 +37,6 @@ namespace Utils
 
 std::string getInput(const std::string &);
 
-void writeConsole(const std::string &);
-
 } // end namespace Utils
 
 } // end namespace CLI

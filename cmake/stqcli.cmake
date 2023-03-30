@@ -27,6 +27,7 @@ add_dependencies(STQCli grpc_common STQModel)
 target_link_libraries(STQCli
     PRIVATE
 
+    STQModel
     grpc_common
     spdlog::spdlog
     SQLite::SQLite3

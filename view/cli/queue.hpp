@@ -29,6 +29,7 @@
 #include <unordered_map>
 
 #include "model/dao/iqueue.hpp"
+#include "model/utils.hpp"
 #include "utils.hpp"
 
 namespace View
@@ -113,7 +114,7 @@ int_fast32_t run(std::shared_ptr<Model::DAO::IQueue<T>> &queue, const std::strin
         func = handlers<T>[cmd];
         if (func == nullptr)
         {
-            Utils::writeConsole("Unknown command: " + cmd + "\n");
+            Model::Utils::writeConsole("Unknown command: " + cmd + "\n");
             lastExitCode = 1;
             continue;
         }
@@ -145,22 +146,22 @@ void init()
 template<class T>
 int_fast32_t help(std::shared_ptr<Model::DAO::IQueue<T>> &)
 {
-    Utils::writeConsole("listPending: list pending task\n");
-    Utils::writeConsole("listFinished: list finished task\n");
-    Utils::writeConsole("pendingDetails: task details in pending list\n");
-    Utils::writeConsole("finishedDetails: task details in finished list\n");
-    Utils::writeConsole("clearPending: clear all tasks in pending list\n");
-    Utils::writeConsole("clearFinished: clear all tasks in finished list\n");
-    Utils::writeConsole("currentTask: get the current task's details\n");
-    Utils::writeConsole("addTask: add task to queue\n");
-    Utils::writeConsole("removeTask: remove task from pending list\n");
-    Utils::writeConsole("isRunning: output this queue is running or not\n");
-    Utils::writeConsole("readCurrentOutput: read the current output of this queue\n");
-    Utils::writeConsole("start: start this queue\n");
-    Utils::writeConsole("stop: stop this queue\n");
+    Model::Utils::writeConsole("listPending: list pending task\n");
+    Model::Utils::writeConsole("listFinished: list finished task\n");
+    Model::Utils::writeConsole("pendingDetails: task details in pending list\n");
+    Model::Utils::writeConsole("finishedDetails: task details in finished list\n");
+    Model::Utils::writeConsole("clearPending: clear all tasks in pending list\n");
+    Model::Utils::writeConsole("clearFinished: clear all tasks in finished list\n");
+    Model::Utils::writeConsole("currentTask: get the current task's details\n");
+    Model::Utils::writeConsole("addTask: add task to queue\n");
+    Model::Utils::writeConsole("removeTask: remove task from pending list\n");
+    Model::Utils::writeConsole("isRunning: output this queue is running or not\n");
+    Model::Utils::writeConsole("readCurrentOutput: read the current output of this queue\n");
+    Model::Utils::writeConsole("start: start this queue\n");
+    Model::Utils::writeConsole("stop: stop this queue\n");
 
-    Utils::writeConsole("help: print this message\n");
-    Utils::writeConsole("exit: exit this loop\n");
+    Model::Utils::writeConsole("help: print this message\n");
+    Model::Utils::writeConsole("exit: exit this loop\n");
     return 0;
 }
 
@@ -170,19 +171,19 @@ int_fast32_t listPending(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     std::vector<int> out;
     if (queue->listPending(out))
     {
-        Utils::writeConsole("Fail to list pending list\n");
+        Model::Utils::writeConsole("Fail to list pending list\n");
         return 1;
     }
 
     if (!out.size())
     {
-        Utils::writeConsole("pending list is empty\n");
+        Model::Utils::writeConsole("pending list is empty\n");
         return 0;
     }
 
     for (auto &it : out)
     {
-        Utils::writeConsole(std::to_string(it) + "\n");
+        Model::Utils::writeConsole(std::to_string(it) + "\n");
     }
 
     return 0;
@@ -194,19 +195,19 @@ int_fast32_t listFinished(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     std::vector<int> out;
     if (queue->listFinished(out))
     {
-        Utils::writeConsole("Fail to list finished list\n");
+        Model::Utils::writeConsole("Fail to list finished list\n");
         return 1;
     }
 
     if (!out.size())
     {
-        Utils::writeConsole("finished list is empty\n");
+        Model::Utils::writeConsole("finished list is empty\n");
         return 0;
     }
 
     for (auto &it : out)
     {
-        Utils::writeConsole(std::to_string(it) + "\n");
+        Model::Utils::writeConsole(std::to_string(it) + "\n");
     }
 
     return 0;
@@ -215,7 +216,7 @@ int_fast32_t listFinished(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 template<class T>
 int_fast32_t pendingDetails(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
-    Model::Task out = Model::Task();
+    Model::Proc::Task out = Model::Proc::Task();
     std::string input = Utils::getInput("Please enter id:");
 
     int_fast32_t id(0);
@@ -225,13 +226,13 @@ int_fast32_t pendingDetails(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     }
     catch (...)
     {
-        Utils::writeConsole("Invalid input: " + input + "\n");
+        Model::Utils::writeConsole("Invalid input: " + input + "\n");
         return 1;
     }
 
     if (queue->pendingDetails(id, out))
     {
-        Utils::writeConsole("Fail to get details\n");
+        Model::Utils::writeConsole("Fail to get details\n");
         return 1;
     }
 
@@ -242,7 +243,7 @@ int_fast32_t pendingDetails(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 template<class T>
 int_fast32_t finishedDetails(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
-    Model::Task out = Model::Task();
+    Model::Proc::Task out = Model::Proc::Task();
     std::string input = Utils::getInput("Please enter id:");
 
     int_fast32_t id(0);
@@ -252,13 +253,13 @@ int_fast32_t finishedDetails(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     }
     catch (...)
     {
-        Utils::writeConsole("Invalid input: " + input + "\n");
+        Model::Utils::writeConsole("Invalid input: " + input + "\n");
         return 1;
     }
 
     if (queue->finishedDetails(id, out))
     {
-        Utils::writeConsole("Fail to get details\n");
+        Model::Utils::writeConsole("Fail to get details\n");
         return 1;
     }
 
@@ -271,7 +272,7 @@ int_fast32_t clearPending(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
     if (queue->clearPending())
     {
-        Utils::writeConsole("Fail to clear pending list\n");
+        Model::Utils::writeConsole("Fail to clear pending list\n");
         return 1;
     }
 
@@ -283,7 +284,7 @@ int_fast32_t clearFinished(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
     if (queue->clearFinished())
     {
-        Utils::writeConsole("Fail to clear finished list\n");
+        Model::Utils::writeConsole("Fail to clear finished list\n");
         return 1;
     }
 
@@ -293,10 +294,10 @@ int_fast32_t clearFinished(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 template<class T>
 int_fast32_t currentTask(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
-    Model::Task out = Model::Task();
+    Model::Proc::Task out = Model::Proc::Task();
     if (queue->currentTask(out))
     {
-        Utils::writeConsole("Fail to get current task\n");
+        Model::Utils::writeConsole("Fail to get current task\n");
         return 1;
     }
 
@@ -307,7 +308,7 @@ int_fast32_t currentTask(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 template<class T>
 int_fast32_t addTask(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
-    Model::Task in = Model::Task();
+    Model::Proc::Task in = Model::Proc::Task();
     in.execName = Utils::getInput("execName:");
     std::string s = Utils::getInput("args:");
 
@@ -324,17 +325,17 @@ int_fast32_t addTask(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     }
 
     in.workDir = Utils::getInput("workDir:");
-    
-    Utils::writeConsole("Your input:\n");
-    Utils::writeConsole("\n");
+
+    Model::Utils::writeConsole("Your input:\n");
+    Model::Utils::writeConsole("\n");
     in.print();
-    Utils::writeConsole("\n");
+    Model::Utils::writeConsole("\n");
     static_cast<void>(Utils::getInput("Press return to continue"));
-    Utils::writeConsole("\n");
+    Model::Utils::writeConsole("\n");
 
     if (queue->addTask(in))
     {
-        Utils::writeConsole("Fail to add task\n");
+        Model::Utils::writeConsole("Fail to add task\n");
         return 1;
     }
 
@@ -353,24 +354,24 @@ int_fast32_t removeTask(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     }
     catch (...)
     {
-        Utils::writeConsole("Invalid input: " + input + "\n");
+        Model::Utils::writeConsole("Invalid input: " + input + "\n");
         return 1;
     }
 
     if (queue->removeTask(id))
     {
-        Utils::writeConsole("Fail to remove task\n");
+        Model::Utils::writeConsole("Fail to remove task\n");
         return 1;
     }
 
-    Utils::writeConsole("done\n");
+    Model::Utils::writeConsole("done\n");
     return 0;
 }
 
 template<class T>
 int_fast32_t isRunning(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
-    Utils::writeConsole(std::to_string(queue->isRunning()) + "\n");
+    Model::Utils::writeConsole(std::to_string(queue->isRunning()) + "\n");
     return 0;
 }
 
@@ -380,11 +381,11 @@ int_fast32_t readCurrentOutput(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
     std::string out;
     if (queue->readCurrentOutput(out))
     {
-        Utils::writeConsole("Fail to read current output\n");
+        Model::Utils::writeConsole("Fail to read current output\n");
         return 1;
     }
 
-    Utils::writeConsole(out);
+    Model::Utils::writeConsole(out);
     return 0;
 }
 
@@ -393,11 +394,11 @@ int_fast32_t start(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
     if (queue->start())
     {
-        Utils::writeConsole("Fail to start this queue\n");
+        Model::Utils::writeConsole("Fail to start this queue\n");
         return 1;
     }
 
-    Utils::writeConsole("done\n");
+    Model::Utils::writeConsole("done\n");
     return 0;
 }
 
@@ -405,7 +406,7 @@ template<class T>
 int_fast32_t stop(std::shared_ptr<Model::DAO::IQueue<T>> &queue)
 {
     queue->stop();
-    Utils::writeConsole("done\n");
+    Model::Utils::writeConsole("done\n");
     return 0;
 }
 

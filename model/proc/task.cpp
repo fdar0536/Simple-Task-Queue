@@ -24,7 +24,7 @@
 #include <ostream>
 
 #include "task.hpp"
-#include "view/cli/utils.hpp"
+#include "model/utils.hpp"
 
 namespace Model
 {
@@ -43,18 +43,18 @@ Task::Task() :
 
 void Task::print()
 {
-    View::CLI::Utils::writeConsole("execName: " + execName + "\n");
-    View::CLI::Utils::writeConsole("args: ");
+    Utils::writeConsole("execName: " + execName + "\n");
+    Utils::writeConsole("args: ");
     for (auto it = args.begin(); it != args.end(); ++it)
     {
-        View::CLI::Utils::writeConsole(*it + "\n");
+        Utils::writeConsole(*it + "\n");
     }
-    View::CLI::Utils::writeConsole("\n");
+    Utils::writeConsole("\n");
 
-    View::CLI::Utils::writeConsole("workDir: " + workDir + "\n");
-    View::CLI::Utils::writeConsole("ID: " + std::to_string(ID) + "\n");
-    View::CLI::Utils::writeConsole("exitCode: " + std::to_string(exitCode) + "\n");
-    View::CLI::Utils::writeConsole("isSuccess: " + std::to_string(isSuccess) + "\n");
+    Utils::writeConsole("workDir: " + workDir + "\n");
+    Utils::writeConsole("ID: " + std::to_string(ID) + "\n");
+    Utils::writeConsole("exitCode: " + std::to_string(exitCode) + "\n");
+    Utils::writeConsole("isSuccess: " + std::to_string(isSuccess) + "\n");
 }
 
 } // end namespace Proc

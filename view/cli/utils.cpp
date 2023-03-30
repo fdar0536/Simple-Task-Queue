@@ -68,22 +68,6 @@ std::string getInput(const std::string &prefix)
     return out;
 }
 
-void writeConsole(const std::string &in)
-{
-#ifdef _WIN32
-    wchar_t buf[4096] = {};
-    if (Model::Utils::utf8ToUtf16(in, buf, 4096))
-    {
-        spdlog::error("{}:{} Fail to input", __FILE__, __LINE__);
-        return;
-    }
-
-    std::wcout << buf;
-#else
-    std::cout << in;
-#endif
-}
-
 } // end namespace Utils
 
 } // end namespace CLI

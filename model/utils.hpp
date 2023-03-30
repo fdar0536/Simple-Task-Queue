@@ -42,6 +42,8 @@ uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char *out, size_t out
 
 void writeLastError(const char *file, int line);
 
+void writeConsole(const std::string &);
+
 uint8_t verifyIP(const std::string &);
 
 } // end namespace Utils
