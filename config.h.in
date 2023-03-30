@@ -28,8 +28,7 @@
 #define STQ_NAME "@STQ_NAME@"
 #define STQ_CLIENT_TIMEOUT @CLIENT_TIMEOUT@
 
-#cmakedefine STQ_CLI
 #cmakedefine STQ_GUI
-#cmakedefine STQ_GRPC_SERVER
+#cmakedefine STQ_MOBILE
 
 #endif // _CONFIG_H_

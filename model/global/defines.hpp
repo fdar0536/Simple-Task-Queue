@@ -36,7 +36,7 @@ namespace Global
 
 typedef enum class EventLoopType
 {
-    Server, CLI, GUI
+    None, Server, CLI, GUI
 } EventLoopType;
 
 } // end namespace Global

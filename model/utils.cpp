@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include <regex>
+
 #ifdef _WIN32
 #include "windows.h"
 #endif
@@ -35,10 +37,13 @@ namespace Model
 namespace Utils
 {
 
-uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t **out)
+static std::regex ipRegex = std::regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
+                                       "{3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+
+uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t *out, size_t outLen)
 {
 #ifdef _WIN32
-    return utf8ToUtf16(in.c_str(), in.length(), out);
+    return utf8ToUtf16(in.c_str(), in.length(), out, outLen);
 #else
     static_cast<void>(in);
     static_cast<void>(out);
@@ -46,7 +51,7 @@ uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t **out)
 #endif
 }
 
-uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t **out)
+uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t *out, size_t outLen)
 {
 #ifdef _WIN32
 
@@ -63,24 +68,20 @@ uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t **out)
         return 1;
     }
 
-    *out = new (std::nothrow) wchar_t[sizeNeeded + 1]();
-    if (!(*out))
+    if (static_cast<size_t>(sizeNeeded) > (outLen - 1))
     {
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+        spdlog::error("{}:{} no enough buffer", __FILE__, __LINE__);
         return 1;
     }
 
-    sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, in, inSize, *out, sizeNeeded);
-
+    sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, in, inSize, out, sizeNeeded);
     if (sizeNeeded <= 0)
     {
         writeLastError(__FILE__, __LINE__);
-        delete[](*out);
-        (*out) = nullptr;
         return 1;
     }
 
-    (*out)[sizeNeeded] = L'\0';
+    out[sizeNeeded] = L'\0';
     return 0;
 
 #else
@@ -91,10 +92,10 @@ uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t **out)
 #endif
 }
 
-uint_fast8_t utf16ToUtf8(const std::wstring &in, char **out)
+uint_fast8_t utf16ToUtf8(const std::wstring &in, char *out, size_t outLen)
 {
 #ifdef _WIN32
-    return utf16ToUtf8(in.c_str(), in.length(), out);
+    return utf16ToUtf8(in.c_str(), in.length(), out, outLen);
 #else
     static_cast<void>(in);
     static_cast<void>(out);
@@ -102,7 +103,7 @@ uint_fast8_t utf16ToUtf8(const std::wstring &in, char **out)
 #endif
 }
 
-uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char **out)
+uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char *out, size_t outLen)
 {
 #ifdef _WIN32
 
@@ -120,25 +121,22 @@ uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char **out)
         return 1;
     }
 
-    *out = new (std::nothrow) char[sizeNeeded + 1]();
-    if (!(*out))
+    if (static_cast<size_t>(sizeNeeded) > (outLen - 1))
     {
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+        spdlog::error("{}:{} no enough buffer", __FILE__, __LINE__);
         return 1;
     }
 
     sizeNeeded = WideCharToMultiByte(CP_UTF8, 0,
-        in, inSize, *out, sizeNeeded, NULL, NULL);
+        in, inSize, out, sizeNeeded, NULL, NULL);
 
     if (sizeNeeded <= 0)
     {
         writeLastError(__FILE__, __LINE__);
-        delete[](*out);
-        (*out) = nullptr;
         return 1;
     }
 
-    (*out)[sizeNeeded] = '\0';
+    out[sizeNeeded] = '\0';
     return 0;
 
 #else
@@ -179,6 +177,16 @@ void writeLastError(const char *file, int line)
     static_cast<void>(file);
     static_cast<void>(line);
 #endif
+}
+
+uint8_t verifyIP(const std::string &in)
+{
+    if (!std::regex_match(in, ipRegex))
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 } // end namespace Utils

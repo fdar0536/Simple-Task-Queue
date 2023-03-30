@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2022-2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +21,18 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_GLOBAL_INIT_HPP_
-#define _MODEL_GLOBAL_INIT_HPP_
+#include "spdlog/spdlog.h"
 
-#include <inttypes.h>
+#include "model/global/init.hpp"
 
-#include "config.hpp"
-
-namespace Model
+int main(int argc, char **argv)
 {
+    if (Model::Global::init(argc, argv))
+    {
+        spdlog::error("{}:{} Fail to initialize", __FILE__, __LINE__);
+        return 1;
+    }
 
-namespace Global
-{
-
-extern Config config;
-
-uint_fast8_t init(int argc, char **argv);
-
-void fin();
-
-} // end namespace Global
-
-} // end namespace Model
-
-#endif // _MODEL_GLOBAL_INIT_HPP_
+    Model::Global::fin();
+    return 0;
+}

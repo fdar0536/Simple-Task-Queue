@@ -32,15 +32,17 @@ namespace Model
 namespace Utils
 {
 
-uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t **out);
+uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t *out, size_t outLen);
 
-uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t **out);
+uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t *out, size_t outLen);
 
-uint_fast8_t utf16ToUtf8(const std::wstring &in, char **out);
+uint_fast8_t utf16ToUtf8(const std::wstring &in, char *out, size_t outLen);
 
-uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char **out);
+uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char *out, size_t outLen);
 
 void writeLastError(const char *file, int line);
+
+uint8_t verifyIP(const std::string &);
 
 } // end namespace Utils
 

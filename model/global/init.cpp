@@ -44,23 +44,27 @@ namespace Model
 namespace Global
 {
 
+Config config;
+
 #ifdef _WIN32
 static UINT consoleCP(0);
 
 static UINT consoleOutputCP(0);
-
 #endif
 
 static uint_fast8_t initConsole();
 
 uint_fast8_t init(int argc, char **argv)
 {
-    UNUSED(argc);
-    UNUSED(argv);
-
     if (initConsole())
     {
         spdlog::error("{}:{} initConsole failed", __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (config.parse(argc, argv))
+    {
+        spdlog::error("{}:{} parse config failed", __FILE__, __LINE__);
         return 1;
     }
 

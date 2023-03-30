@@ -44,25 +44,20 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
     set(CLIENT_TIMEOUT 31)
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
-option(ENABLE_CLI "enable debug console" on)
-option(ENABLE_GUI "enable GUI shell" on)
-option(ENABLE_GRPC_SERVER "enable GRPC server" on)
-
-if ((NOT ENABLE_CLI) AND (NOT ENABLE_GUI) AND (ENABLE_GRPC_SERVER))
-    set(ENABLE_GUI ON)
-endif ((NOT ENABLE_CLI) AND (NOT ENABLE_GUI) AND (ENABLE_GRPC_SERVER))
-
-if (ENABLE_CLI)
-    set(STQ_CLI ON)
-endif (ENABLE_CLI)
+option(ENABLE_CLI "enable debug console" off)
+option(ENABLE_GUI "enable GUI" on)
+option(ENABLE_MOBILE "enable qt for mobile device" off)
 
 if (ENABLE_GUI)
     set(STQ_GUI ON)
 endif (ENABLE_GUI)
 
-if (ENABLE_GRPC_SERVER)
-    set(STQ_GRPC_SERVER ON)
-endif (ENABLE_GRPC_SERVER)
+if (ENABLE_MOBILE)
+    set(ENABLE_GUI on)
+    set(STQ_GUI ON)
+    set(STQ_MOBILE ON)
+    set(ENABLE_CLI off)
+endif (ENABLE_MOBILE)
 
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
@@ -70,13 +65,16 @@ include(GNUInstallDirs)
 
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(RapidJSON REQUIRED)
 
 if (ENABLE_GUI)
     find_package(Qt6 COMPONENTS Widgets REQUIRED)
 endif (ENABLE_GUI)
 
-find_package(spdlog REQUIRED)
-find_package(SQLite3 REQUIRED)
+if (NOT ENABLE_MOBILE)
+    find_package(SQLite3 REQUIRED)
+endif (NOT ENABLE_MOBILE)
 
 set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
 include(cmake/protoc.cmake)
@@ -106,99 +104,8 @@ target_link_libraries(grpc_common
     gRPC::grpc++
 )
 
-# add_subdirectory(client)
-
-set(MODEL_SRC
-
-    # DAO
-    model/dao/iconnect.hpp
-    model/dao/iqueuelist.hpp
-    model/dao/iqueue.hpp
-
-    model/dao/sqliteconnect.cpp
-    model/dao/sqliteconnect.hpp
-    model/dao/sqlitequeuelist.cpp
-    model/dao/sqlitequeuelist.hpp
-    model/dao/sqlitequeue.cpp
-    model/dao/sqlitequeue.hpp
-
-    model/dao/dirutils.cpp
-    model/dao/dirutils.hpp
-
-    # global
-    model/global/defines.hpp
-    model/global/config.cpp
-    model/global/config.hpp
-    model/global/init.cpp
-    model/global/init.hpp
-
-    # proc
-    model/proc/iproc.cpp
-    model/proc/iproc.hpp
-    model/proc/task.cpp
-    model/proc/task.hpp
-
-    model/utils.cpp
-    model/utils.hpp
-)
-
-if (WIN32)
-    list(APPEND MODEL_SRC
-        model/proc/winproc.cpp
-        model/proc/winproc.hpp
-
-        model/win32-code/getopt.c
-        model/win32-code/getopt.h
-        model/win32-code/getopt_long.c
-    )
-else(WIN32)
-    list(APPEND MODEL_SRC
-        model/posixprocess.cpp
-        model/posixprocess.hpp
-    )
-endif (WIN32)
-
+include(cmake/stqmodel.cmake)
+include(cmake/stq.cmake)
 if (ENABLE_CLI)
-    set(VIEW_SRC
-    
-        # cli
-        view/cli/main.cpp
-        view/cli/main.hpp
-        view/cli/queue.hpp
-        view/cli/queuelist.hpp
-        view/cli/utils.cpp
-        view/cli/utils.hpp
-    )
+    include(cmake/stqcli.cmake)
 endif (ENABLE_CLI)
-
-if (ENABLE_GRPC_SERVER)
-    set(CONTROLLER_SRC
-    
-        # grpc
-        controller/grpcserver/accessimpl.cpp
-        controller/grpcserver/accessimpl.hpp
-    )
-endif (ENABLE_GRPC_SERVER)
-
-add_executable(STQ
-    ${MODEL_SRC}
-    ${VIEW_SRC}
-    ${CONTROLLER_SRC}
-
-    main.cpp
- "model/global/ocnfig.cpp")
-
-add_dependencies(STQ grpc_common)
-
-target_link_libraries(STQ
-    PRIVATE
-
-    grpc_common
-    spdlog::spdlog
-    SQLite::SQLite3
-)
-
-if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-    target_link_options(STQ PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-    target_compile_options(STQ PRIVATE $<$<CONFIG:Debug>:/ZI>)
-endif()

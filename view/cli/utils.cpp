@@ -41,28 +41,26 @@ std::string getInput(const std::string &prefix)
 {
     std::string out = "";
 #ifdef _WIN32
-    wchar_t *buf = nullptr;
-    if (Model::Utils::utf8ToUtf16(prefix, &buf))
+    wchar_t buf[4096] = {};
+    if (Model::Utils::utf8ToUtf16(prefix, buf, 4096))
     {
         spdlog::error("{}:{} Fail to convert prefix", __FILE__, __LINE__);
         return "";
     }
 
     std::wcout << buf << L" ";
-    delete[] buf;
 
     std::wstring wout;
     std::getline(std::wcin, wout);
 
-    char *outBuf = nullptr;
-    if (Model::Utils::utf16ToUtf8(wout, &outBuf))
+    char outBuf[4096] = {};
+    if (Model::Utils::utf16ToUtf8(wout, outBuf, 4096))
     {
         spdlog::error("{}:{} Fail to convert output", __FILE__, __LINE__);
         return "";
     }
 
     out = std::string(outBuf);
-    delete[] outBuf;
 #else
     std::cout << prefix << " ";
     std::getline(std::cin, out);
@@ -73,15 +71,14 @@ std::string getInput(const std::string &prefix)
 void writeConsole(const std::string &in)
 {
 #ifdef _WIN32
-    wchar_t *buf = nullptr;
-    if (Model::Utils::utf8ToUtf16(in, &buf))
+    wchar_t buf[4096] = {};
+    if (Model::Utils::utf8ToUtf16(in, buf, 4096))
     {
         spdlog::error("{}:{} Fail to input", __FILE__, __LINE__);
         return;
     }
 
     std::wcout << buf;
-    delete[] buf;
 #else
     std::cout << in;
 #endif

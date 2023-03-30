@@ -99,7 +99,6 @@ void deleteDirectoryContents(const std::string& dir_path)
         std::filesystem::remove_all(entry.path(), ec);
 }
 
-
 void convertPath(std::string &toConvert)
 {
 #ifdef _WIN32
