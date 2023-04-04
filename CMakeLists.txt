@@ -44,7 +44,6 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
     set(CLIENT_TIMEOUT 31)
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
-option(ENABLE_CLI "enable debug console" off)
 option(ENABLE_GUI "enable GUI" on)
 option(ENABLE_MOBILE "enable qt for mobile device" off)
 
@@ -53,10 +52,8 @@ if (ENABLE_GUI)
 endif (ENABLE_GUI)
 
 if (ENABLE_MOBILE)
-    set(ENABLE_GUI on)
     set(STQ_GUI ON)
     set(STQ_MOBILE ON)
-    set(ENABLE_CLI off)
 endif (ENABLE_MOBILE)
 
 configure_file(config.h.in config.h @ONLY)
@@ -106,6 +103,3 @@ target_link_libraries(grpc_common
 
 include(cmake/stqmodel.cmake)
 include(cmake/stq.cmake)
-if (ENABLE_CLI)
-    include(cmake/stqcli.cmake)
-endif (ENABLE_CLI)

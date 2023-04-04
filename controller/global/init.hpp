@@ -21,14 +21,19 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_GLOBAL_INIT_HPP_
-#define _MODEL_GLOBAL_INIT_HPP_
+#ifndef _CONTROLLER_GLOBAL_INIT_HPP_
+#define _CONTROLLER_GLOBAL_INIT_HPP_
 
 #include <inttypes.h>
 
 #include "config.hpp"
+#include "defines.hpp"
 
-namespace Model
+#ifndef STQ_MOBILE
+#include "controller/grpcserver/server.hpp"
+#endif
+
+namespace Controller
 {
 
 namespace Global
@@ -36,12 +41,16 @@ namespace Global
 
 extern Config config;
 
+#ifndef STQ_MOBILE
+extern GRPCServer::Server server;
+#endif
+
 uint_fast8_t init(int argc, char **argv);
 
 void fin();
 
 } // end namespace Global
 
-} // end namespace Model
+} // end namespace Controller
 
-#endif // _MODEL_GLOBAL_INIT_HPP_
+#endif // _CONTROLLER_GLOBAL_INIT_HPP_

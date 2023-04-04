@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_GLOBAL_CONFIG_HPP_
-#define _MODEL_GLOBAL_CONFIG_HPP_
+#ifndef _CONTROLLER_GLOBAL_CONFIG_HPP_
+#define _CONTROLLER_GLOBAL_CONFIG_HPP_
 
 #include <mutex>
 #include <string>
@@ -34,7 +34,7 @@
 
 #include "defines.hpp"
 
-namespace Model
+namespace Controller
 {
 
 namespace Global
@@ -99,4 +99,4 @@ private:
 
 } // end namespace Model
 
-#endif // _MODEL_GLOBAL_CONFIG_HPP_
+#endif // _CONTROLLER_GLOBAL_CONFIG_HPP_

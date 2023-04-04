@@ -21,18 +21,108 @@
  * SOFTWARE.
  */
 
+#include <csignal>
+
+#ifdef _WIN32
+#include "windows.h"
+#endif
+
 #include "spdlog/spdlog.h"
 
-#include "model/global/init.hpp"
+#ifndef STQ_MOBILE
+#include "controller/grpcserver/server.hpp"
+#endif
+#include "controller/global/init.hpp"
+
+static bool isAdmin();
+
+static void sighandler(int signum);
+
+#ifdef _WIN32
+static BOOL eventHandler(DWORD dwCtrlType);
+#endif
 
 int main(int argc, char **argv)
 {
-    if (Model::Global::init(argc, argv))
+    if (isAdmin())
+    {
+#ifdef _WIN32
+        spdlog::error("{}:{} Refuse to run as administrator", __FILE__, __LINE__);
+#else
+        spdlog::error("{}:{} Refuse to run as super user", __FILE__, __LINE__);
+#endif
+        return 1;
+    }
+
+    if (Controller::Global::init(argc, argv))
     {
         spdlog::error("{}:{} Fail to initialize", __FILE__, __LINE__);
         return 1;
     }
 
-    Model::Global::fin();
+    signal(SIGABRT, sighandler);
+    signal(SIGFPE,  sighandler);
+    signal(SIGILL,  sighandler);
+    signal(SIGINT,  sighandler);
+    signal(SIGSEGV, sighandler);
+    signal(SIGTERM, sighandler);
+
+#ifdef _WIN32
+    SetConsoleCtrlHandler(eventHandler, TRUE);
+#endif
+
+#ifndef STQ_GUI
+    if (Controller::Global::server.start())
+    {
+        spdlog::error("{}:{} Fail to start server", __FILE__, __LINE__);
+        return 1;
+    }
+#endif
+
+    Controller::Global::fin();
     return 0;
 }
+
+static bool isAdmin()
+{
+#ifdef _WIN32
+    PSID sid;
+    SID_IDENTIFIER_AUTHORITY auth = SECURITY_NT_AUTHORITY;
+    if (!AllocateAndInitializeSid(&auth,
+                                  2,
+                                  SECURITY_BUILTIN_DOMAIN_RID,
+                                  DOMAIN_ALIAS_RID_ADMINS,
+                                  0, 0, 0, 0, 0, 0,
+                                  &sid))
+    {
+        return true;
+    }
+
+    BOOL res;
+    if (!CheckTokenMembership(nullptr, sid, &res))
+    {
+        return true;
+    }
+
+    FreeSid(sid);
+    return res;
+#else
+    return (geteuid() == 0);
+#endif
+}
+
+static void sighandler(int signum)
+{
+    UNUSED(signum);
+    spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
+    Controller::Global::server.stop();
+}
+
+#ifdef _WIN32
+static BOOL eventHandler(DWORD dwCtrlType)
+{
+    UNUSED(dwCtrlType);
+    sighandler(0);
+    return TRUE;
+}
+#endif

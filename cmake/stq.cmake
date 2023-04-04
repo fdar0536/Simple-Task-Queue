@@ -1,20 +1,23 @@
-# set(VIEW_SRC
-#
-#     # cli
-#     view/cli/main.cpp
-#     view/cli/main.hpp
-#     view/cli/queue.hpp
-#     view/cli/queuelist.hpp
-#     view/cli/utils.cpp
-#     view/cli/utils.hpp
-# )
+set(CONTROLLER_SRC
 
-set(CLI_CONTROLLER_SRC
-
-    # grpc
-    controller/grpcserver/accessimpl.cpp
-    controller/grpcserver/accessimpl.hpp
+    # global
+    controller/global/defines.hpp
+    controller/global/config.cpp
+    controller/global/config.hpp
+    controller/global/init.cpp
+    controller/global/init.hpp
 )
+
+if (NOT ENABLE_MOBILE)
+    list(APPEND CONTROLLER_SRC
+
+        # grpc
+        controller/grpcserver/accessimpl.cpp
+        controller/grpcserver/accessimpl.hpp
+        controller/grpcserver/server.cpp
+        controller/grpcserver/server.hpp
+    )
+endif (NOT ENABLE_MOBILE)
 
 add_executable(STQ
     ${VIEW_SRC}

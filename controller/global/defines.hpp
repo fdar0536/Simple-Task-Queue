@@ -21,55 +21,11 @@
  * SOFTWARE.
  */
 
-#include <iostream>
+#ifndef _CONTROLLER_GLOBAL_DEFINES_HPP_
+#define _CONTROLLER_GLOBAL_DEFINES_HPP_
 
-#include "spdlog/spdlog.h"
+#include "config.h"
 
-#include "model/utils.hpp"
-#include "utils.hpp"
+#define UNUSED(x) static_cast<void>(x)
 
-namespace View
-{
-
-namespace CLI
-{
-
-namespace Utils
-{
-
-std::string getInput(const std::string &prefix)
-{
-    std::string out = "";
-#ifdef _WIN32
-    wchar_t buf[4096] = {};
-    if (Model::Utils::utf8ToUtf16(prefix, buf, 4096))
-    {
-        spdlog::error("{}:{} Fail to convert prefix", __FILE__, __LINE__);
-        return "";
-    }
-
-    std::wcout << buf << L" ";
-
-    std::wstring wout;
-    std::getline(std::wcin, wout);
-
-    char outBuf[4096] = {};
-    if (Model::Utils::utf16ToUtf8(wout, outBuf, 4096))
-    {
-        spdlog::error("{}:{} Fail to convert output", __FILE__, __LINE__);
-        return "";
-    }
-
-    out = std::string(outBuf);
-#else
-    std::cout << prefix << " ";
-    std::getline(std::cin, out);
-#endif
-    return out;
-}
-
-} // end namespace Utils
-
-} // end namespace CLI
-
-} // end namespace View
+#endif // _CONTROLLER_GLOBAL_DEFINES_HPP_

@@ -35,16 +35,19 @@
 
 #include "model/utils.hpp"
 
-
 #include "init.hpp"
 
-namespace Model
+namespace Controller
 {
 
 namespace Global
 {
 
 Config config;
+
+#ifndef STQ_MOBILE
+GRPCServer::Server server;
+#endif
 
 #ifdef _WIN32
 static UINT consoleCP(0);
@@ -99,31 +102,31 @@ static uint_fast8_t initConsole()
 
     if (!SetConsoleCP(CP_UTF8))
     {
-        Utils::writeLastError(__FILE__, __LINE__);
+        Model::Utils::writeLastError(__FILE__, __LINE__);
         return 1;
     }
     if (!SetConsoleOutputCP(CP_UTF8))
     {
-        Utils::writeLastError(__FILE__, __LINE__);
+        Model::Utils::writeLastError(__FILE__, __LINE__);
         return 1;
     }
 
     // change file stream translation mode
     if (_setmode(_fileno(stdout), _O_U8TEXT) == -1)
     {
-        Utils::writeLastError(__FILE__, __LINE__);
+        Model::Utils::writeLastError(__FILE__, __LINE__);
         return 1;
     }
 
     if (_setmode(_fileno(stderr), _O_U8TEXT) == -1)
     {
-        Utils::writeLastError(__FILE__, __LINE__);
+        Model::Utils::writeLastError(__FILE__, __LINE__);
         return 1;
     }
 
     if (_setmode(_fileno(stdin), _O_U16TEXT) == -1)
     {
-        Utils::writeLastError(__FILE__, __LINE__);
+        Model::Utils::writeLastError(__FILE__, __LINE__);
         return 1;
     }
 #endif

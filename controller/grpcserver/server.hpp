@@ -21,21 +21,62 @@
  * SOFTWARE.
  */
 
-#ifndef _VIEW_CLI_MAIN_HPP_
-#define _VIEW_CLI_MAIN_HPP_
+#ifndef _CONTROLLER_GRPCSERVER_SERVER_HPP_
+#define _CONTROLLER_GRPCSERVER_SERVER_HPP_
 
-#include <inttypes.h>
+#include <thread>
 
-namespace View
+#include <cinttypes>
+
+#include "grpcpp/server.h"
+
+#include "controller/global/defines.hpp"
+#include "accessimpl.hpp"
+
+#ifndef STQ_GUI
+#include <future>
+#endif
+
+namespace Controller
 {
 
-namespace CLI
+namespace GRPCServer
 {
 
-int_fast32_t main();
+class Server
+{
+public:
 
-} // end namespace CLI
+    Server();
 
-} // end namespace View
+    ~Server();
 
-#endif // _VIEW_CLI_MAIN_HPP_
+    uint_fast8_t start();
+
+    void stop();
+
+private:
+
+    std::jthread m_thread;
+
+#ifdef STQ_GUI
+    std::atomic<bool> m_isRunning;
+#endif
+
+#ifndef STQ_GUI
+    std::promise<void> m_exitRequested;
+
+    std::future<void> m_future;
+#endif
+
+    std::unique_ptr<grpc::Server> m_server = nullptr;
+
+    AccessImpl m_accessImpl;
+
+};
+
+} // end namespace GRPCServer
+
+} // end namespace Controller
+
+#endif // _CONTROLLER_GRPCSERVER_SERVER_HPP_

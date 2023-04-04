@@ -8,13 +8,6 @@ set(MODEL_SRC
     model/dao/dirutils.cpp
     model/dao/dirutils.hpp
 
-    # global
-    model/global/defines.hpp
-    model/global/config.cpp
-    model/global/config.hpp
-    model/global/init.cpp
-    model/global/init.hpp
-
     # proc
     model/proc/iproc.cpp
     model/proc/iproc.hpp

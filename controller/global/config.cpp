@@ -38,7 +38,7 @@
 
 namespace json = rapidjson;
 
-namespace Model
+namespace Controller
 {
 
 namespace Global
@@ -90,7 +90,7 @@ uint_fast8_t Config::parse(int argc, char **argv)
 #else
             configFile = optarg;
 #endif
-            if (DAO::DirUtils::verifyFile(optarg))
+            if (Model::DAO::DirUtils::verifyFile(optarg))
             {
                 spdlog::error("{}:{} Fail to verify config file", __FILE__, __LINE__);
                 return 1;
@@ -177,8 +177,8 @@ uint_fast8_t Config::parseJson(const std::string &in)
             return 1;
         }
 
-        DAO::DirUtils::convertPath(m_logPath);
-        if (DAO::DirUtils::verifyDir(m_logPath))
+        Model::DAO::DirUtils::convertPath(m_logPath);
+        if (Model::DAO::DirUtils::verifyDir(m_logPath))
         {
             spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
             return 1;
@@ -253,6 +253,18 @@ std::string Config::configPath()
 }
 #endif
 
+uint_fast16_t Config::listenPort()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    return m_listenPort;
+}
+
+void Config::setListenPort(uint_fast16_t in)
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_listenPort = in;
+}
+
 std::string Config::listenIP()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
@@ -261,7 +273,7 @@ std::string Config::listenIP()
 
 void Config::setListenIP(const std::string &in)
 {
-    if (Utils::verifyIP(in))
+    if (Model::Utils::verifyIP(in))
     {
         spdlog::error("{}:{} input is valid ipv4", __FILE__, __LINE__);
         return;
@@ -296,9 +308,9 @@ void Config::printHelp(char **argv)
         return;
     }
 
-    Utils::writeConsole(argv[0]);
-    Utils::writeConsole(" usage:\n");
-    Utils::writeConsole("--config-file <file>, -c <file>: set config file\n");
+    Model::Utils::writeConsole(argv[0]);
+    Model::Utils::writeConsole(" usage:\n");
+    Model::Utils::writeConsole("--config-file <file>, -c <file>: set config file\n");
 }
 
 } // end namespace Global
