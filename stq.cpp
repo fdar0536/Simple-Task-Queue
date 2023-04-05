@@ -90,10 +90,10 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 #endif // STQ_MOBILE
 
-    app.setWindowIcon(QIcon(":/STQ.ico"));
+    app.setWindowIcon(QIcon(":/view/gui/stq.ico"));
 
     QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/stq.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/view/gui/stq.qml")));
     if (engine.rootObjects().isEmpty())
     {
         spdlog::error("{}:{} Fail to load qml", __FILE__, __LINE__);

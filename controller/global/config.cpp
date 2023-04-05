@@ -50,13 +50,21 @@ Config::Config()
 Config::~Config()
 {}
 
-uint_fast8_t Config::parse(int argc, char **argv)
+uint_fast8_t Config::parse(Config *in, int argc, char **argv)
 {
 #ifdef STQ_MOBILE
+    UNUSED(in);
     UNSUED(argc);
     UNSUED(argv);
     return 0;
 #else
+
+    if (!in)
+    {
+        spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
+        return 1;
+    }
+
     if (argc == 1 || !argv)
     {
         spdlog::warn("{}:{} use default config", __FILE__, __LINE__);
@@ -86,7 +94,7 @@ uint_fast8_t Config::parse(int argc, char **argv)
         case 'c':
         {
 #ifdef STQ_GUI
-            m_configPath = optarg;
+            in->m_configPath = optarg;
 #else
             configFile = optarg;
 #endif
@@ -106,7 +114,7 @@ uint_fast8_t Config::parse(int argc, char **argv)
     }
 
 #ifdef STQ_GUI
-    if (m_configPath.empty())
+    if (in->m_configPath.empty())
 #else
     if (configFile.empty())
 #endif
@@ -116,9 +124,9 @@ uint_fast8_t Config::parse(int argc, char **argv)
     }
 
 #ifdef STQ_GUI
-    if (parseJson(m_configPath))
+    if (parseJson(in, in->m_configPath))
 #else
-    if (parseJson(configFile))
+    if (parseJson(in, configFile))
 #endif
     {
         spdlog::error("{}:{} fail to parse config file", __FILE__, __LINE__);
@@ -149,9 +157,15 @@ static uint8_t getJSONString(std::string &dst,
     return 0;
 }
 
-uint_fast8_t Config::parseJson(const std::string &in)
+uint_fast8_t Config::parseJson(Config *obj, const std::string &in)
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    if (!obj)
+    {
+        spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
+        return 1;
+    }
+
+    std::unique_lock<std::mutex> lock(obj->m_mutex);
     try
     {
         std::ifstream i(in.c_str());
@@ -168,17 +182,17 @@ uint_fast8_t Config::parseJson(const std::string &in)
             return 1;
         }
 
-        m_autoStartServer = j["auto start server"].GetBool();
+        obj->m_autoStartServer = j["auto start server"].GetBool();
 #endif
 
         // log path
-        if (getJSONString(m_logPath, j, "log path"))
+        if (getJSONString(obj->m_logPath, j, "log path"))
         {
             return 1;
         }
 
-        Model::DAO::DirUtils::convertPath(m_logPath);
-        if (Model::DAO::DirUtils::verifyDir(m_logPath))
+        Model::DAO::DirUtils::convertPath(obj->m_logPath);
+        if (Model::DAO::DirUtils::verifyDir(obj->m_logPath))
         {
             spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
             return 1;
@@ -191,20 +205,20 @@ uint_fast8_t Config::parseJson(const std::string &in)
             return 1;
         }
 
-        m_listenPort = static_cast<uint_fast16_t>(j["port"].GetUint());
-        if (m_listenPort > 65535)
+        obj->m_listenPort = static_cast<uint_fast16_t>(j["port"].GetUint());
+        if (obj->m_listenPort > 65535)
         {
             spdlog::error("{}:{} Invalid port", __FILE__, __LINE__);
             return 1;
         }
 
         // listen ip
-        if (getJSONString(m_listenIP, j, "ip"))
+        if (getJSONString(obj->m_listenIP, j, "ip"))
         {
             return 1;
         }
 
-        if (Model::Utils::verifyIP(m_listenIP))
+        if (Model::Utils::verifyIP(obj->m_listenIP))
         {
             spdlog::error("{}:{} Invalid ip", __FILE__, __LINE__);
             return 1;
@@ -217,8 +231,8 @@ uint_fast8_t Config::parseJson(const std::string &in)
             return 1;
         }
 
-        m_logLevel = static_cast<spdlog::level::level_enum>(j["port"].GetUint());
-        if (m_listenPort > 65535)
+        obj->m_logLevel = static_cast<spdlog::level::level_enum>(j["port"].GetUint());
+        if (obj->m_listenPort > 65535)
         {
             spdlog::error("{}:{} Invalid log level", __FILE__, __LINE__);
             return 1;

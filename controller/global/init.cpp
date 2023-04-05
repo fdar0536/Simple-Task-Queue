@@ -67,7 +67,7 @@ uint_fast8_t init(int argc, char **argv)
         return 1;
     }
 
-    if (config.parse(argc, argv))
+    if (config.parse(&config, argc, argv))
     {
         spdlog::error("{}:{} parse config failed", __FILE__, __LINE__);
         return 1;

@@ -48,9 +48,9 @@ public:
 
     ~Config();
 
-    uint_fast8_t parse(int argc, char **argv);
+    static uint_fast8_t parse(Config *in, int argc, char **argv);
 
-    uint_fast8_t parseJson(const std::string &);
+    static uint_fast8_t parseJson(Config *, const std::string &);
 
 #if defined(STQ_GUI) && !defined(STQ_MOBILE)
     void setAutoStartServer(bool);

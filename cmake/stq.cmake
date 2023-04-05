@@ -20,20 +20,22 @@ if (NOT ENABLE_MOBILE)
 endif (NOT ENABLE_MOBILE)
 
 if(ENABLE_GUI)
-
-    set(VIEW_SRC
-
-        view/gui/stq.qrc
-    )
-
     qt_add_executable(STQ
         WIN32
         MACOSX_BUNDLE
 
         ${CONTROLLER_SRC}
-        ${VIEW_SRC}
 
         stq.cpp)
+
+    qt_add_qml_module(STQ
+        URI stq
+        NO_RESOURCE_TARGET_PATH
+        QML_FILES
+            "view/gui/stq.qml"
+        RESOURCES
+            "view/gui/stq.ico"
+    )
 
     add_dependencies(STQ grpc_common STQModel)
 
