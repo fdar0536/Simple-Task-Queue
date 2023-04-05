@@ -28,9 +28,8 @@
 #endif
 
 #include "spdlog/spdlog.h"
-#include "QQmlApplicationEngine"
 
-#include "controller/global/init.hpp"
+#include "controller/gui/global.hpp"
 
 #ifdef STQ_GUI
 
@@ -92,7 +91,16 @@ int main(int argc, char **argv)
 
     app.setWindowIcon(QIcon(":/view/gui/stq.ico"));
 
+    Controller::GUI::Global guiGlobal;
+    qmlRegisterSingletonInstance
+        <Controller::GUI::Global>("Global",
+                                  1,
+                                  0,
+                                  "Controller::GUI::Global",
+                                  &guiGlobal);
+
     QQmlApplicationEngine engine;
+    guiGlobal.setEngine(&engine);
     engine.load(QUrl(QStringLiteral("qrc:/view/gui/stq.qml")));
     if (engine.rootObjects().isEmpty())
     {
@@ -155,9 +163,15 @@ static void sighandler(int signum)
     spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
 #ifdef STQ_GUI
 
+#ifdef STQ_MOBILE
+    QGuiApplication::quit();
+#else
+    QApplication::quit();
+#endif // STQ_MOBILE
+
 #else
     Controller::Global::server.stop();
-#endif
+#endif // STQ_GUI
 }
 
 #ifdef _WIN32

@@ -20,6 +20,14 @@ if (NOT ENABLE_MOBILE)
 endif (NOT ENABLE_MOBILE)
 
 if(ENABLE_GUI)
+
+    list(APPEND CONTROLLER_SRC
+
+        # global
+        "controller/gui/global.cpp"
+        "controller/gui/global.hpp"
+    )
+
     qt_add_executable(STQ
         WIN32
         MACOSX_BUNDLE
@@ -31,6 +39,7 @@ if(ENABLE_GUI)
     qt_add_qml_module(STQ
         URI stq
         NO_RESOURCE_TARGET_PATH
+
         QML_FILES
             "view/gui/stq.qml"
         RESOURCES
