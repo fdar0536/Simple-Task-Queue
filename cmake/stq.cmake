@@ -19,23 +19,69 @@ if (NOT ENABLE_MOBILE)
     )
 endif (NOT ENABLE_MOBILE)
 
-add_executable(STQ
-    ${VIEW_SRC}
-    ${CONTROLLER_SRC}
+if(ENABLE_GUI)
 
-    stq.cpp)
+    set(VIEW_SRC
 
-add_dependencies(STQ grpc_common STQModel)
+        view/gui/stq.qrc
+    )
 
-target_link_libraries(STQ
-    PRIVATE
+    qt_add_executable(STQ
+        WIN32
+        MACOSX_BUNDLE
 
-    STQModel
-    grpc_common
-    spdlog::spdlog
-    SQLite::SQLite3
-    rapidjson
-)
+        ${CONTROLLER_SRC}
+        ${VIEW_SRC}
+
+        stq.cpp)
+
+    add_dependencies(STQ grpc_common STQModel)
+
+    if(ENABLE_MOBILE)
+        target_link_libraries(STQ
+            PRIVATE
+
+            STQModel
+            grpc_common
+            spdlog::spdlog
+            rapidjson
+
+            Qt6::Gui
+            Qt6::Quick
+        )
+    else()
+        target_link_libraries(STQ
+            PRIVATE
+
+            STQModel
+            grpc_common
+            spdlog::spdlog
+            SQLite::SQLite3
+            rapidjson
+
+            # Qt
+            Qt6::Widgets
+            Qt6::Quick
+        )
+    endif()
+else()
+    add_executable(STQ
+        ${CONTROLLER_SRC}
+
+        stq.cpp)
+
+    add_dependencies(STQ grpc_common STQModel)
+
+    target_link_libraries(STQ
+        PRIVATE
+
+        STQModel
+        grpc_common
+        spdlog::spdlog
+        SQLite::SQLite3
+        rapidjson
+    )
+endif(ENABLE_GUI)
 
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
     target_link_options(STQ PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)

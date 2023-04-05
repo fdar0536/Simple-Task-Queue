@@ -104,6 +104,12 @@ uint_fast8_t Server::start()
 void Server::stop()
 {
 #ifdef STQ_GUI
+    if (!m_isRunning.load(std::memory_order_relaxed))
+    {
+        spdlog::warn("{}:{} Server is not running", __FILE__, __LINE__);
+        return;
+    }
+
     try
     {
         m_server->Shutdown();

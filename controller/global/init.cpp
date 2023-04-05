@@ -49,10 +49,12 @@ Config config;
 GRPCServer::Server server;
 #endif
 
+#ifndef STQ_GUI
 #ifdef _WIN32
 static UINT consoleCP(0);
 
 static UINT consoleOutputCP(0);
+#endif
 #endif
 
 static uint_fast8_t initConsole();
@@ -76,16 +78,19 @@ uint_fast8_t init(int argc, char **argv)
 
 void fin()
 {
+#ifndef STQ_GUI
 #ifdef _WIN32
     SetConsoleCP(consoleCP);
     SetConsoleOutputCP(consoleOutputCP);
+#endif
 #endif
 }
 
 static uint_fast8_t initConsole()
 {
     fflush(stdout);
-#if defined _MSC_VER
+#ifndef STQ_GUI
+#ifdef _MSC_VER
 #   pragma region WIN_UNICODE_SUPPORT_MAIN
 #endif
 
@@ -131,9 +136,10 @@ static uint_fast8_t initConsole()
     }
 #endif
 
-#if defined _MSC_VER
+#ifdef _MSC_VER
 #   pragma endregion
 #endif
+#endif // STQ_GUI
     std::ios::sync_with_stdio(false);
     return 0;
 }

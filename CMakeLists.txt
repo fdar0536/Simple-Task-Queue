@@ -66,7 +66,11 @@ find_package(spdlog REQUIRED)
 find_package(RapidJSON REQUIRED)
 
 if (ENABLE_GUI)
-    find_package(Qt6 COMPONENTS Widgets REQUIRED)
+    if(ENABLE_MOBILE)
+        find_package(Qt6 COMPONENTS Quick Gui REQUIRED)
+    else()
+        find_package(Qt6 COMPONENTS Widgets Quick REQUIRED)
+    endif(ENABLE_MOBILE)
 endif (ENABLE_GUI)
 
 if (NOT ENABLE_MOBILE)

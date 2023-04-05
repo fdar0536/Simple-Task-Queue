@@ -28,11 +28,21 @@
 #endif
 
 #include "spdlog/spdlog.h"
+#include "QQmlApplicationEngine"
 
-#ifndef STQ_MOBILE
-#include "controller/grpcserver/server.hpp"
-#endif
 #include "controller/global/init.hpp"
+
+#ifdef STQ_GUI
+
+#ifdef STQ_MOBILE
+#include "QGuiApplication"
+#else
+#include "QApplication"
+#endif // STQ_MOBILE
+
+#include "QIcon"
+
+#endif // STQ_GUI
 
 static bool isAdmin();
 
@@ -71,16 +81,44 @@ int main(int argc, char **argv)
     SetConsoleCtrlHandler(eventHandler, TRUE);
 #endif
 
-#ifndef STQ_GUI
+    int ret(0);
+#ifdef STQ_GUI
+
+#ifdef STQ_MOBILE
+    QGuiApplication app(argc, argv);
+#else
+    QApplication app(argc, argv);
+#endif // STQ_MOBILE
+
+    app.setWindowIcon(QIcon(":/STQ.ico"));
+
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/stq.qml")));
+    if (engine.rootObjects().isEmpty())
+    {
+        spdlog::error("{}:{} Fail to load qml", __FILE__, __LINE__);
+        ret = 1;
+        goto exit;
+    }
+
+#ifdef STQ_MOBILE
+    QObject::connect(&engine, &QQmlApplicationEngine::quit, &QGuiApplication::quit);
+#else
+    QObject::connect(&engine, &QQmlApplicationEngine::quit, &QApplication::quit);
+#endif // STQ_MOBILE
+
+    ret = app.exec();
+#else
     if (Controller::Global::server.start())
     {
         spdlog::error("{}:{} Fail to start server", __FILE__, __LINE__);
-        return 1;
+        ret = 1;
     }
-#endif
+#endif // STQ_GUI
 
+exit:
     Controller::Global::fin();
-    return 0;
+    return ret;
 }
 
 static bool isAdmin()
@@ -115,7 +153,11 @@ static void sighandler(int signum)
 {
     UNUSED(signum);
     spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
+#ifdef STQ_GUI
+
+#else
     Controller::Global::server.stop();
+#endif
 }
 
 #ifdef _WIN32
