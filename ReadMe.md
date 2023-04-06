@@ -7,12 +7,17 @@ As its name, and just for reference.
 
 ## Dependency
 
-- C++20
-- [gRPC](https://grpc.io)
-- [Qt](https://www.qt.io) 6.0 or later
-- [spdlog](https://github.com/gabime/spdlog)
-- [SQLite](https://www.sqlite.org)
-- Windows 10 1903 or later with UTF-8 enabled
+- Required
+  - C++20
+  - [gRPC](https://grpc.io)
+  - [spdlog](https://github.com/gabime/spdlog)
+  - [inipp](https://github.com/mcmtroffaes/inipp)
+- Optional
+  - [Qt](https://www.qt.io) 6.5 or later
+  - [SQLite](https://www.sqlite.org)
+- Supported OS (Others are not tested yet)
+  - Windows 10 1903 or later with UTF-8 enabled
+  - Arch Linux
 
 ## Licence
 
