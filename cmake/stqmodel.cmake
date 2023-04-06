@@ -61,5 +61,4 @@ target_link_libraries(STQModel
     grpc_common
     spdlog::spdlog
     SQLite::SQLite3
-    rapidjson
 )

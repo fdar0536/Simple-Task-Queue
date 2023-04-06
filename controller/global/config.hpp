@@ -50,9 +50,11 @@ public:
 
     static uint_fast8_t parse(Config *in, int argc, char **argv);
 
-    static uint_fast8_t parseJson(Config *, const std::string &);
+    static uint_fast8_t parse(Config *, const std::string &);
 
 #if defined(STQ_GUI) && !defined(STQ_MOBILE)
+    static uint_fast8_t save(Config *, const std::string &);
+
     void setAutoStartServer(bool);
 
     bool autoStartServer();
@@ -91,8 +93,6 @@ private:
     spdlog::level::level_enum m_logLevel = spdlog::level::level_enum::info;
 
     std::mutex m_mutex = std::mutex();
-
-    void correctConfig();
 };
 
 } // end namespace Global

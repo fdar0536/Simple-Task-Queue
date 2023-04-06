@@ -29,14 +29,11 @@
 #include "getopt.h"
 #endif
 
-#include "rapidjson/document.h"
-#include "rapidjson/istreamwrapper.h"
+#include "inipp.h"
 
 #include "model/dao/dirutils.hpp"
 #include "model/utils.hpp"
 #include "config.hpp"
-
-namespace json = rapidjson;
 
 namespace Controller
 {
@@ -48,7 +45,14 @@ Config::Config()
 {}
 
 Config::~Config()
-{}
+{
+#if defined(STQ_GUI) && !defined(STQ_MOBILE)
+    if (!m_configPath.empty())
+    {
+        UNUSED(save(this, m_configPath));
+    }
+#endif
+}
 
 uint_fast8_t Config::parse(Config *in, int argc, char **argv)
 {
@@ -124,9 +128,9 @@ uint_fast8_t Config::parse(Config *in, int argc, char **argv)
     }
 
 #ifdef STQ_GUI
-    if (parseJson(in, in->m_configPath))
+    if (parse(in, in->m_configPath))
 #else
-    if (parseJson(in, configFile))
+    if (parse(in, configFile))
 #endif
     {
         spdlog::error("{}:{} fail to parse config file", __FILE__, __LINE__);
@@ -137,27 +141,25 @@ uint_fast8_t Config::parse(Config *in, int argc, char **argv)
 #endif
 }
 
-static uint8_t getJSONString(std::string &dst,
-                             json::Document &doc,
-                             const char *key)
+template <typename CharT, typename T>
+static inline bool get_value(const std::map<std::basic_string<CharT>,
+                                            std::basic_string<CharT>> & sec,
+                             const std::basic_string<CharT> & key, T & dst)
 {
-    if (!key)
-    {
-        spdlog::error("{}:{} key is null", __FILE__, __LINE__);
-        return 1;
-    }
-
-    if (!doc[key].IsString())
-    {
-        spdlog::error("{}:{} {} is not string", __FILE__, __LINE__, key);
-        return 1;
-    }
-
-    dst = doc[key].GetString();
-    return 0;
+    const auto it = sec.find(key);
+    if (it == sec.end()) return false;
+    return inipp::extract(it->second, dst);
 }
 
-uint_fast8_t Config::parseJson(Config *obj, const std::string &in)
+template <typename CharT, typename T>
+inline bool get_value(const std::map<std::basic_string<CharT>,
+                                     std::basic_string<CharT>>& sec,
+                      const CharT* key, T& dst)
+{
+    return get_value(sec, std::basic_string<CharT>(key), dst);
+}
+
+uint_fast8_t Config::parse(Config *obj, const std::string &path)
 {
     if (!obj)
     {
@@ -166,30 +168,28 @@ uint_fast8_t Config::parseJson(Config *obj, const std::string &in)
     }
 
     std::unique_lock<std::mutex> lock(obj->m_mutex);
+    std::ifstream i(path.c_str());
     try
     {
-        std::ifstream i(in.c_str());
-        json::IStreamWrapper isw(i);
-        json::Document j;
-        j.ParseStream(isw);
+        if (i.fail())
+        {
+            spdlog::warn("{}:{} Fail to open file: {}", __FILE__, __LINE__, path);
+            return 1;
+        }
+
+        inipp::Ini<char> ini;
+        ini.parse(i);
         i.close();
 
 #if defined(STQ_GUI) && !defined(STQ_MOBILE)
-        // auto start server
-        if (!j["auto start server"].IsBool())
-        {
-            spdlog::error("{}:{} \"auto start server\" is not bool", __FILE__, __LINE__);
-            return 1;
-        }
-
-        obj->m_autoStartServer = j["auto start server"].GetBool();
+        UNUSED(get_value(ini.sections["Settings"],
+                                    "auto start server",
+                                    obj->m_autoStartServer));
 #endif
 
-        // log path
-        if (getJSONString(obj->m_logPath, j, "log path"))
-        {
-            return 1;
-        }
+        UNUSED(get_value(ini.sections["Settings"],
+                         "log path",
+                         obj->m_logPath));
 
         Model::DAO::DirUtils::convertPath(obj->m_logPath);
         if (Model::DAO::DirUtils::verifyDir(obj->m_logPath))
@@ -198,25 +198,19 @@ uint_fast8_t Config::parseJson(Config *obj, const std::string &in)
             return 1;
         }
 
-        // listen port
-        if (!j["port"].IsUint())
-        {
-            spdlog::error("{}:{} \"port\" is not number", __FILE__, __LINE__);
-            return 1;
-        }
+        UNUSED(get_value(ini.sections["Settings"],
+                         "port",
+                         obj->m_listenPort));
 
-        obj->m_listenPort = static_cast<uint_fast16_t>(j["port"].GetUint());
         if (obj->m_listenPort > 65535)
         {
             spdlog::error("{}:{} Invalid port", __FILE__, __LINE__);
             return 1;
         }
 
-        // listen ip
-        if (getJSONString(obj->m_listenIP, j, "ip"))
-        {
-            return 1;
-        }
+        UNUSED(get_value(ini.sections["Settings"],
+                         "ip",
+                         obj->m_listenIP));
 
         if (Model::Utils::verifyIP(obj->m_listenIP))
         {
@@ -224,22 +218,16 @@ uint_fast8_t Config::parseJson(Config *obj, const std::string &in)
             return 1;
         }
 
-        // log level
-        if (!j["log level"].IsUint())
-        {
-            spdlog::error("{}:{} \"log level\" is not number", __FILE__, __LINE__);
-            return 1;
-        }
+        uint_fast8_t level(0);
+        UNUSED(get_value(ini.sections["Settings"],
+                         "log level",
+                         level));
 
-        obj->m_logLevel = static_cast<spdlog::level::level_enum>(j["port"].GetUint());
-        if (obj->m_listenPort > 65535)
-        {
-            spdlog::error("{}:{} Invalid log level", __FILE__, __LINE__);
-            return 1;
-        }
+        obj->m_logLevel = static_cast<spdlog::level::level_enum>(level);
     }
     catch (...)
     {
+        i.close();
         spdlog::error("{}:{} error caught", __FILE__, __LINE__);
         return 1;
     }
@@ -248,6 +236,57 @@ uint_fast8_t Config::parseJson(Config *obj, const std::string &in)
 }
 
 #if defined(STQ_GUI) && !defined(STQ_MOBILE)
+
+uint_fast8_t Config::save(Config *obj, const std::string &path)
+{
+    if (!obj)
+    {
+        spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
+        return 1;
+    }
+
+    std::unique_lock<std::mutex> lock(obj->m_mutex);
+    std::fstream i;
+    try
+    {
+        inipp::Ini<char> ini;
+#if defined(STQ_GUI) && !defined(STQ_MOBILE)
+        ini.sections["Settings"]["auto start server"] =
+            std::to_string(obj->m_autoStartServer);
+#endif
+
+        ini.sections["Settings"]["log path"] =
+            obj->m_logPath;
+
+        ini.sections["Settings"]["port"] =
+            std::to_string(obj->m_listenPort);
+
+        ini.sections["Settings"]["ip"] =
+            obj->m_listenIP;
+
+        ini.sections["Settings"]["log level"] =
+            std::to_string(static_cast<uint_fast8_t>(obj->m_logLevel));
+
+        i.open(path, std::ifstream::out | std::ifstream::trunc);
+        if (i.fail())
+        {
+            spdlog::warn("{}:{} Fail to open file: {}", __FILE__, __LINE__, path);
+            return 1;
+        }
+
+        ini.generate(i);
+        i.close();
+    }
+    catch(...)
+    {
+        i.close();
+        spdlog::error("{}:{} error caught", __FILE__, __LINE__);
+        return 1;
+    }
+
+    return 0;
+}
+
 void Config::setAutoStartServer(bool in)
 {
     std::unique_lock<std::mutex> lock(m_mutex);

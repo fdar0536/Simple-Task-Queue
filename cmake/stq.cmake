@@ -55,7 +55,6 @@ if(ENABLE_GUI)
             STQModel
             grpc_common
             spdlog::spdlog
-            rapidjson
 
             Qt6::Gui
             Qt6::Quick
@@ -68,7 +67,6 @@ if(ENABLE_GUI)
             grpc_common
             spdlog::spdlog
             SQLite::SQLite3
-            rapidjson
 
             # Qt
             Qt6::Widgets
@@ -90,9 +88,10 @@ else()
         grpc_common
         spdlog::spdlog
         SQLite::SQLite3
-        rapidjson
     )
 endif(ENABLE_GUI)
+
+target_include_directories(STQ PRIVATE ${INIPP_INCLUDE_DIRS})
 
 if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
     target_link_options(STQ PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)

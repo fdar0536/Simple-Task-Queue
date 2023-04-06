@@ -63,7 +63,7 @@ include(GNUInstallDirs)
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(spdlog REQUIRED)
-find_package(RapidJSON REQUIRED)
+find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
 
 if (ENABLE_GUI)
     if(ENABLE_MOBILE)
