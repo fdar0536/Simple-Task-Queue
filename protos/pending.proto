@@ -14,6 +14,7 @@ service Pending {
   rpc Remove(TaskDetailsReq) returns (Empty);
   rpc Start(QueueReq) returns (Empty);
   rpc Stop(QueueReq) returns (Empty);
+  rpc IsRunning(QueueReq) returns (IsRunningRes);
 }
 
 message AddTaskReq {
@@ -22,4 +23,8 @@ message AddTaskReq {
   string execName = 3;
   repeated string args = 4;
   int32 ID = 5;
+}
+
+message IsRunningRes {
+  bool isRunning = 1;
 }
