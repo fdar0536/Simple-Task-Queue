@@ -91,16 +91,15 @@ int main(int argc, char **argv)
 
     app.setWindowIcon(QIcon(":/view/gui/stq.ico"));
 
-    Controller::GUI::Global guiGlobal;
     qmlRegisterSingletonInstance
         <Controller::GUI::Global>("Global",
                                   1,
                                   0,
                                   "Controller::GUI::Global",
-                                  &guiGlobal);
+                                  &Controller::Global::guiGlobal);
 
     QQmlApplicationEngine engine;
-    guiGlobal.setEngine(&engine);
+    Controller::Global::guiGlobal.setEngine(&engine);
     engine.load(QUrl(QStringLiteral("qrc:/view/gui/stq.qml")));
     if (engine.rootObjects().isEmpty())
     {

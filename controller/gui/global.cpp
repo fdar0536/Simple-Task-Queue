@@ -85,29 +85,110 @@ QQmlApplicationEngine *Global::engine() const
     return m_engine;
 }
 
-#ifndef STQ_MOBILE
 void Global::setBackendMode(BackendMode in)
 {
+#ifdef STQ_MOBILE
+    UNUSED(in);
+    return;
+#else
     m_backendMode = in;
+#endif
 }
 
 Global::BackendMode Global::backendMode() const
 {
+#ifdef STQ_MOBILE
+    return GRPC;
+#else
     return m_backendMode;
+#endif
 }
 
 void
-Global::setSqliteQueueList(std::shared_ptr<Model::DAO::IQueueList> &in)
+Global::setQueueList(BackendMode mode,
+                     std::shared_ptr<Model::DAO::IQueueList> &in)
 {
-    m_sqliteQueueList = in;
+#ifdef STQ_MOBILE
+    UNUSED(mode);
+    m_grpcQueueList = in;
+#else
+    switch(mode)
+    {
+    case GRPC:
+    {
+        m_grpcQueueList = in;
+        break;
+    }
+    case SQLITE:
+    {
+        m_sqliteQueueList = in;
+        break;
+    }
+    }
+#endif
 }
 
 std::shared_ptr<Model::DAO::IQueueList>
-Global::sqliteQueueList() const
+Global::queueList() const
 {
-    return m_sqliteQueueList;
+#ifdef STQ_MOBILE
+    return m_grpcQueueList;
+#else
+    switch(m_backendMode)
+    {
+    case GRPC:
+    {
+        return m_grpcQueueList;
+    }
+    case SQLITE:
+    {
+        return m_sqliteQueueList;
+    }
+    }
+#endif
 }
-#endif // STQ_MOBILE
+
+void Global::setQueue(BackendMode mode, std::shared_ptr<Model::DAO::IQueue> &in)
+{
+#ifdef STQ_MOBILE
+    UNUSED(mode);
+    m_sqliteQueue = in;
+#else
+    switch(mode)
+    {
+    case GRPC:
+    {
+        m_grpcQueue = in;
+        break;
+    }
+    case SQLITE:
+    {
+        m_sqliteQueue = in;
+        break;
+    }
+    }
+#endif
+}
+
+std::shared_ptr<Model::DAO::IQueue>
+Global::queue() const
+{
+#ifdef STQ_MOBILE
+    return m_sqliteQueue;
+#else
+    switch(m_backendMode)
+    {
+    case GRPC:
+    {
+        return m_grpcQueue;
+    }
+    case SQLITE:
+    {
+        return m_sqliteQueue;
+    }
+    }
+#endif
+}
 
 } // namespace GUI
 

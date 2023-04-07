@@ -49,6 +49,10 @@ Config config;
 GRPCServer::Server server;
 #endif
 
+#ifdef STQ_GUI
+GUI::Global guiGlobal;
+#endif
+
 #ifndef STQ_GUI
 #ifdef _WIN32
 static UINT consoleCP(0);

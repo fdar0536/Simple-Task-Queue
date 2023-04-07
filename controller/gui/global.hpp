@@ -64,12 +64,10 @@ class Global : public QWidget
 
 public:
 
-#ifndef STQ_MOBILE
     typedef enum BackendMode
     {
         GRPC, SQLITE
     } BackendMode;
-#endif
 
     Global();
 
@@ -83,21 +81,20 @@ public:
 
     QQmlApplicationEngine *engine() const;
 
-#ifndef STQ_MOBILE
     void setBackendMode(BackendMode);
 
     BackendMode backendMode() const;
 
     void
-    setSqliteQueueList(std::shared_ptr<Model::DAO::IQueueList> &);
+    setQueueList(BackendMode, std::shared_ptr<Model::DAO::IQueueList> &);
 
     std::shared_ptr<Model::DAO::IQueueList>
-    sqliteQueueList() const;
-#endif
+    queueList() const;
 
-signals:
+    void setQueue(BackendMode, std::shared_ptr<Model::DAO::IQueue> &);
 
-    void InitDone(bool);
+    std::shared_ptr<Model::DAO::IQueue>
+    queue() const;
 
 private:
 
@@ -114,7 +111,16 @@ private:
 
     std::shared_ptr<Model::DAO::IQueueList>
         m_sqliteQueueList;
+
+    std::shared_ptr<Model::DAO::IQueue>
+        m_sqliteQueue;
 #endif
+
+    std::shared_ptr<Model::DAO::IQueueList>
+        m_grpcQueueList;
+
+    std::shared_ptr<Model::DAO::IQueue>
+        m_grpcQueue;
 
 }; // and class Global
 

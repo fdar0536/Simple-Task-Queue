@@ -57,9 +57,9 @@ public:
 
 protected:
 
-    void *m_connectToken;
+    void *m_connectToken = nullptr;
 
-    std::string m_targetPath;
+    std::string m_targetPath = "";
 
     template<class T>
     void freeConnectToken()
