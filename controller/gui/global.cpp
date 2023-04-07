@@ -121,7 +121,7 @@ Global::setQueueList(BackendMode mode,
     }
     case SQLITE:
     {
-        m_sqliteQueueList = in;
+        Controller::Global::sqliteQueueList = in;
         break;
     }
     }
@@ -142,7 +142,7 @@ Global::queueList() const
     }
     case SQLITE:
     {
-        return m_sqliteQueueList;
+        return Controller::Global::sqliteQueueList;
     }
     }
 #endif

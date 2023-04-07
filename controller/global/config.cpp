@@ -187,6 +187,12 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
                                     obj->m_autoStartServer));
 #endif
 
+#ifndef STQ_MOBILE
+        UNUSED(get_value(ini.sections["Settings"],
+                         "db path",
+                         obj->m_dbPath));
+#endif
+
         UNUSED(get_value(ini.sections["Settings"],
                          "log path",
                          obj->m_logPath));
@@ -253,6 +259,11 @@ uint_fast8_t Config::save(Config *obj, const std::string &path)
 #if defined(STQ_GUI) && !defined(STQ_MOBILE)
         ini.sections["Settings"]["auto start server"] =
             std::to_string(obj->m_autoStartServer);
+#endif
+
+#ifndef STQ_MOBILE
+        ini.sections["Settings"]["db path"] =
+            obj->m_dbPath;
 #endif
 
         ini.sections["Settings"]["log path"] =

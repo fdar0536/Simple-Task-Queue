@@ -109,9 +109,6 @@ private:
 #ifndef STQ_MOBILE
     BackendMode m_backendMode;
 
-    std::shared_ptr<Model::DAO::IQueueList>
-        m_sqliteQueueList;
-
     std::shared_ptr<Model::DAO::IQueue>
         m_sqliteQueue;
 #endif

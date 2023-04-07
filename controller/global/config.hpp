@@ -62,6 +62,10 @@ public:
     std::string configPath();
 #endif
 
+#ifndef STQ_MOBILE
+    std::string dbPath();
+#endif
+
     uint_fast16_t listenPort();
 
     void setListenPort(uint_fast16_t);
@@ -82,6 +86,10 @@ private:
     std::string m_configPath = "";
 
     bool m_autoStartServer = false;
+#endif
+
+#ifndef STQ_MOBILE
+    std::string m_dbPath;
 #endif
 
     std::string m_logPath = "";
