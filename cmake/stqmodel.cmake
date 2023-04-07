@@ -24,6 +24,10 @@ if (ENABLE_GUI)
         #grpc
         model/dao/grpcconnect.cpp
         model/dao/grpcconnect.hpp
+        model/dao/grpcqueue.cpp
+        model/dao/grpcqueue.hpp
+        model/dao/grpcqueuelist.cpp
+        model/dao/grpcqueuelist.hpp
         model/dao/grpcutils.cpp
         model/dao/grpcutils.hpp
     )

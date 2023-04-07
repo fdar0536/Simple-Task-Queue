@@ -11,6 +11,7 @@ service QueueList {
   rpc Rename(RenameQueueReq) returns (Empty);
   rpc Delete(QueueReq) returns (Empty);
   rpc List(Empty) returns (stream ListQueueRes);
+  rpc GetQueue(QueueReq) returns (Empty);
 }
 
 message RenameQueueReq {

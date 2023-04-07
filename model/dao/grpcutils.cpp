@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include "spdlog/spdlog.h"
+
 #include "grpcutils.hpp"
 
 #include "config.h"
@@ -38,6 +40,12 @@ void setupCtx(grpc::ClientContext &ctx)
 {
     ctx.set_deadline(std::chrono::system_clock::now() +
                      std::chrono::milliseconds(STQ_CLIENT_TIMEOUT * 1000));
+}
+
+void buildErrMsg(const char *file, int line, grpc::Status &status)
+{
+    spdlog::error("{}:{} gRPC error code {}: {}", file, line,
+                  static_cast<int>(status.error_code()), status.error_message());
 }
 
 } // end namespace GRPCUtils

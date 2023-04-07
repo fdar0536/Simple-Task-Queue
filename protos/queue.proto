@@ -27,7 +27,6 @@ message AddTaskReq {
   string workDir = 2;
   string execName = 3;
   repeated string args = 4;
-  int32 ID = 5;
 }
 
 message IsRunningRes {

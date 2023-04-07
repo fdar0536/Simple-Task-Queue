@@ -110,9 +110,7 @@ uint_fast8_t GRPCConnect::startConnect(const std::string &target,
 
     delete token;
     m_connectToken = nullptr;
-    spdlog::error("{}:{} gRPC error code {}: {}", __FILE__, __LINE__,
-                  static_cast<int>(status.error_code()), status.error_message());
-
+    GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
     return 1;
 }
 
