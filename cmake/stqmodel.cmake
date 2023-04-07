@@ -18,6 +18,17 @@ set(MODEL_SRC
     model/utils.hpp
 )
 
+if (ENABLE_GUI)
+    list(APPEND MODEL_SRC
+
+        #grpc
+        model/dao/grpcconnect.cpp
+        model/dao/grpcconnect.hpp
+        model/dao/grpcutils.cpp
+        model/dao/grpcutils.hpp
+    )
+endif (ENABLE_GUI)
+
 if (WIN32 AND (NOT ENABLE_MOBILE))
     list(APPEND MODEL_SRC
         model/proc/winproc.cpp
