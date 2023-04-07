@@ -69,6 +69,10 @@ static UINT consoleOutputCP(0);
 
 static uint_fast8_t initConsole();
 
+#ifndef STQ_MOBILE
+static uint_fast8_t initSQLiteQueueList();
+#endif
+
 uint_fast8_t init(int argc, char **argv)
 {
     if (initConsole())
@@ -105,7 +109,7 @@ void fin()
 }
 
 #ifndef STQ_MOBILE
-uint_fast8_t initSQLiteQueueList()
+static uint_fast8_t initSQLiteQueueList()
 {
     Model::DAO::SQLiteConnect *conn(nullptr);
     try

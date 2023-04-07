@@ -63,10 +63,6 @@ uint_fast8_t init(int argc, char **argv);
 
 void fin();
 
-#ifndef STQ_MOBILE
-uint_fast8_t initSQLiteQueueList();
-#endif
-
 } // end namespace Global
 
 } // end namespace Controller

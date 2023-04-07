@@ -317,6 +317,14 @@ std::string Config::configPath()
 }
 #endif
 
+#ifndef STQ_MOBILE
+std::string Config::dbPath()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    return m_dbPath;
+}
+#endif
+
 uint_fast16_t Config::listenPort()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
