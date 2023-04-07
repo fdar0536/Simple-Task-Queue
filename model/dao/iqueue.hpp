@@ -36,14 +36,13 @@ namespace Model
 namespace DAO
 {
 
-template<class T>
 class IQueue
 {
 public:
 
     virtual ~IQueue() {}
 
-    virtual uint_fast8_t init(std::shared_ptr<IConnect<T>> &connect,
+    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect,
                          std::shared_ptr<Proc::IProc> &process,
                          const std::string &name) = 0;
 

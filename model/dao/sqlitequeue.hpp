@@ -37,7 +37,7 @@ namespace Model
 namespace DAO
 {
 
-class SQLiteQueue: public IQueue<SQLiteToken>
+class SQLiteQueue: public IQueue
 {
 public:
 
@@ -45,7 +45,7 @@ public:
 
     ~SQLiteQueue();
 
-    virtual uint_fast8_t init(std::shared_ptr<IConnect<SQLiteToken>> &connect,
+    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect,
                          std::shared_ptr<Proc::IProc> &process,
                          const std::string &name) override;
 

@@ -49,7 +49,7 @@ SQLiteQueueList::~SQLiteQueueList()
 {}
 
 uint_fast8_t
-SQLiteQueueList::init(std::shared_ptr<IConnect<SQLiteToken>> &connect)
+SQLiteQueueList::init(std::shared_ptr<IConnect> &connect)
 {
     if (connect == nullptr)
     {
@@ -150,7 +150,7 @@ uint_fast8_t SQLiteQueueList::createQueue(const std::string &name)
         return 1;
     }
 
-    m_queueList[name] = std::shared_ptr<IQueue<SQLiteToken>>(queue);
+    m_queueList[name] = std::shared_ptr<IQueue>(queue);
     return 0;
 }
 
@@ -204,7 +204,7 @@ uint_fast8_t SQLiteQueueList::renameQueue(const std::string &oldName,
     return 1;
 }
 
-std::shared_ptr<IQueue<SQLiteToken>>
+std::shared_ptr<IQueue>
 SQLiteQueueList::getQueue(const std::string &name)
 {
     return m_queueList[name];

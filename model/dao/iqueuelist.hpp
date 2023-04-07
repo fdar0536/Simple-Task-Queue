@@ -36,14 +36,13 @@ namespace Model
 namespace DAO
 {
 
-template<class T>
 class IQueueList
 {
 public:
 
     virtual ~IQueueList() {}
 
-    virtual uint_fast8_t init(std::shared_ptr<IConnect<T>> &connect) = 0;
+    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect) = 0;
 
     virtual uint_fast8_t createQueue(const std::string &name) = 0;
 
@@ -54,11 +53,11 @@ public:
     virtual uint_fast8_t renameQueue(const std::string &oldName,
                                 const std::string &newName) = 0;
 
-    virtual std::shared_ptr<IQueue<T>> getQueue(const std::string &name) = 0;
+    virtual std::shared_ptr<IQueue> getQueue(const std::string &name) = 0;
 
 protected:
 
-    std::shared_ptr<IConnect<T>> m_conn;
+    std::shared_ptr<IConnect> m_conn;
 
 }; // end class IQueueList
 

@@ -89,9 +89,9 @@ public:
     BackendMode backendMode() const;
 
     void
-    setSqliteQueueList(std::shared_ptr<Model::DAO::IQueueList<Model::DAO::SQLiteToken>> &);
+    setSqliteQueueList(std::shared_ptr<Model::DAO::IQueueList> &);
 
-    std::shared_ptr<Model::DAO::IQueueList<Model::DAO::SQLiteToken>>
+    std::shared_ptr<Model::DAO::IQueueList>
     sqliteQueueList() const;
 #endif
 
@@ -112,7 +112,7 @@ private:
 #ifndef STQ_MOBILE
     BackendMode m_backendMode;
 
-    std::shared_ptr<Model::DAO::IQueueList<Model::DAO::SQLiteToken>>
+    std::shared_ptr<Model::DAO::IQueueList>
         m_sqliteQueueList;
 #endif
 

@@ -32,8 +32,6 @@
 #endif
 
 #include "spdlog/spdlog.h"
-#include "rapidjson/document.h"
-#include "rapidjson/istreamwrapper.h"
 
 #include "model/utils.hpp"
 #include "sqlitequeue.hpp"
@@ -62,7 +60,7 @@ SQLiteQueue::~SQLiteQueue()
     stopImpl();
 }
 
-uint_fast8_t SQLiteQueue::init(std::shared_ptr<IConnect<SQLiteToken>> &connect,
+uint_fast8_t SQLiteQueue::init(std::shared_ptr<IConnect> &connect,
                           std::shared_ptr<Proc::IProc> &process,
                           const std::string &name)
 {
@@ -1089,7 +1087,7 @@ uint_fast8_t SQLiteQueue::mainLoopInit()
     // find the task in pending list
     std::unique_lock<std::mutex> lock(m_token->mutex);
     uint_fast8_t ret(0);
-    
+
     if (sqlite3_prepare_v2(m_token->db,
         "SELECT * FROM pending limit 1;", 30,
         &m_token->stmt, NULL))

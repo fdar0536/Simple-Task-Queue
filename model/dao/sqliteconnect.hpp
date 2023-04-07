@@ -50,7 +50,7 @@ public:
 
 }; // end class SQLiteToken
 
-class SQLiteConnect: public IConnect<SQLiteToken>
+class SQLiteConnect: public IConnect
 {
 public:
 

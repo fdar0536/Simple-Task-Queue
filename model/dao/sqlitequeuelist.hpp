@@ -35,7 +35,7 @@ namespace Model
 namespace DAO
 {
 
-class SQLiteQueueList: public IQueueList<SQLiteToken>
+class SQLiteQueueList: public IQueueList
 {
 public:
 
@@ -44,7 +44,7 @@ public:
     ~SQLiteQueueList();
 
     virtual uint_fast8_t
-    init(std::shared_ptr<IConnect<SQLiteToken>> &connect) override;
+    init(std::shared_ptr<IConnect> &connect) override;
 
     virtual uint_fast8_t createQueue(const std::string &name) override;
 
@@ -55,13 +55,13 @@ public:
     virtual uint_fast8_t renameQueue(const std::string &oldName,
                                 const std::string &newName) override;
 
-    virtual std::shared_ptr<IQueue<SQLiteToken>>
+    virtual std::shared_ptr<IQueue>
     getQueue(const std::string &name) override;
 
 private:
 
     std::unordered_map<std::string,
-    std::shared_ptr<IQueue<SQLiteToken>>> m_queueList;
+    std::shared_ptr<IQueue>> m_queueList;
 };
 
 } // end namespace DAO

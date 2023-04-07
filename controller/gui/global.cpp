@@ -97,12 +97,12 @@ Global::BackendMode Global::backendMode() const
 }
 
 void
-Global::setSqliteQueueList(std::shared_ptr<Model::DAO::IQueueList<Model::DAO::SQLiteToken>> &in)
+Global::setSqliteQueueList(std::shared_ptr<Model::DAO::IQueueList> &in)
 {
     m_sqliteQueueList = in;
 }
 
-std::shared_ptr<Model::DAO::IQueueList<Model::DAO::SQLiteToken>>
+std::shared_ptr<Model::DAO::IQueueList>
 Global::sqliteQueueList() const
 {
     return m_sqliteQueueList;

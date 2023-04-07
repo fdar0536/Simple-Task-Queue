@@ -33,7 +33,6 @@ namespace Model
 namespace DAO
 {
 
-template<class T>
 class IConnect
 {
 
@@ -46,7 +45,7 @@ public:
     virtual uint_fast8_t startConnect(const std::string &target,
                                  const int_fast32_t port = 0) = 0;
 
-    std::shared_ptr<T> connectToken() const
+    std::shared_ptr<void> connectToken() const
     {
         return m_connectToken;
     }
@@ -58,7 +57,7 @@ public:
 
 protected:
 
-    std::shared_ptr<T> m_connectToken;
+    std::shared_ptr<void> m_connectToken;
 
     std::string m_targetPath;
 

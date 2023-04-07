@@ -82,10 +82,8 @@ include(cmake/protoc.cmake)
 
 set(PROTOS
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/access.proto
-    ${CMAKE_CURRENT_SOURCE_DIR}/protos/console.proto
-    ${CMAKE_CURRENT_SOURCE_DIR}/protos/done.proto
-    ${CMAKE_CURRENT_SOURCE_DIR}/protos/pending.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/queue.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protos/queuelist.proto
     ${CMAKE_CURRENT_SOURCE_DIR}/protos/types.proto
 )
 
