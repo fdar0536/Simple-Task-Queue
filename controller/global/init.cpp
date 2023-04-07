@@ -37,6 +37,10 @@
 
 #include "init.hpp"
 
+#ifdef STQ_GUI
+#include "controller/gui/global.hpp"
+#endif
+
 namespace Controller
 {
 
@@ -50,7 +54,7 @@ GRPCServer::Server server;
 #endif
 
 #ifdef STQ_GUI
-GUI::Global guiGlobal;
+Controller::GUI::Global guiGlobal;
 #endif
 
 #ifndef STQ_GUI

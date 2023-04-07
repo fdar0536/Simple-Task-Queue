@@ -29,7 +29,7 @@
 
 #include "spdlog/spdlog.h"
 
-#include "controller/gui/global.hpp"
+#include "controller/global/init.hpp"
 
 #ifdef STQ_GUI
 
@@ -40,6 +40,8 @@
 #endif // STQ_MOBILE
 
 #include "QIcon"
+
+#include "controller/gui/global.hpp"
 
 #endif // STQ_GUI
 

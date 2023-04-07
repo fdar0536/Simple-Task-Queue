@@ -33,12 +33,15 @@
 #include "controller/grpcserver/server.hpp"
 #endif
 
-#ifdef STQ_GUI
-#include "controller/gui/global.hpp"
-#endif
-
 namespace Controller
 {
+
+namespace GUI
+{
+
+class Global;
+
+}
 
 namespace Global
 {
@@ -50,7 +53,7 @@ extern GRPCServer::Server server;
 #endif
 
 #ifdef STQ_GUI
-extern GUI::Global guiGlobal;
+extern Controller::GUI::Global guiGlobal;
 #endif
 
 uint_fast8_t init(int argc, char **argv);
