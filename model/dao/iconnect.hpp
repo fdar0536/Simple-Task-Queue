@@ -61,6 +61,17 @@ protected:
 
     std::string m_targetPath;
 
+    template<class T>
+    void freeConnectToken()
+    {
+        if (m_connectToken)
+        {
+            T *token = reinterpret_cast<T *>(m_connectToken);
+            delete token;
+            m_connectToken = nullptr;
+        }
+    }
+
 }; // end class IConnect
 
 } // end namespace DAO

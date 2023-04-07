@@ -56,11 +56,7 @@ SQLiteConnect::SQLiteConnect()
 
 SQLiteConnect::~SQLiteConnect()
 {
-    if (m_connectToken)
-    {
-        SQLiteToken *token = reinterpret_cast<SQLiteToken *>(m_connectToken);
-        delete token;
-    }
+    freeConnectToken<SQLiteToken>();
 }
 
 uint_fast8_t SQLiteConnect::init()
