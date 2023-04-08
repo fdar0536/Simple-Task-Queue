@@ -45,33 +45,38 @@ public:
 
     ~SQLiteQueue();
 
-    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect,
-                         std::shared_ptr<Proc::IProc> &process,
-                         const std::string &name) override;
+    virtual void init(std::shared_ptr<IConnect> &connect,
+                      std::shared_ptr<Proc::IProc> &process,
+                      const std::string &name,
+                      ErrMsg &msg) override;
 
-    virtual uint_fast8_t listPending(std::vector<int> &out) override;
+    virtual void listPending(std::vector<int> &out, ErrMsg &msg) override;
 
-    virtual uint_fast8_t listFinished(std::vector<int> &out) override;
+    virtual void listFinished(std::vector<int> &out, ErrMsg &msg) override;
 
-    virtual uint_fast8_t pendingDetails(const int_fast32_t id, Proc::Task &out) override;
+    virtual void pendingDetails(const int_fast32_t id,
+                                Proc::Task &out,
+                                ErrMsg &msg) override;
 
-    virtual uint_fast8_t finishedDetails(const int_fast32_t id, Proc::Task &out) override;
+    virtual void finishedDetails(const int_fast32_t id,
+                                 Proc::Task &out,
+                                 ErrMsg &msg) override;
 
-    virtual uint_fast8_t clearPending() override;
+    virtual void clearPending(ErrMsg &msg) override;
 
-    virtual uint_fast8_t clearFinished() override;
+    virtual void clearFinished(ErrMsg &msg) override;
 
-    virtual uint_fast8_t currentTask(Proc::Task &out) override;
+    virtual void currentTask(Proc::Task &out, ErrMsg &msg) override;
 
-    virtual uint_fast8_t addTask(Proc::Task &in) override;
+    virtual void addTask(Proc::Task &in, ErrMsg &msg) override;
 
-    virtual uint_fast8_t removeTask(const int_fast32_t in) override;
+    virtual void removeTask(const int_fast32_t in, ErrMsg &msg) override;
 
     virtual bool isRunning() const override;
 
-    virtual uint_fast8_t readCurrentOutput(std::string &out) override;
+    virtual void readCurrentOutput(std::string &out, ErrMsg &msg) override;
 
-    virtual uint_fast8_t start() override;
+    virtual void start(ErrMsg &msg) override;
 
     virtual void stop() override;
 
@@ -97,21 +102,24 @@ private:
 
     uint_fast8_t verifyID();
 
-    uint_fast8_t clearTable(const std::string &);
+    void clearTable(const std::string &, ErrMsg &);
 
-    uint_fast8_t listIDInTable(const std::string &, std::vector<int> &);
+    void listIDInTable(const std::string &, std::vector<int> &, ErrMsg &);
 
-    uint_fast8_t taskDetails(const std::string &, const int_fast32_t, Proc::Task &);
+    void taskDetails(const std::string &,
+                     const int_fast32_t,
+                     Proc::Task &,
+                     ErrMsg &msg);
 
-    uint_fast8_t addTaskToTable(const std::string &, const Proc::Task &);
+    void addTaskToTable(const std::string &, const Proc::Task &, ErrMsg &);
 
-    uint_fast8_t removeTaskFromPending(const int_fast32_t, const bool);
+    void removeTaskFromPending(const int_fast32_t, const bool, ErrMsg &);
 
     void splitString(const std::string &, std::vector<std::string> &);
 
     std::string concatString(const std::vector<std::string> &);
 
-    uint_fast8_t getID(int_fast32_t &);
+    void getID(int_fast32_t &, ErrMsg &);
 
     void mainLoop();
 
