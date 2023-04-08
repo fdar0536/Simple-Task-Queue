@@ -27,6 +27,8 @@
 #include <string>
 #include <memory>
 
+#include "model/errmsg.hpp"
+
 namespace Model
 {
 
@@ -38,22 +40,17 @@ class IConnect
 
 public:
 
-    virtual ~IConnect() {}
+    virtual ~IConnect() = 0;
 
-    virtual uint_fast8_t init() = 0;
+    virtual void init(ErrMsg &) = 0;
 
-    virtual uint_fast8_t startConnect(const std::string &target,
-                                 const int_fast32_t port = 0) = 0;
+    virtual void startConnect(ErrMsg &,
+                              const std::string &target,
+                              const int_fast32_t port = 0) = 0;
 
-    void *connectToken() const
-    {
-        return m_connectToken;
-    }
+    void *connectToken() const;
 
-    std::string targetPath() const
-    {
-        return m_targetPath;
-    }
+    std::string targetPath() const;
 
 protected:
 

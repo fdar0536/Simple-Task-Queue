@@ -21,49 +21,38 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_DAO_GRPCCONNECT_HPP_
-#define _MODEL_DAO_GRPCCONNECT_HPP_
-
-#include "access.grpc.pb.h"
-
-#include "iconnect.hpp"
+#include "errmsg.hpp"
 
 namespace Model
 {
 
-namespace DAO
+ErrMsg::ErrMsg() :
+    m_code(OK),
+    m_msg("")
+{}
+
+void ErrMsg::setMsg(ErrCode code, const std::string &msg)
 {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_code = code;
+    m_msg = msg;
+}
 
-class GRPCToken
+void ErrMsg::msg(ErrCode &code, std::string &msg)
 {
-public:
+    std::unique_lock<std::mutex> lock(m_mutex);
+    code = m_code;
+    m_code = OK;
 
-    GRPCToken();
+    msg = m_msg;
+    m_msg.clear();
+}
 
-    ~GRPCToken();
-
-    std::shared_ptr<grpc::ChannelInterface> channel;
-};
-
-class GRPCConnect : public IConnect
+#ifndef STQ_MOBILE
+grpc::Status ErrMsg::toGRPCStatus(ErrCode code, const std::string &msg)
 {
-
-public:
-
-    GRPCConnect();
-
-    ~GRPCConnect();
-
-    void init(ErrMsg &) override;
-
-    void startConnect(ErrMsg &,
-                      const std::string &target,
-                      const int_fast32_t port = 0) override;
-
-}; // end class GRPCConnect
-
-} // end namespace DAO
+    return grpc::Status(m_table[code], msg);
+}
+#endif
 
 } // end namespace Model
-
-#endif // _MODEL_DAO_GRPCCONNECT_HPP_

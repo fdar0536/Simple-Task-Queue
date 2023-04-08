@@ -59,20 +59,22 @@ SQLiteConnect::~SQLiteConnect()
     freeConnectToken<SQLiteToken>();
 }
 
-uint_fast8_t SQLiteConnect::init()
+void SQLiteConnect::init(ErrMsg &)
 {
     m_connectToken = nullptr;
-    return 0;
 }
 
-uint_fast8_t SQLiteConnect::startConnect(const std::string &target,
-                                    const int_fast32_t port)
+void
+SQLiteConnect::startConnect(ErrMsg &msg,
+                            const std::string &target,
+                            const int_fast32_t port)
 {
     static_cast<void>(port);
     if (target.empty())
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "target is empty");
         spdlog::error("{}:{} target is empty.", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     std::string basePath = target;
@@ -84,12 +86,12 @@ uint_fast8_t SQLiteConnect::startConnect(const std::string &target,
 
     if (DirUtils::verifyDir(basePath))
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Fail to verify basePath");
         spdlog::error("{}:{} Fail to verify basePath.", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     m_targetPath = basePath;
-    return 0;
 }
 
 } // end namespace DAO

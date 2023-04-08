@@ -21,11 +21,7 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_DAO_ICONNECT_HPP_
-#define _MODEL_DAO_ICONNECT_HPP_
-
-#include <string>
-#include <memory>
+#include "iconnect.hpp"
 
 namespace Model
 {
@@ -33,49 +29,19 @@ namespace Model
 namespace DAO
 {
 
-class IConnect
+IConnect::~IConnect()
+{}
+
+void *IConnect::connectToken() const
 {
+    return m_connectToken;
+}
 
-public:
-
-    virtual ~IConnect() {}
-
-    virtual uint_fast8_t init() = 0;
-
-    virtual uint_fast8_t startConnect(const std::string &target,
-                                 const int_fast32_t port = 0) = 0;
-
-    void *connectToken() const
-    {
-        return m_connectToken;
-    }
-
-    std::string targetPath() const
-    {
-        return m_targetPath;
-    }
-
-protected:
-
-    void *m_connectToken = nullptr;
-
-    std::string m_targetPath = "";
-
-    template<class T>
-    void freeConnectToken()
-    {
-        if (m_connectToken)
-        {
-            T *token = reinterpret_cast<T *>(m_connectToken);
-            delete token;
-            m_connectToken = nullptr;
-        }
-    }
-
-}; // end class IConnect
+std::string IConnect::targetPath() const
+{
+    return m_targetPath;
+}
 
 } // end namespace DAO
 
 } // end namespace Model
-
-#endif // _MODEL_DAO_ICONNECT_HPP_

@@ -1,6 +1,7 @@
 set(MODEL_SRC
 
     # DAO
+    model/dao/iconnect.cpp
     model/dao/iconnect.hpp
     model/dao/iqueuelist.hpp
     model/dao/iqueue.hpp
@@ -14,6 +15,8 @@ set(MODEL_SRC
     model/proc/task.cpp
     model/proc/task.hpp
 
+    model/errmsg.cpp
+    model/errmsg.hpp
     model/utils.cpp
     model/utils.hpp
 )

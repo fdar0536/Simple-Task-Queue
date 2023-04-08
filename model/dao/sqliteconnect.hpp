@@ -58,10 +58,11 @@ public:
 
     ~SQLiteConnect();
 
-    virtual uint_fast8_t init() override;
+    void init(ErrMsg &) override;
 
-    virtual uint_fast8_t startConnect(const std::string &target,
-                                 const int_fast32_t port = 0) override;
+    void startConnect(ErrMsg &,
+                      const std::string &target,
+                      const int_fast32_t port = 0) override;
 
 }; // end class DirConnect
 

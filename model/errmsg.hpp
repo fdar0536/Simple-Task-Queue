@@ -21,49 +21,60 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_DAO_GRPCCONNECT_HPP_
-#define _MODEL_DAO_GRPCCONNECT_HPP_
+#ifndef _MODEL_IMODEL_HPP_
+#define _MODEL_IMODEL_HPP_
 
-#include "access.grpc.pb.h"
+#include <unordered_map>
+#include <string>
+#include <mutex>
 
-#include "iconnect.hpp"
+#include "config.h"
+
+#ifndef STQ_MOBILE
+#include "grpcpp/grpcpp.h"
+#endif
 
 namespace Model
 {
 
-namespace DAO
-{
-
-class GRPCToken
+class ErrMsg
 {
 public:
 
-    GRPCToken();
+    typedef enum ErrCode
+    {
+        OK = 0,
+        INVALID_ARGUMENT,
+        NOT_FOUND,
+        ALREADY_EXISTS,
+        OUT_OF_RANGE,
+        OS_ERROR
+    } ErrCode;
 
-    ~GRPCToken();
+    ErrMsg();
 
-    std::shared_ptr<grpc::ChannelInterface> channel;
-};
+    void setMsg(ErrCode, const std::string &);
 
-class GRPCConnect : public IConnect
-{
+    void msg(ErrCode &, std::string &);
 
-public:
+#ifndef STQ_MOBILE
+    static grpc::Status toGRPCStatus(ErrCode, const std::string &);
+#endif
 
-    GRPCConnect();
+private:
 
-    ~GRPCConnect();
+    ErrCode m_code;
 
-    void init(ErrMsg &) override;
+    std::string m_msg;
 
-    void startConnect(ErrMsg &,
-                      const std::string &target,
-                      const int_fast32_t port = 0) override;
+    std::mutex m_mutex;
 
-}; // end class GRPCConnect
+#ifndef STQ_MOBILE
+    static std::unordered_map<ErrCode, grpc::StatusCode> m_table;
+#endif
 
-} // end namespace DAO
+}; // end class ErrMsg
 
 } // end namespace Model
 
-#endif // _MODEL_DAO_GRPCCONNECT_HPP_
+#endif // _MODEL_IMODEL_HPP_
