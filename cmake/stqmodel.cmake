@@ -61,19 +61,3 @@ if (NOT ENABLE_MOBILE)
         model/dao/sqlitequeue.hpp
     )
 endif (NOT ENABLE_MOBILE)
-
-add_library(STQModel STATIC
-    ${MODEL_SRC}
-)
-
-add_dependencies(STQModel grpc_common)
-
-target_link_libraries(STQModel
-    PRIVATE
-    protobuf::libprotobuf
-    gRPC::grpc++
-
-    grpc_common
-    spdlog::spdlog
-    SQLite::SQLite3
-)

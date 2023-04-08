@@ -34,6 +34,7 @@ if(ENABLE_GUI)
         WIN32
         MACOSX_BUNDLE
 
+        ${MODEL_SRC}
         ${CONTROLLER_SRC}
 
         stq.cpp)
@@ -48,27 +49,29 @@ if(ENABLE_GUI)
             "view/gui/stq.ico"
     )
 
-    add_dependencies(STQ grpc_common STQModel)
+    add_dependencies(STQ grpc_common)
 
     if(ENABLE_MOBILE)
         target_link_libraries(STQ
             PRIVATE
 
-            STQModel
+            protobuf::libprotobuf
+            gRPC::grpc++
+
             grpc_common
             spdlog::spdlog
-
-            Qt6::Gui
-            Qt6::Quick
+            SQLite::SQLite3
         )
     else()
         target_link_libraries(STQ
             PRIVATE
 
-            STQModel
             grpc_common
             spdlog::spdlog
             SQLite::SQLite3
+
+            protobuf::libprotobuf
+            gRPC::grpc++
 
             # Qt
             Qt6::Widgets
@@ -77,11 +80,12 @@ if(ENABLE_GUI)
     endif()
 else()
     add_executable(STQ
+        ${MODEL_SRC}
         ${CONTROLLER_SRC}
 
         stq.cpp)
 
-    add_dependencies(STQ grpc_common STQModel)
+    add_dependencies(STQ grpc_common)
 
     target_link_libraries(STQ
         PRIVATE

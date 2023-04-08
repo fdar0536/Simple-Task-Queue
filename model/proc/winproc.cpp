@@ -210,7 +210,7 @@ uint_fast8_t WinProc::CreateChildProcess(const Task &task)
 
     memcpy(cmdPtr, cmdLine.c_str(), cmdLine.length());
 
-    STARTUPINFO siStartInfo;
+    STARTUPINFOA siStartInfo;
     BOOL bSuccess = FALSE;
 
     // Set up members of the STARTUPINFO structure.
