@@ -1183,7 +1183,7 @@ void SQLiteQueue::mainLoopFin()
 
 void SQLiteQueue::stopImpl()
 {
-    if (!isRunning())
+    if (!m_isRunning.load(std::memory_order_relaxed))
     {
         spdlog::error("{}:{} Queue is not running.", __FILE__, __LINE__);
         return;

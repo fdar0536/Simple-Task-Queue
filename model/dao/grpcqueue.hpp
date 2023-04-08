@@ -45,33 +45,38 @@ public:
 
     ~GRPCQueue();
 
-    uint_fast8_t init(std::shared_ptr<IConnect> &connect,
+    void init(std::shared_ptr<IConnect> &connect,
                       std::shared_ptr<Proc::IProc> &process,
-                      const std::string &name) override;
+                      const std::string &name,
+                      ErrMsg &msg) override;
 
-    uint_fast8_t listPending(std::vector<int> &out) override;
+    void listPending(std::vector<int> &out, ErrMsg &msg) override;
 
-    uint_fast8_t listFinished(std::vector<int> &out) override;
+    void listFinished(std::vector<int> &out, ErrMsg &msg) override;
 
-    uint_fast8_t pendingDetails(const int_fast32_t id, Proc::Task &out) override;
+    void pendingDetails(const int_fast32_t id,
+                        Proc::Task &out,
+                        ErrMsg &msg) override;
 
-    uint_fast8_t finishedDetails(const int_fast32_t id, Proc::Task &out) override;
+    void finishedDetails(const int_fast32_t id,
+                         Proc::Task &out,
+                         ErrMsg &msg) override;
 
-    uint_fast8_t clearPending() override;
+    void clearPending(ErrMsg &msg) override;
 
-    uint_fast8_t clearFinished() override;
+    void clearFinished(ErrMsg &msg) override;
 
-    uint_fast8_t currentTask(Proc::Task &out) override;
+    void currentTask(Proc::Task &out, ErrMsg &msg) override;
 
-    uint_fast8_t addTask(Proc::Task &in) override;
+    void addTask(Proc::Task &in, ErrMsg &msg) override;
 
-    uint_fast8_t removeTask(const int_fast32_t in) override;
+    void removeTask(const int_fast32_t in, ErrMsg &msg) override;
 
     bool isRunning() const override;
 
-    uint_fast8_t readCurrentOutput(std::string &out) override;
+    void readCurrentOutput(std::string &out, ErrMsg &msg) override;
 
-    uint_fast8_t start() override;
+    void start(ErrMsg &msg) override;
 
     void stop() override;
 

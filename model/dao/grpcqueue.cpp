@@ -42,29 +42,32 @@ GRPCQueue::GRPCQueue() :
 GRPCQueue::~GRPCQueue()
 {}
 
-uint_fast8_t
+void
 GRPCQueue::init(std::shared_ptr<IConnect> &connect,
                 std::shared_ptr<Proc::IProc> &process,
-                const std::string &name)
+                const std::string &name,
+                ErrMsg &msg)
 {
     UNUSED(process);
-
     if (connect == nullptr)
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "connect is nullptr");
         spdlog::error("{}:{} connect is nullptr", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     if (!connect->connectToken())
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "connect token is nullptr");
         spdlog::error("{}:{} connect token is nullptr", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     if (name.empty())
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "name is empty");
         spdlog::error("{}:{} name is empty", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     GRPCToken *token = reinterpret_cast<GRPCToken *>(connect->connectToken());
@@ -74,21 +77,22 @@ GRPCQueue::init(std::shared_ptr<IConnect> &connect,
         m_stub = stq::Queue::NewStub(token->channel);
         if (m_stub == nullptr)
         {
+            msg.setMsg(ErrMsg::OS_ERROR, "Fail to get stub");
             spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
-            return 1;
+            return;
         }
     }
     catch (...)
     {
+        msg.setMsg(ErrMsg::OS_ERROR, "Fail to get stub");
         spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     m_queueName = name;
-    return 0;
 }
 
-uint_fast8_t GRPCQueue::listPending(std::vector<int> &out)
+void GRPCQueue::listPending(std::vector<int> &out, ErrMsg &msg)
 {
     out.clear();
     out.reserve(128);
@@ -103,8 +107,9 @@ uint_fast8_t GRPCQueue::listPending(std::vector<int> &out)
     auto reader = m_stub->ListPending(&ctx, req);
     if (reader == nullptr)
     {
+        msg.setMsg(ErrMsg::OS_ERROR, "reader is nullptr");
         spdlog::error("{}:{} reader is nullptr", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     while(reader->Read(&res))
@@ -113,10 +118,9 @@ uint_fast8_t GRPCQueue::listPending(std::vector<int> &out)
     }
 
     UNUSED(reader->Finish());
-    return 0;
 }
 
-uint_fast8_t GRPCQueue::listFinished(std::vector<int> &out)
+void GRPCQueue::listFinished(std::vector<int> &out, ErrMsg &msg)
 {
     out.clear();
     out.reserve(128);
@@ -131,8 +135,9 @@ uint_fast8_t GRPCQueue::listFinished(std::vector<int> &out)
     auto reader = m_stub->ListFinished(&ctx, req);
     if (reader == nullptr)
     {
+        msg.setMsg(ErrMsg::OS_ERROR, "reader is nullptr");
         spdlog::error("{}:{} reader is nullptr", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     while(reader->Read(&res))
@@ -141,10 +146,11 @@ uint_fast8_t GRPCQueue::listFinished(std::vector<int> &out)
     }
 
     UNUSED(reader->Finish());
-    return 0;
 }
 
-uint_fast8_t GRPCQueue::pendingDetails(const int_fast32_t id, Proc::Task &out)
+void GRPCQueue::pendingDetails(const int_fast32_t id,
+                               Proc::Task &out,
+                               ErrMsg &msg)
 {
     stq::TaskDetailsReq req;
     req.set_queuename(m_queueName);
@@ -158,14 +164,16 @@ uint_fast8_t GRPCQueue::pendingDetails(const int_fast32_t id, Proc::Task &out)
     if (status.ok())
     {
         buildTask(res, out);
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueue::finishedDetails(const int_fast32_t id, Proc::Task &out)
+void GRPCQueue::finishedDetails(const int_fast32_t id,
+                                Proc::Task &out,
+                                ErrMsg &msg)
 {
     stq::TaskDetailsReq req;
     req.set_queuename(m_queueName);
@@ -179,14 +187,14 @@ uint_fast8_t GRPCQueue::finishedDetails(const int_fast32_t id, Proc::Task &out)
     if (status.ok())
     {
         buildTask(res, out);
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueue::clearPending()
+void GRPCQueue::clearPending(ErrMsg &msg)
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -198,14 +206,14 @@ uint_fast8_t GRPCQueue::clearPending()
     grpc::Status status = m_stub->ClearPending(&ctx, req, &res);
     if (status.ok())
     {
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueue::clearFinished()
+void GRPCQueue::clearFinished(ErrMsg &msg)
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -217,14 +225,14 @@ uint_fast8_t GRPCQueue::clearFinished()
     grpc::Status status = m_stub->ClearFinished(&ctx, req, &res);
     if (status.ok())
     {
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueue::currentTask(Proc::Task &out)
+void GRPCQueue::currentTask(Proc::Task &out, ErrMsg &msg)
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -237,14 +245,14 @@ uint_fast8_t GRPCQueue::currentTask(Proc::Task &out)
     if (status.ok())
     {
         buildTask(res, out);
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueue::addTask(Proc::Task &in)
+void GRPCQueue::addTask(Proc::Task &in, ErrMsg &msg)
 {
     stq::AddTaskReq req;
     req.set_queuename(m_queueName);
@@ -265,14 +273,14 @@ uint_fast8_t GRPCQueue::addTask(Proc::Task &in)
     if (status.ok())
     {
         in.ID = res.id();
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueue::removeTask(const int_fast32_t in)
+void GRPCQueue::removeTask(const int_fast32_t in, ErrMsg &msg)
 {
     stq::TaskDetailsReq req;
     req.set_queuename(m_queueName);
@@ -287,11 +295,9 @@ uint_fast8_t GRPCQueue::removeTask(const int_fast32_t in)
     status = m_stub->RemoveTask(&ctx, req, &res);
     if (!status.ok())
     {
+        msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
         GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-        return 1;
     }
-
-    return 0;
 }
 
 bool GRPCQueue::isRunning() const
@@ -313,7 +319,7 @@ bool GRPCQueue::isRunning() const
     return false;
 }
 
-uint_fast8_t GRPCQueue::readCurrentOutput(std::string &out)
+void GRPCQueue::readCurrentOutput(std::string &out, ErrMsg &msg)
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -326,14 +332,14 @@ uint_fast8_t GRPCQueue::readCurrentOutput(std::string &out)
     if (status.ok())
     {
         out = res.msg();
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueue::start()
+void GRPCQueue::start(ErrMsg &msg)
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -345,11 +351,11 @@ uint_fast8_t GRPCQueue::start()
     grpc::Status status = m_stub->Start(&ctx, req, &res);
     if (status.ok())
     {
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
 void GRPCQueue::stop()
