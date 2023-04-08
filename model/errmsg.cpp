@@ -26,10 +26,26 @@
 namespace Model
 {
 
+#ifndef STQ_MOBILE
+static std::unordered_map<ErrMsg::ErrCode, grpc::StatusCode> table;
+#endif
+
 ErrMsg::ErrMsg() :
     m_code(OK),
     m_msg("")
 {}
+
+void ErrMsg::init()
+{
+#ifndef STQ_MOBILE
+    table[OK] = grpc::StatusCode::OK;
+    table[INVALID_ARGUMENT] = grpc::StatusCode::INVALID_ARGUMENT;
+    table[NOT_FOUND] = grpc::StatusCode::NOT_FOUND;
+    table[ALREADY_EXISTS] = grpc::StatusCode::ALREADY_EXISTS;
+    table[OUT_OF_RANGE] = grpc::StatusCode::OUT_OF_RANGE;
+    table[OS_ERROR] = grpc::StatusCode::INTERNAL;
+#endif
+}
 
 void ErrMsg::setMsg(ErrCode code, const std::string &msg)
 {
@@ -51,7 +67,7 @@ void ErrMsg::msg(ErrCode &code, std::string &msg)
 #ifndef STQ_MOBILE
 grpc::Status ErrMsg::toGRPCStatus(ErrCode code, const std::string &msg)
 {
-    return grpc::Status(m_table[code], msg);
+    return grpc::Status(table[code], msg);
 }
 #endif
 

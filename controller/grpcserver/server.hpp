@@ -32,6 +32,7 @@
 
 #include "controller/global/defines.hpp"
 #include "accessimpl.hpp"
+#include "queuelistimpl.hpp"
 
 #ifndef STQ_GUI
 #include <future>
@@ -72,6 +73,8 @@ private:
     std::unique_ptr<grpc::Server> m_server = nullptr;
 
     AccessImpl m_accessImpl;
+
+    QueueListImpl m_queueListImpl;
 
 };
 

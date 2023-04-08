@@ -53,6 +53,8 @@ public:
 
     ErrMsg();
 
+    static void init();
+
     void setMsg(ErrCode, const std::string &);
 
     void msg(ErrCode &, std::string &);
@@ -68,10 +70,6 @@ private:
     std::string m_msg;
 
     std::mutex m_mutex;
-
-#ifndef STQ_MOBILE
-    static std::unordered_map<ErrCode, grpc::StatusCode> m_table;
-#endif
 
 }; // end class ErrMsg
 

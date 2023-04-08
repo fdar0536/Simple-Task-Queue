@@ -54,11 +54,15 @@ QueueListImpl::Create(grpc::ServerContext *ctx,
                             "\"name\" is empty string");
     }
 
-    if (Global::sqliteQueueList->createQueue(req->name()))
+    Model::ErrMsg msg;
+    Model::ErrMsg::ErrCode code;
+    std::string errMsg;
+    Global::sqliteQueueList->createQueue(req->name(), msg);
+    msg.msg(code, errMsg);
+    if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                            "Please see server log for details.");
+        return Model::ErrMsg::toGRPCStatus(code, errMsg);
     }
 
     return grpc::Status::OK;
@@ -86,11 +90,15 @@ QueueListImpl::Rename(grpc::ServerContext *ctx,
                             "\"oldName\" or \"newName\" is empty string");
     }
 
-    if (Global::sqliteQueueList->renameQueue(req->oldname(), req->newname()))
+    Model::ErrMsg msg;
+    Model::ErrMsg::ErrCode code;
+    std::string errMsg;
+    Global::sqliteQueueList->renameQueue(req->oldname(), req->newname(), msg);
+    msg.msg(code, errMsg);
+    if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                            "Please see server log for details.");
+        return Model::ErrMsg::toGRPCStatus(code, errMsg);
     }
 
     return grpc::Status::OK;
@@ -118,11 +126,15 @@ QueueListImpl::Delete(grpc::ServerContext *ctx,
                             "\"name\" is empty string");
     }
 
-    if (Global::sqliteQueueList->deleteQueue(req->name()))
+    Model::ErrMsg msg;
+    Model::ErrMsg::ErrCode code;
+    std::string errMsg;
+    Global::sqliteQueueList->deleteQueue(req->name(), msg);
+    msg.msg(code, errMsg);
+    if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                            "Please see server log for details.");
+        return Model::ErrMsg::toGRPCStatus(code, errMsg);
     }
 
     return grpc::Status::OK;
@@ -144,44 +156,50 @@ QueueListImpl::List(grpc::ServerContext *ctx,
     }
 
     std::vector<std::string> out;
-    if (Global::sqliteQueueList->listQueue(out))
+    Model::ErrMsg msg;
+    Model::ErrMsg::ErrCode code;
+    std::string errMsg;
+    Global::sqliteQueueList->listQueue(out, msg);
+    msg.msg(code, errMsg);
+    if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                            "Please see server log for details.");
+        return Model::ErrMsg::toGRPCStatus(code, errMsg);
     }
 
-    /*
-    if (req->name().empty())
+    stq::ListQueueRes toWrite;
+    for (size_t i = 0; i < out.size(); ++i)
     {
-        spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                            "\"name\" is empty string");
+        toWrite.set_name(out.at(i));
+        writer->Write(toWrite);
     }
-
-    if (Global::sqliteQueueList->deleteQueue(req->name()))
-    {
-        spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
-                            "Please see server log for details.");
-    }
-    */
 
     return grpc::Status::OK;
 }
 
-/*
+grpc::Status
+QueueListImpl::GetQueue(grpc::ServerContext *ctx,
+                        const stq::QueueReq *req,
+                        stq::Empty *res)
+{
+    UNUSED(ctx);
+    UNUSED(res);
+    if (!req)
+    {
+        spdlog::critical("{}:{} invalid input", __FILE__, __LINE__);
+        return grpc::Status(grpc::StatusCode::INTERNAL,
+                            "Internal server error");
+    }
 
+    auto queue = Global::sqliteQueueList->getQueue(req->name());
+    if (queue == nullptr)
+    {
+        return grpc::Status(grpc::StatusCode::NOT_FOUND,
+                            "No such queue");
+    }
 
-    grpc::Status List(grpc::ServerContext *ctx,
-                      const stq::Empty *req,
-                      grpc::ServerWriter<::stq::ListQueueRes> *writer) override;
-
-    grpc::Status GetQueue(grpc::ServerContext *ctx,
-                          const stq::QueueReq *req,
-                          stq::Empty *res) override;
-
-*/
+    return grpc::Status::OK;
+}
 
 } // end namespace GRPCServer
 

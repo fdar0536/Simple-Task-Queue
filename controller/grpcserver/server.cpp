@@ -67,6 +67,7 @@ uint_fast8_t Server::start()
                                  &actualPort);
 
         builder.RegisterService(&m_accessImpl);
+        builder.RegisterService(&m_queueListImpl);
 #ifdef STQ_GUI
         m_isRunning.store(true, std::memory_order_relaxed);
 #endif
