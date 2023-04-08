@@ -41,18 +41,20 @@ GRPCQueueList::GRPCQueueList() :
 GRPCQueueList::~GRPCQueueList()
 {}
 
-uint_fast8_t GRPCQueueList::init(std::shared_ptr<IConnect> &connect)
+void GRPCQueueList::init(std::shared_ptr<IConnect> &connect, ErrMsg &msg)
 {
     if (connect == nullptr)
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "connect is nullptr");
         spdlog::error("{}:{} connect is nullptr", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     if (!connect->connectToken())
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "connect token is nullptr");
         spdlog::error("{}:{} connect token is nullptr", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     GRPCToken *token = reinterpret_cast<GRPCToken *>(connect->connectToken());
@@ -61,21 +63,22 @@ uint_fast8_t GRPCQueueList::init(std::shared_ptr<IConnect> &connect)
         m_stub = stq::QueueList::NewStub(token->channel);
         if (m_stub == nullptr)
         {
+            msg.setMsg(ErrMsg::OS_ERROR, "Fail to get stub");
             spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
-            return 1;
+            return;
         }
     }
     catch (...)
     {
+        msg.setMsg(ErrMsg::OS_ERROR, "Fail to get stub");
         spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     m_conn = connect;
-    return 0;
 }
 
-uint_fast8_t GRPCQueueList::createQueue(const std::string &name)
+void GRPCQueueList::createQueue(const std::string &name, ErrMsg &msg)
 {
     stq::QueueReq req;
     req.set_name(name);
@@ -87,14 +90,14 @@ uint_fast8_t GRPCQueueList::createQueue(const std::string &name)
     grpc::Status status = m_stub->Create(&ctx, req, &res);
     if (status.ok())
     {
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueueList::listQueue(std::vector<std::string> &out)
+void GRPCQueueList::listQueue(std::vector<std::string> &out, ErrMsg &msg)
 {
     out.clear();
     out.reserve(100);
@@ -107,8 +110,9 @@ uint_fast8_t GRPCQueueList::listQueue(std::vector<std::string> &out)
     auto reader = m_stub->List(&ctx, req);
     if (reader == nullptr)
     {
+        msg.setMsg(ErrMsg::OS_ERROR, "reader is nullptr");
         spdlog::error("{}:{} reader is nullptr", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     while (reader->Read(&res))
@@ -119,14 +123,14 @@ uint_fast8_t GRPCQueueList::listQueue(std::vector<std::string> &out)
     grpc::Status status = reader->Finish();
     if (status.ok())
     {
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueueList::deleteQueue(const std::string &name)
+void GRPCQueueList::deleteQueue(const std::string &name, ErrMsg &msg)
 {
     stq::QueueReq req;
     req.set_name(name);
@@ -138,15 +142,16 @@ uint_fast8_t GRPCQueueList::deleteQueue(const std::string &name)
     grpc::Status status = m_stub->Delete(&ctx, req, &res);
     if (status.ok())
     {
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
-uint_fast8_t GRPCQueueList::renameQueue(const std::string &oldName,
-                                        const std::string &newName)
+void GRPCQueueList::renameQueue(const std::string &oldName,
+                                const std::string &newName,
+                                ErrMsg &msg)
 {
     stq::RenameQueueReq req;
     req.set_oldname(oldName);
@@ -159,11 +164,11 @@ uint_fast8_t GRPCQueueList::renameQueue(const std::string &oldName,
     grpc::Status status = m_stub->Rename(&ctx, req, &res);
     if (status.ok())
     {
-        return 0;
+        return;
     }
 
+    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return 1;
 }
 
 std::shared_ptr<IQueue> GRPCQueueList::getQueue(const std::string &name)
@@ -186,7 +191,12 @@ std::shared_ptr<IQueue> GRPCQueueList::getQueue(const std::string &name)
         }
 
         std::shared_ptr<Proc::IProc> proc = std::shared_ptr<Proc::IProc>(nullptr);
-        if (queue->init(m_conn, proc, name))
+        ErrMsg::ErrCode code;
+        std::string errMsg;
+        ErrMsg msg;
+        queue->init(m_conn, proc, name, msg);
+        msg.msg(code, errMsg);
+        if (code != ErrMsg::OK)
         {
             spdlog::error("{}:{} Fail to initialize queue", __FILE__, __LINE__);
             delete queue;
