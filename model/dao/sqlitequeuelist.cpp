@@ -48,19 +48,21 @@ SQLiteQueueList::SQLiteQueueList()
 SQLiteQueueList::~SQLiteQueueList()
 {}
 
-uint_fast8_t
-SQLiteQueueList::init(std::shared_ptr<IConnect> &connect)
+void
+SQLiteQueueList::init(std::shared_ptr<IConnect> &connect, ErrMsg &msg)
 {
     if (connect == nullptr)
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "\"connect\" is nullptr");
         spdlog::error("{}:{} \"connect\" is nullptr.", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     if (DirUtils::verifyDir(connect->targetPath()))
     {
+        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Fail to verify target path");
         spdlog::error("{}:{} Fail to verify target path.", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     // create queue
@@ -68,6 +70,8 @@ SQLiteQueueList::init(std::shared_ptr<IConnect> &connect)
     std::string fileName;
     m_queueList.clear();
     m_conn = connect;
+    ErrMsg::ErrCode code;
+    std::string errMsg;
     for (const auto& entry : std::filesystem::directory_iterator(connect->targetPath()))
     {
         if (std::filesystem::is_directory(entry))
@@ -98,63 +102,68 @@ SQLiteQueueList::init(std::shared_ptr<IConnect> &connect)
         }
 
         name = name.substr(0, index);
-        spdlog::debug("{}:{} \"name\" is: {}", __FILE__, __LINE__, name);
-
-        if (createQueue(name))
+        createQueue(name, msg);
+        msg.msg(code, errMsg);
+        if (code != ErrMsg::OK)
         {
+            msg.setMsg(ErrMsg::OS_ERROR, "Fail to create queue");
             spdlog::error("{}:{} Fail to create queue: {}", __FILE__, __LINE__,
                           name);
             m_conn = nullptr;
             m_queueList.clear();
-            return 1;
+            return;
         }
     }
-
-    return 0;
 }
 
-uint_fast8_t SQLiteQueueList::createQueue(const std::string &name)
+void SQLiteQueueList::createQueue(const std::string &name, ErrMsg &msg)
 {
 #ifdef _WIN32
-    Proc::WinProc *proc = new ( std::nothrow ) Proc::WinProc();
+    Proc::WinProc *proc = new (std::nothrow) Proc::WinProc();
 #else
     PosixProc *proc = new (std::nothrow) Proc::PosixProc();
 #endif
     if (!proc)
     {
+        msg.setMsg(ErrMsg::OS_ERROR, "Fail to allocate memory");
         spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     if (proc->init())
     {
         delete proc;
+        msg.setMsg(ErrMsg::OS_ERROR, "Fail to initialize process");
         spdlog::error("{}:{} Fail to initialize process", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     SQLiteQueue *queue = new (std::nothrow) SQLiteQueue();
     if (!queue)
     {
         delete proc;
+        msg.setMsg(ErrMsg::OS_ERROR, "Fail to allocate memory");
         spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     std::shared_ptr<Proc::IProc> procPtr = std::shared_ptr<Proc::IProc>(proc);
-
-    if (queue->init(m_conn, procPtr, name))
+    ErrMsg::ErrCode code;
+    std::string errMsg;
+    queue->init(m_conn, procPtr, name, msg);
+    msg.msg(code, errMsg);
+    if (code != ErrMsg::OK)
     {
         delete queue;
+        msg.setMsg(ErrMsg::OS_ERROR, "Fail to initialize queue");
         spdlog::error("{}:{} Fail to initialize queue", __FILE__, __LINE__);
-        return 1;
+        return;
     }
 
     m_queueList[name] = std::shared_ptr<IQueue>(queue);
-    return 0;
 }
 
-uint_fast8_t SQLiteQueueList::listQueue(std::vector<std::string> &out)
+void SQLiteQueueList::listQueue(std::vector<std::string> &out, ErrMsg &msg)
 {
     out.clear();
     out.reserve(m_queueList.size());
@@ -167,27 +176,26 @@ uint_fast8_t SQLiteQueueList::listQueue(std::vector<std::string> &out)
 
     if (!out.size())
     {
+        msg.setMsg(ErrMsg::NOT_FOUND, "queue list is empty");
         spdlog::error("{}:{} queue list is empty", __FILE__, __LINE__);
-        return 1;
+        return;
     }
-
-    return 0;
 }
 
-uint_fast8_t SQLiteQueueList::deleteQueue(const std::string &name)
+void SQLiteQueueList::deleteQueue(const std::string &name, ErrMsg &msg)
 {
     if (!m_queueList.erase(name))
     {
+        msg.setMsg(ErrMsg::NOT_FOUND, "No such queue");
         spdlog::error("{}:{} No such queue: {}", __FILE__, __LINE__,
             name);
-        return 1;
     }
-
-    return 0;
 }
 
-uint_fast8_t SQLiteQueueList::renameQueue(const std::string &oldName,
-    const std::string &newName)
+void
+SQLiteQueueList::renameQueue(const std::string &oldName,
+                             const std::string &newName,
+                             ErrMsg &msg)
 {
     for (auto &it : m_queueList)
     {
@@ -195,13 +203,13 @@ uint_fast8_t SQLiteQueueList::renameQueue(const std::string &oldName,
         {
             m_queueList[newName] = it.second;
             m_queueList.erase(oldName);
-            return 0;
+            return;
         }
     }
 
+    msg.setMsg(ErrMsg::NOT_FOUND, "No such queue");
     spdlog::error("{}:{} No such queue: {}", __FILE__, __LINE__,
         oldName);
-    return 1;
 }
 
 std::shared_ptr<IQueue>

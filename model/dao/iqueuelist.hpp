@@ -42,16 +42,17 @@ public:
 
     virtual ~IQueueList() {}
 
-    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect) = 0;
+    virtual void init(std::shared_ptr<IConnect> &connect, ErrMsg &msg) = 0;
 
-    virtual uint_fast8_t createQueue(const std::string &name) = 0;
+    virtual void createQueue(const std::string &name, ErrMsg &msg) = 0;
 
-    virtual uint_fast8_t listQueue(std::vector<std::string> &out) = 0;
+    virtual void listQueue(std::vector<std::string> &out, ErrMsg &msg) = 0;
 
-    virtual uint_fast8_t deleteQueue(const std::string &name) = 0;
+    virtual void deleteQueue(const std::string &name, ErrMsg &msg) = 0;
 
-    virtual uint_fast8_t renameQueue(const std::string &oldName,
-                                const std::string &newName) = 0;
+    virtual void renameQueue(const std::string &oldName,
+                             const std::string &newName,
+                             ErrMsg &msg) = 0;
 
     virtual std::shared_ptr<IQueue> getQueue(const std::string &name) = 0;
 

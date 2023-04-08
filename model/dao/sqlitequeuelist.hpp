@@ -43,19 +43,19 @@ public:
 
     ~SQLiteQueueList();
 
-    virtual uint_fast8_t
-    init(std::shared_ptr<IConnect> &connect) override;
+    void init(std::shared_ptr<IConnect> &connect, ErrMsg &msg) override;
 
-    virtual uint_fast8_t createQueue(const std::string &name) override;
+    void createQueue(const std::string &name, ErrMsg &msg) override;
 
-    virtual uint_fast8_t listQueue(std::vector<std::string> &out) override;
+    void listQueue(std::vector<std::string> &out, ErrMsg &msg) override;
 
-    virtual uint_fast8_t deleteQueue(const std::string &name) override;
+    void deleteQueue(const std::string &name, ErrMsg &msg) override;
 
-    virtual uint_fast8_t renameQueue(const std::string &oldName,
-                                const std::string &newName) override;
+    void renameQueue(const std::string &oldName,
+                     const std::string &newName,
+                     ErrMsg &msg) override;
 
-    virtual std::shared_ptr<IQueue>
+    std::shared_ptr<IQueue>
     getQueue(const std::string &name) override;
 
 private:
