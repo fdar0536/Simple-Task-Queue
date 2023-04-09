@@ -177,9 +177,8 @@ void SQLiteQueue::addTask(Proc::Task &in, ErrMsg &msg)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
     ErrMsg::ErrCode code;
-    std::string errMsg;
     getID(in.ID, msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, nullptr);
     if (code != ErrMsg::OK)
     {
         msg.setMsg(ErrMsg::OS_ERROR, "Fail to get ID");
@@ -1156,9 +1155,8 @@ void SQLiteQueue::mainLoopFin()
     std::unique_lock<std::mutex> dbLock(m_token->mutex);
     ErrMsg msg;
     ErrMsg::ErrCode code;
-    std::string errMsg;
     removeTaskFromPending(m_currentTask.ID, false, msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, nullptr);
     if (code == ErrMsg::INVALID_ARGUMENT ||
         code == ErrMsg::OS_ERROR)
     {
@@ -1169,7 +1167,7 @@ void SQLiteQueue::mainLoopFin()
     }
 
     addTaskToTable("done", m_currentTask, msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, nullptr);
     if (code != ErrMsg::OK)
     {
         spdlog::error("{}:{} Fail to add task to done list", __FILE__, __LINE__);

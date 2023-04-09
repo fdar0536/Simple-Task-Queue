@@ -54,14 +54,24 @@ void ErrMsg::setMsg(ErrCode code, const std::string &msg)
     m_msg = msg;
 }
 
-void ErrMsg::msg(ErrCode &code, std::string &msg)
+void ErrMsg::msg(ErrCode *code, std::string *msg, bool needReset)
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    code = m_code;
-    m_code = OK;
+    if (code)
+    {
+        *code = m_code;
+    }
 
-    msg = m_msg;
-    m_msg.clear();
+    if (msg)
+    {
+        *msg = m_msg;
+    }
+
+    if (needReset)
+    {
+        m_code = OK;
+        m_msg.clear();
+    }
 }
 
 #ifndef STQ_MOBILE

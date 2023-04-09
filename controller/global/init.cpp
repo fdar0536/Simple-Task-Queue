@@ -130,9 +130,8 @@ static uint_fast8_t initSQLiteQueueList()
 
     Model::ErrMsg msg;
     Model::ErrMsg::ErrCode code;
-    std::string errMsg;
     conn->startConnect(msg, config.dbPath());
-    msg.msg(code, errMsg);
+    msg.msg(&code, nullptr);
     if (code != Model::ErrMsg::OK)
     {
         delete conn;
@@ -153,7 +152,7 @@ static uint_fast8_t initSQLiteQueueList()
     }
 
     sqlPtr->init(connPtr, msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, nullptr);
     if (code != Model::ErrMsg::OK)
     {
         spdlog::error("{}:{} Fail to initialize sqlite queue list", __FILE__, __LINE__);

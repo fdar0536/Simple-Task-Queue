@@ -57,7 +57,7 @@ public:
 
     void setMsg(ErrCode, const std::string &);
 
-    void msg(ErrCode &, std::string &);
+    void msg(ErrCode * = nullptr, std::string * = nullptr, bool = true);
 
 #ifndef STQ_MOBILE
     static grpc::Status toGRPCStatus(ErrCode, const std::string &);

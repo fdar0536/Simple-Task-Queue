@@ -58,7 +58,7 @@ QueueListImpl::Create(grpc::ServerContext *ctx,
     Model::ErrMsg::ErrCode code;
     std::string errMsg;
     Global::sqliteQueueList->createQueue(req->name(), msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, &errMsg);
     if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
@@ -94,7 +94,7 @@ QueueListImpl::Rename(grpc::ServerContext *ctx,
     Model::ErrMsg::ErrCode code;
     std::string errMsg;
     Global::sqliteQueueList->renameQueue(req->oldname(), req->newname(), msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, &errMsg);
     if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
@@ -130,7 +130,7 @@ QueueListImpl::Delete(grpc::ServerContext *ctx,
     Model::ErrMsg::ErrCode code;
     std::string errMsg;
     Global::sqliteQueueList->deleteQueue(req->name(), msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, &errMsg);
     if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
@@ -160,7 +160,7 @@ QueueListImpl::List(grpc::ServerContext *ctx,
     Model::ErrMsg::ErrCode code;
     std::string errMsg;
     Global::sqliteQueueList->listQueue(out, msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, &errMsg);
     if (code != Model::ErrMsg::OK)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);

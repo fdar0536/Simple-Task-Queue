@@ -192,10 +192,9 @@ std::shared_ptr<IQueue> GRPCQueueList::getQueue(const std::string &name)
 
         std::shared_ptr<Proc::IProc> proc = std::shared_ptr<Proc::IProc>(nullptr);
         ErrMsg::ErrCode code;
-        std::string errMsg;
         ErrMsg msg;
         queue->init(m_conn, proc, name, msg);
-        msg.msg(code, errMsg);
+        msg.msg(&code, nullptr);
         if (code != ErrMsg::OK)
         {
             spdlog::error("{}:{} Fail to initialize queue", __FILE__, __LINE__);

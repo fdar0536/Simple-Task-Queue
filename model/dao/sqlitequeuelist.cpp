@@ -71,7 +71,6 @@ SQLiteQueueList::init(std::shared_ptr<IConnect> &connect, ErrMsg &msg)
     m_queueList.clear();
     m_conn = connect;
     ErrMsg::ErrCode code;
-    std::string errMsg;
     for (const auto& entry : std::filesystem::directory_iterator(connect->targetPath()))
     {
         if (std::filesystem::is_directory(entry))
@@ -103,7 +102,7 @@ SQLiteQueueList::init(std::shared_ptr<IConnect> &connect, ErrMsg &msg)
 
         name = name.substr(0, index);
         createQueue(name, msg);
-        msg.msg(code, errMsg);
+        msg.msg(&code, nullptr);
         if (code != ErrMsg::OK)
         {
             msg.setMsg(ErrMsg::OS_ERROR, "Fail to create queue");
@@ -149,9 +148,8 @@ void SQLiteQueueList::createQueue(const std::string &name, ErrMsg &msg)
 
     std::shared_ptr<Proc::IProc> procPtr = std::shared_ptr<Proc::IProc>(proc);
     ErrMsg::ErrCode code;
-    std::string errMsg;
     queue->init(m_conn, procPtr, name, msg);
-    msg.msg(code, errMsg);
+    msg.msg(&code, nullptr);
     if (code != ErrMsg::OK)
     {
         delete queue;
