@@ -153,7 +153,7 @@ void GRPCQueue::pendingDetails(const int_fast32_t id,
                                ErrMsg &msg)
 {
     stq::TaskDetailsReq req;
-    req.set_queuename(m_queueName);
+    req.set_name(m_queueName);
     req.set_id(id);
 
     grpc::ClientContext ctx;
@@ -176,7 +176,7 @@ void GRPCQueue::finishedDetails(const int_fast32_t id,
                                 ErrMsg &msg)
 {
     stq::TaskDetailsReq req;
-    req.set_queuename(m_queueName);
+    req.set_name(m_queueName);
     req.set_id(id);
 
     grpc::ClientContext ctx;
@@ -255,7 +255,7 @@ void GRPCQueue::currentTask(Proc::Task &out, ErrMsg &msg)
 void GRPCQueue::addTask(Proc::Task &in, ErrMsg &msg)
 {
     stq::AddTaskReq req;
-    req.set_queuename(m_queueName);
+    req.set_name(m_queueName);
     req.set_workdir(in.workDir);
     req.set_execname(in.execName);
     for (auto it = in.args.begin();
@@ -283,7 +283,7 @@ void GRPCQueue::addTask(Proc::Task &in, ErrMsg &msg)
 void GRPCQueue::removeTask(const int_fast32_t in, ErrMsg &msg)
 {
     stq::TaskDetailsReq req;
-    req.set_queuename(m_queueName);
+    req.set_name(m_queueName);
     req.set_id(in);
 
     grpc::ClientContext ctx;

@@ -23,7 +23,7 @@ service Queue {
 }
 
 message AddTaskReq {
-  string queueName = 1;
+  string name = 1;
   string workDir = 2;
   string execName = 3;
   repeated string args = 4;

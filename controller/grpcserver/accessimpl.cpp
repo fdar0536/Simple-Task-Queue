@@ -31,14 +31,14 @@ namespace Controller
 namespace GRPCServer
 {
 
-::grpc::Status AccessImpl::Echo(::grpc::ServerContext* context,
-                                const ::stq::Empty* request,
-                                ::stq::EchoRes* response)
+grpc::Status AccessImpl::Echo(grpc::ServerContext* context,
+                              const stq::Empty* request,
+                              stq::EchoRes* response)
 {
     UNUSED(context);
     UNUSED(request);
     UNUSED(response);
-    return ::grpc::Status::OK;
+    return grpc::Status::OK;
 }
 
 } // end namespace GRPCServer

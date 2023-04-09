@@ -14,6 +14,8 @@ if (NOT ENABLE_MOBILE)
         # grpc
         controller/grpcserver/accessimpl.cpp
         controller/grpcserver/accessimpl.hpp
+        controller/grpcserver/queueimpl.cpp
+        controller/grpcserver/queueimpl.hpp
         controller/grpcserver/queuelistimpl.cpp
         controller/grpcserver/queuelistimpl.hpp
         controller/grpcserver/server.cpp
