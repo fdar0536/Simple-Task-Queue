@@ -23,6 +23,14 @@ if (NOT ENABLE_MOBILE)
     )
 endif (NOT ENABLE_MOBILE)
 
+set(STQ_LIBS
+    protobuf::libprotobuf
+    gRPC::grpc++
+
+    grpc_common
+    spdlog::spdlog
+)
+
 if(ENABLE_GUI)
 
     list(APPEND CONTROLLER_SRC
@@ -30,6 +38,9 @@ if(ENABLE_GUI)
         # global
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
+
+        "controller/gui/main.cpp"
+        "controller/gui/main.hpp"
     )
 
     qt_add_executable(STQ
@@ -39,45 +50,53 @@ if(ENABLE_GUI)
         ${MODEL_SRC}
         ${CONTROLLER_SRC}
 
-        stq.cpp)
+        main.cpp)
 
     qt_add_qml_module(STQ
-        URI stq
+        URI "stq"
         NO_RESOURCE_TARGET_PATH
 
         QML_FILES
-            "view/gui/stq.qml"
+            "view/gui/main.qml"
+
+            # components
+            "view/gui/components/MsgDialog.qml"
+            "view/gui/components/TitleText.qml"
+            "view/gui/components/ToolTipButton.qml"
+
         RESOURCES
             "view/gui/stq.ico"
+
+            # icons
+            "view/gui/icons/close.svg"
+            "view/gui/icons/computer.svg"
+            "view/gui/icons/info.svg"
+            "view/gui/icons/menu.svg"
     )
 
     add_dependencies(STQ grpc_common)
+
+    list(APPEND STQ_LIBS
+
+        Qt6::Quick
+        Qt6::QuickControls2
+    )
 
     if(ENABLE_MOBILE)
         target_link_libraries(STQ
             PRIVATE
 
-            protobuf::libprotobuf
-            gRPC::grpc++
-
-            grpc_common
-            spdlog::spdlog
-            SQLite::SQLite3
+            ${STQ_LIBS}
         )
     else()
         target_link_libraries(STQ
             PRIVATE
 
-            grpc_common
-            spdlog::spdlog
+            ${STQ_LIBS}
             SQLite::SQLite3
-
-            protobuf::libprotobuf
-            gRPC::grpc++
 
             # Qt
             Qt6::Widgets
-            Qt6::Quick
         )
     endif()
 else()
@@ -85,16 +104,14 @@ else()
         ${MODEL_SRC}
         ${CONTROLLER_SRC}
 
-        stq.cpp)
+        main.cpp)
 
     add_dependencies(STQ grpc_common)
 
     target_link_libraries(STQ
         PRIVATE
 
-        STQModel
-        grpc_common
-        spdlog::spdlog
+        ${STQ_LIBS}
         SQLite::SQLite3
     )
 endif(ENABLE_GUI)

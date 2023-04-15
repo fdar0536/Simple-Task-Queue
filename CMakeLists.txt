@@ -67,9 +67,9 @@ find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
 
 if (ENABLE_GUI)
     if(ENABLE_MOBILE)
-        find_package(Qt6 6.5 COMPONENTS Quick Gui REQUIRED)
+        find_package(Qt6 6.5 COMPONENTS Quick Gui QuickControls2 REQUIRED)
     else()
-        find_package(Qt6 6.5 COMPONENTS Widgets Quick REQUIRED)
+        find_package(Qt6 6.5 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
     endif(ENABLE_MOBILE)
 endif (ENABLE_GUI)
 

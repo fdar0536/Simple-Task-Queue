@@ -31,6 +31,8 @@
 
 #include "controller/global/init.hpp"
 
+#include "controller/gui/main.hpp"
+
 #ifdef STQ_GUI
 
 #ifdef STQ_MOBILE
@@ -40,6 +42,7 @@
 #endif // STQ_MOBILE
 
 #include "QIcon"
+#include "QQuickStyle"
 
 #include "controller/gui/global.hpp"
 
@@ -97,12 +100,15 @@ int main(int argc, char **argv)
         <Controller::GUI::Global>("Global",
                                   1,
                                   0,
-                                  "Controller::GUI::Global",
+                                  "Global",
                                   &Controller::Global::guiGlobal);
 
+    qmlRegisterType<Controller::GUI::Main>("Main", 1, 0, "Main");
+
     QQmlApplicationEngine engine;
+    QQuickStyle::setStyle("Material");
     Controller::Global::guiGlobal.setEngine(&engine);
-    engine.load(QUrl(QStringLiteral("qrc:/view/gui/stq.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/view/gui/main.qml")));
     if (engine.rootObjects().isEmpty())
     {
         spdlog::error("{}:{} Fail to load qml", __FILE__, __LINE__);

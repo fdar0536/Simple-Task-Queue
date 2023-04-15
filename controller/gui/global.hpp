@@ -30,11 +30,7 @@
 
 #include <cinttypes>
 
-#ifdef STQ_MOBILE
 #include "QObject"
-#else
-#include "QWidget"
-#endif
 
 #include "QSettings"
 #include "QQmlApplicationEngine"
@@ -51,11 +47,7 @@ namespace Controller
 namespace GUI
 {
 
-#ifdef STQ_MOBILE
 class Global : public QObject
-#else
-class Global : public QWidget
-#endif
 {
 
     Q_OBJECT
@@ -69,13 +61,13 @@ public:
         GRPC, SQLITE
     } BackendMode;
 
-    Global();
+    Global(QObject * = nullptr);
 
     ~Global();
 
     uint_fast8_t init();
 
-    bool isNotMobile() const;
+    Q_INVOKABLE bool isNotMobile() const;
 
     void setEngine(QQmlApplicationEngine *engine);
 
@@ -96,13 +88,29 @@ public:
     std::shared_ptr<Model::DAO::IQueue>
     queue() const;
 
+    QSettings *settings();
+
+    Q_INVOKABLE void setState(QString, QJSValue);
+
+    Q_INVOKABLE QJSValue state(QString);
+
+    Q_INVOKABLE void notifyClosing();
+
+    Q_INVOKABLE void notifyAllCleaned();
+
+signals:
+
+    void WindowClosing();
+
+    void AllCleaned();
+
 private:
 
     std::atomic<bool> m_isInit;
 
     bool m_isNotMobile;
 
-    QSettings m_settings;
+    QSettings *m_settings;
 
     QQmlApplicationEngine *m_engine;
 
@@ -118,6 +126,8 @@ private:
 
     std::shared_ptr<Model::DAO::IQueue>
         m_grpcQueue;
+
+    std::unordered_map<QString, QJSValue> m_state;
 
 }; // and class Global
 

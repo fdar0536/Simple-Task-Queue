@@ -52,7 +52,7 @@ Config config;
 #ifndef STQ_MOBILE
 GRPCServer::Server server;
 
-std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList;
+std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList = nullptr;
 #endif
 
 #ifdef STQ_GUI
@@ -68,10 +68,6 @@ static UINT consoleOutputCP(0);
 #endif
 
 static uint_fast8_t initConsole();
-
-#ifndef STQ_MOBILE
-static uint_fast8_t initSQLiteQueueList();
-#endif
 
 uint_fast8_t init(int argc, char **argv)
 {
@@ -110,8 +106,16 @@ void fin()
 }
 
 #ifndef STQ_MOBILE
-static uint_fast8_t initSQLiteQueueList()
+uint_fast8_t initSQLiteQueueList()
 {
+#ifdef STQ_GUI
+    if (config.dbPath().empty())
+    {
+        spdlog::warn("{}:{} SQLite is not initialized", __FILE__, __LINE__);
+        return 0;
+    }
+#endif
+
     Model::DAO::SQLiteConnect *conn(nullptr);
     try
     {

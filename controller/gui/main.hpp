@@ -21,17 +21,16 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GLOBAL_INIT_HPP_
-#define _CONTROLLER_GLOBAL_INIT_HPP_
+#ifndef _CONTROLLER_GUI_MAIN_HPP_
+#define _CONTROLLER_GUI_MAIN_HPP_
 
-#include <inttypes.h>
+#include "config.h"
 
-#include "config.hpp"
-#include "defines.hpp"
+#include "QObject"
 
 #ifndef STQ_MOBILE
-#include "controller/grpcserver/server.hpp"
-#include "model/dao/sqlitequeuelist.hpp"
+#include "QWidget"
+#include "QSystemTrayIcon"
 #endif
 
 namespace Controller
@@ -40,35 +39,47 @@ namespace Controller
 namespace GUI
 {
 
-class Global;
-
-}
-
-namespace Global
+class Main : public QObject
 {
+    Q_OBJECT
 
-extern Config config;
+public:
+
+    Main(QObject * = nullptr);
+
+    ~Main();
+
+    Q_INVOKABLE bool init();
+
+signals:
+
+    void Show();
+
+    void Exit();
+
+public slots:
+
+    void AboutQt();
 
 #ifndef STQ_MOBILE
-extern GRPCServer::Server server;
+private slots:
 
-extern std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList;
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
+
+private:
+    QSystemTrayIcon *m_icon;
+
+    QMenu *m_iconContextMenu;
+
+    QAction *m_showAction;
+
+    QAction *m_exitAction;
 #endif
 
-#ifdef STQ_GUI
-extern Controller::GUI::Global guiGlobal;
-#endif
+}; // end class Main
 
-uint_fast8_t init(int argc, char **argv);
-
-void fin();
-
-#ifndef STQ_MOBILE
-uint_fast8_t initSQLiteQueueList();
-#endif
-
-} // end namespace Global
+} // namespace GUI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GLOBAL_INIT_HPP_
+#endif // _CONTROLLER_GUI_MAIN_HPP_

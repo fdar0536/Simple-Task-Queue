@@ -29,14 +29,10 @@ namespace Controller
 namespace GUI
 {
 
-Global::Global() :
-#ifdef STQ_MOBILE
-    QObject(nullptr),
-#else
-    QWidget(nullptr),
-#endif
+Global::Global(QObject *parent) :
+    QObject(parent),
     m_isNotMobile(true),
-    m_settings("STQGuiSettings", QSettings::NativeFormat),
+    m_settings(nullptr),
 #ifndef STQ_MOBILE
     m_backendMode(SQLITE)
 #endif
@@ -64,6 +60,14 @@ uint_fast8_t Global::init()
     if (!m_engine)
     {
         spdlog::warn("{}:{} engine is nullptr", __FILE__, __LINE__);
+        return 1;
+    }
+
+    m_settings = new (std::nothrow) QSettings("STQGuiSettings",
+                                              QSettings::NativeFormat);
+    if (!m_settings)
+    {
+        spdlog::error("{}:{} Failed to allocate memory", __FILE__, __LINE__);
         return 1;
     }
 
@@ -188,6 +192,37 @@ Global::queue() const
     }
     }
 #endif
+}
+
+QSettings *Global::settings()
+{
+    return m_settings;
+}
+
+void Global::setState(QString key, QJSValue value)
+{
+    m_state[key] = value;
+}
+
+QJSValue Global::state(QString key)
+{
+    auto it = m_state.find(key);
+    if (it == m_state.end())
+    {
+        return m_engine->newObject();
+    }
+
+    return it->second;
+}
+
+void Global::notifyClosing()
+{
+    emit WindowClosing();
+}
+
+void Global::notifyAllCleaned()
+{
+    emit AllCleaned();
 }
 
 } // namespace GUI

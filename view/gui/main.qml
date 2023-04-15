@@ -21,54 +21,42 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GLOBAL_INIT_HPP_
-#define _CONTROLLER_GLOBAL_INIT_HPP_
+import QtQuick.Controls
+import QtQuick.Dialogs
+import Global
+import Main
+import "components"
 
-#include <inttypes.h>
-
-#include "config.hpp"
-#include "defines.hpp"
-
-#ifndef STQ_MOBILE
-#include "controller/grpcserver/server.hpp"
-#include "model/dao/sqlitequeuelist.hpp"
-#endif
-
-namespace Controller
+ApplicationWindow
 {
+    id: root
+    visible: true
+    property bool isNotInit: true
 
-namespace GUI
-{
+    Main
+    {
+        id: ctrl
+    } // end Main
 
-class Global;
+    MsgDialog
+    {
+        id: msgDialog
+    }
 
-}
+    onAfterSynchronizing: () =>
+    {
+        if (isNotInit)
+        {
+            Qt.font.pointSize = 25;
+            if (!ctrl.init())
+            {
+                msgDialog.title = "Error";
+                msgDialog.text = "Fail to initialize";
+                msgDialog.accepted.connect(() => { Qt.exit(1) })
+                msgDialog.open();
+            }
 
-namespace Global
-{
-
-extern Config config;
-
-#ifndef STQ_MOBILE
-extern GRPCServer::Server server;
-
-extern std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList;
-#endif
-
-#ifdef STQ_GUI
-extern Controller::GUI::Global guiGlobal;
-#endif
-
-uint_fast8_t init(int argc, char **argv);
-
-void fin();
-
-#ifndef STQ_MOBILE
-uint_fast8_t initSQLiteQueueList();
-#endif
-
-} // end namespace Global
-
-} // end namespace Controller
-
-#endif // _CONTROLLER_GLOBAL_INIT_HPP_
+            isNotInit = false;
+        }
+    } // end onAfterSynchronizing
+} // end ApplicationWindow root
