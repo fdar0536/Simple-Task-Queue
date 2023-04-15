@@ -24,7 +24,7 @@
 import QtQuick.Controls
 import QtQuick.Dialogs
 import Global
-import Main
+import MainCtrl
 import "components"
 
 ApplicationWindow
@@ -33,7 +33,7 @@ ApplicationWindow
     visible: true
     property bool isNotInit: true
 
-    Main
+    MainCtrl
     {
         id: ctrl
     } // end Main

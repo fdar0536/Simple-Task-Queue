@@ -103,7 +103,7 @@ int main(int argc, char **argv)
                                   "Global",
                                   &Controller::Global::guiGlobal);
 
-    qmlRegisterType<Controller::GUI::Main>("Main", 1, 0, "Main");
+    qmlRegisterType<Controller::GUI::Main>("MainCtrl", 1, 0, "MainCtrl");
 
     QQmlApplicationEngine engine;
     QQuickStyle::setStyle("Material");
