@@ -38,9 +38,37 @@ ApplicationWindow
         id: ctrl
     } // end Main
 
-    MsgDialog
+    MessageDialog
     {
         id: msgDialog
+    }
+
+    function onCtrlShow()
+    {
+        root.visible = true;
+    } // end onCtrlShow
+
+    function onCtrlExit()
+    {
+        onCtrlShow();
+        msgDialog.buttons = MessageDialog.Ok | MessageDialog.No;
+        msgDialog.title = qsTr("Exit");
+        msgDialog.text = qsTr("Are you sure to exit?");
+        msgDialog.accepted.connect(() => { Qt.exit(0) })
+        msgDialog.open();
+    }
+
+    onClosing: (close) =>
+    {
+        close.accepted = false;
+        if (Global.isNotMobile)
+        {
+            root.visible = false;
+        }
+        else
+        {
+            Global.notifyClosing();
+        }
     }
 
     onAfterSynchronizing: () =>
@@ -50,13 +78,16 @@ ApplicationWindow
             Qt.font.pointSize = 25;
             if (!ctrl.init())
             {
-                msgDialog.title = "Error";
-                msgDialog.text = "Fail to initialize";
+                msgDialog.buttons = MessageDialog.Ok;
+                msgDialog.title = qsTr("Error");
+                msgDialog.text = qsTr("Fail to initialize");
                 msgDialog.accepted.connect(() => { Qt.exit(1) })
                 msgDialog.open();
             }
 
             isNotInit = false;
+            ctrl.Show.connect(onCtrlShow);
+            ctrl.Exit.connect(onCtrlExit);
         }
     } // end onAfterSynchronizing
 } // end ApplicationWindow root

@@ -52,7 +52,7 @@ class Global : public QObject
 
     Q_OBJECT
 
-    Q_PROPERTY(bool isnNotMobile READ isNotMobile CONSTANT)
+    Q_PROPERTY(bool isNotMobile READ isNotMobile CONSTANT)
 
 public:
 

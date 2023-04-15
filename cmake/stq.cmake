@@ -60,7 +60,6 @@ if(ENABLE_GUI)
             "view/gui/main.qml"
 
             # components
-            "view/gui/components/MsgDialog.qml"
             "view/gui/components/TitleText.qml"
             "view/gui/components/ToolTipButton.qml"
 
