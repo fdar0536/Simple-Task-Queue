@@ -23,6 +23,10 @@
 
 #include "global.hpp"
 
+#ifndef STQ_MOBILE
+#include <fstream>
+#endif
+
 namespace Controller
 {
 
@@ -224,6 +228,24 @@ void Global::notifyAllCleaned()
 {
     emit AllCleaned();
 }
+
+#ifndef STQ_MOBILE
+void Global::saveFile(const QString &fileName, const QString &text)
+{
+    std::fstream f;
+    f.open(fileName.toUtf8().toStdString(),
+           std::ifstream::out | std::ifstream::trunc);
+    if (f.fail())
+    {
+        spdlog::error("{}:{} Fail to open file", __FILE__, __LINE__);
+        return;
+    }
+
+    std::string output = text.toUtf8().toStdString();
+    f.write(output.c_str(), output.size());
+    f.close();
+}
+#endif
 
 } // namespace GUI
 

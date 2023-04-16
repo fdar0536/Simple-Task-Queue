@@ -24,6 +24,9 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import QtQuick.Dialogs
+
+import Global
 import "../components"
 
 Item
@@ -34,7 +37,32 @@ Item
 
     function addLog(log)
     {
-        textArea.append(log)
+        textArea.append(log);
+    }
+
+    function onWindowClosing()
+    {
+        root.goBackClicked();
+    }
+
+    Component.onCompleted: function()
+    {
+        Global.WindowClosing.connect(onWindowClosing);
+    }
+
+    FileDialog
+    {
+        id: fileDialog
+        fileMode: FileDialog.SaveFile
+        onAccepted: function()
+        {
+            // https://stackoverflow.com/questions/24927850/get-the-path-from-a-qml-url
+            var fileName = fileDialog.selectedFile.toString();
+            fileName = fileName.replace(/^(file:\/{3})/,"");
+            fileName = decodeURIComponent(fileName);
+
+            Global.saveFile(fileName, textArea.text);
+        }
     }
 
     ScrollView
@@ -48,19 +76,25 @@ Item
         TextArea
         {
             id: textArea
+            readOnly: true
         }
     }
 
     ToolTipButton
     {
         id: saveBtn
+        enabled: Global.isNotMobile
 
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: clearBtn.top
 
         text: qsTr("Save")
-        toolTip: qsTr("Save the log")
+        toolTip: qsTr("Save the log");
+        onClicked: function()
+        {
+            fileDialog.open();
+        }
     }
 
     ToolTipButton

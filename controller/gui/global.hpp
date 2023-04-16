@@ -98,6 +98,10 @@ public:
 
     Q_INVOKABLE void notifyAllCleaned();
 
+#ifndef STQ_MOBILE
+    Q_INVOKABLE void saveFile(const QString &, const QString &);
+#endif
+
 signals:
 
     void WindowClosing();
