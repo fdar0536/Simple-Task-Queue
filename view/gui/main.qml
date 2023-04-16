@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import Global
@@ -112,4 +113,34 @@ ApplicationWindow
             Global.AllCleaned.connect(onCtrlExit);
         }
     } // end onAfterSynchronizing
+
+    SwipeView {
+        id: swipeView
+
+        currentIndex: 1
+        anchors.fill: parent
+
+        Loader
+        {
+            id: loader
+            source: "qrc:/view/gui/pages/config.qml"
+        }
+
+        Item
+        {
+            id: placeHolder
+        }
+    }
+
+    PageIndicator
+    {
+        id: pageIndicator
+
+        count: swipeView.count
+        currentIndex: swipeView.currentIndex
+
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+    }
+
 } // end ApplicationWindow root
