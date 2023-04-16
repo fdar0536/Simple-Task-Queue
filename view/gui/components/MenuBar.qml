@@ -29,6 +29,7 @@ ToolBar
 {
     id: root
     signal menuClicked()
+    signal logClicked()
     signal infoClicked()
     signal closeClicked()
 
@@ -40,6 +41,14 @@ ToolBar
             source: "qrc:/view/gui/icons/menu.svg"
             toolTip: qsTr("Menu")
             onClicked: root.menuClicked()
+        }
+
+        ToolbarIcon
+        {
+            id: logBtn
+            source: "qrc:/view/gui/icons/event.svg"
+            toolTip: qsTr("Log")
+            onClicked: root.logClicked()
         }
 
         ToolbarIcon

@@ -28,7 +28,7 @@ import QtQuick.Controls.Material
 Button
 {
     id: root
-    property alias tooltip: btnToolTip.text
+    property alias toolTip: btnToolTip.text
 
     hoverEnabled: true
 

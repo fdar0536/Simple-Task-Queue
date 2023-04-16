@@ -24,39 +24,68 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
+import "../components"
 
-Drawer
+Item
 {
     id: root
-    signal menuItemClicked(source: string)
 
-    ListView
+    signal goBackClicked()
+
+    function addLog(log)
     {
-        id: listView
-        focus: true
-        currentIndex: -1
-        anchors.fill: parent
-        delegate: ItemDelegate
-        {
-            width: listView.width
-            text: model.name
-            highlighted: ListView.isCurrentItem
-            onClicked:
-            {
-                listView.currentIndex = index
-                root.menuItemClicked(model.source)
-                root.close()
-            }
-        }
+        textArea.append(log)
+    }
 
-        model: ListModel
-        {
-            ListElement
-            {
-                name: qsTr("Configuration");
-                source: "qrc:/view/gui/pages/Config.qml"
-            }
-        }
+    ScrollView
+    {
+        id: scrollView
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: saveBtn.top
 
-    } // end ListView
-} // end Drawer
+        TextArea
+        {
+            id: textArea
+        }
+    }
+
+    ToolTipButton
+    {
+        id: saveBtn
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: clearBtn.top
+
+        text: qsTr("Save")
+        toolTip: qsTr("Save the log")
+    }
+
+    ToolTipButton
+    {
+        id: clearBtn
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: backBtn.top
+
+        text: qsTr("Clear")
+        toolTip: qsTr("Clear the log")
+        onClicked: textArea.clear()
+    }
+
+    ToolTipButton
+    {
+        id: backBtn
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+
+        text: qsTr("Go back")
+        toolTip: qsTr("Go Back")
+        onClicked: root.goBackClicked()
+    }
+}

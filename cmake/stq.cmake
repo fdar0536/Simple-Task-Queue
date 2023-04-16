@@ -65,7 +65,8 @@ if(ENABLE_GUI)
             "view/gui/components/ToolTipButton.qml"
 
             # pages
-            "view/gui/pages/config.qml"
+            "view/gui/pages/Config.qml"
+            "view/gui/pages/Logger.qml"
 
         RESOURCES
             "view/gui/stq.ico"
@@ -73,6 +74,7 @@ if(ENABLE_GUI)
             # icons
             "view/gui/icons/close.svg"
             "view/gui/icons/computer.svg"
+            "view/gui/icons/event.svg"
             "view/gui/icons/info.svg"
             "view/gui/icons/menu.svg"
     )

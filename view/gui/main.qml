@@ -27,6 +27,7 @@ import QtQuick.Dialogs
 import Global
 import MainCtrl
 import "components"
+import "pages"
 
 ApplicationWindow
 {
@@ -74,6 +75,23 @@ ApplicationWindow
         msgDialog.open();
     }
 
+    function onLogClicked()
+    {
+        if (stackView.depth !== 1)
+        {
+            return;
+        }
+
+        stackView.push(logger);
+        logger.visible = true;
+    }
+
+    function onLoggerGoBackClicked()
+    {
+        logger.visible = false;
+        stackView.pop();
+    }
+
     onClosing: function(close)
     {
         close.accepted = false;
@@ -103,44 +121,37 @@ ApplicationWindow
 
             isNotInit = false;
 
+            // controller
             ctrl.Show.connect(onCtrlShow);
             ctrl.Exit.connect(onCtrlExit);
+            ctrl.LogEmitted.connect(logger.addLog);
+
+            // logger
+            logger.goBackClicked.connect(onLoggerGoBackClicked);
 
             // menuBar
-            menuBar.menuClicked.connect(mainMenu.open)
+            menuBar.menuClicked.connect(mainMenu.open);
+            menuBar.logClicked.connect(onLogClicked);
             menuBar.infoClicked.connect(ctrl.AboutQt);
             menuBar.closeClicked.connect(onCtrlExit);
             Global.AllCleaned.connect(onCtrlExit);
         }
     } // end onAfterSynchronizing
 
-    SwipeView {
-        id: swipeView
+    Logger
+    {
+        id: logger
+        visible: false
+    }
 
-        currentIndex: 1
+    StackView
+    {
+        id: stackView
         anchors.fill: parent
-
-        Loader
+        initialItem: Loader
         {
             id: loader
-            source: "qrc:/view/gui/pages/config.qml"
-        }
-
-        Item
-        {
-            id: placeHolder
+            source: "qrc:/view/gui/pages/Config.qml"
         }
     }
-
-    PageIndicator
-    {
-        id: pageIndicator
-
-        count: swipeView.count
-        currentIndex: swipeView.currentIndex
-
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-    }
-
 } // end ApplicationWindow root
