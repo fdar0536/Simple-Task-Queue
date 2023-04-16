@@ -58,7 +58,9 @@ if(ENABLE_GUI)
             "view/gui/main.qml"
 
             # components
+            "view/gui/components/MenuBar.qml"
             "view/gui/components/TitleText.qml"
+            "view/gui/components/ToolbarIcon.qml"
             "view/gui/components/ToolTipButton.qml"
 
         RESOURCES

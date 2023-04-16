@@ -32,6 +32,8 @@ ApplicationWindow
     id: root
     visible: true
     property bool isNotInit: true
+    width: 1920
+    height: 1080
 
     MainCtrl
     {
@@ -42,6 +44,13 @@ ApplicationWindow
     {
         id: msgDialog
     }
+
+    MenuBar
+    {
+        id: menuBar
+    }
+
+    header: menuBar
 
     function onCtrlShow()
     {
@@ -58,7 +67,7 @@ ApplicationWindow
         msgDialog.open();
     }
 
-    onClosing: (close) =>
+    onClosing: function(close)
     {
         close.accepted = false;
         if (Global.isNotMobile)
@@ -71,7 +80,7 @@ ApplicationWindow
         }
     }
 
-    onAfterSynchronizing: () =>
+    onAfterSynchronizing: function()
     {
         if (isNotInit)
         {
@@ -86,8 +95,13 @@ ApplicationWindow
             }
 
             isNotInit = false;
+
             ctrl.Show.connect(onCtrlShow);
             ctrl.Exit.connect(onCtrlExit);
+
+            // menuBar
+            menuBar.infoClicked.connect(ctrl.AboutQt);
+            menuBar.closeClicked.connect(onCtrlExit);
             Global.AllCleaned.connect(onCtrlExit);
         }
     } // end onAfterSynchronizing

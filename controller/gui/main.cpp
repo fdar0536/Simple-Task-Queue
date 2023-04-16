@@ -76,6 +76,7 @@ bool Main::init()
 #else
 
     sqliteInit();
+
     if ((Controller::Global::sqliteQueueList != nullptr) &&
         (Controller::Global::config.autoStartServer()))
     {
@@ -95,15 +96,16 @@ bool Main::init()
 #endif
 }
 
-// public slots
-void Main::AboutQt()
-{
-    qApp->aboutQt();
-}
 
 void Main::onSpdlogLog(const QString &in)
 {
     emit LogEmitted(in);
+}
+
+// public slots
+void Main::AboutQt()
+{
+    qApp->aboutQt();
 }
 
 // private slots
