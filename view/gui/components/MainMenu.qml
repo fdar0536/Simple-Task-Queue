@@ -25,37 +25,38 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-ToolBar
+Drawer
 {
     id: root
-    signal menuClicked()
-    signal infoClicked()
-    signal closeClicked()
+    signal menuItemClicked(source: string)
 
-    Row
+    ListView
     {
-        ToolbarIcon
+        id: listView
+        focus: true
+        currentIndex: -1
+        anchors.fill: parent
+        delegate: ItemDelegate
         {
-            id: menuBtn
-            source: "qrc:/view/gui/icons/menu.svg"
-            toolTip: qsTr("Menu")
-            onClicked: root.menuClicked()
+            width: listView.width
+            text: model.name
+            highlighted: ListView.isCurrentItem
+            onClicked:
+            {
+                listView.currentIndex = index
+                root.menuItemClicked(model.source)
+                root.close()
+            }
         }
 
-        ToolbarIcon
+        model: ListModel
         {
-            id: infoBtn
-            source: "qrc:/view/gui/icons/info.svg"
-            toolTip: qsTr("About Qt")
-            onClicked: root.infoClicked()
+            ListElement
+            {
+                name: qsTr("Configuration");
+                source: "qrc:/view/gui/pages/config.qml"
+            }
         }
 
-        ToolbarIcon
-        {
-            id: closeBtn
-            source: "qrc:/view/gui/icons/close.svg"
-            toolTip: qsTr("Exit")
-            onClicked: root.closeClicked()
-        }
-    }
-}
+    } // end ListView
+} // end Drawer

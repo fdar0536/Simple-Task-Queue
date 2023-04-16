@@ -32,8 +32,9 @@ ApplicationWindow
     id: root
     visible: true
     property bool isNotInit: true
-    width: 1920
-    height: 1080
+    width: 1280
+    height: 720
+    header: menuBar
 
     MainCtrl
     {
@@ -50,7 +51,12 @@ ApplicationWindow
         id: menuBar
     }
 
-    header: menuBar
+    MainMenu
+    {
+        id: mainMenu
+        width: Math.min(root.width, root.height) / 3 * 2
+        height: root.height
+    }
 
     function onCtrlShow()
     {
@@ -100,6 +106,7 @@ ApplicationWindow
             ctrl.Exit.connect(onCtrlExit);
 
             // menuBar
+            menuBar.menuClicked.connect(mainMenu.open)
             menuBar.infoClicked.connect(ctrl.AboutQt);
             menuBar.closeClicked.connect(onCtrlExit);
             Global.AllCleaned.connect(onCtrlExit);

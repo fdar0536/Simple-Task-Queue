@@ -25,37 +25,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-ToolBar
+Item
 {
     id: root
-    signal menuClicked()
-    signal infoClicked()
-    signal closeClicked()
-
-    Row
-    {
-        ToolbarIcon
-        {
-            id: menuBtn
-            source: "qrc:/view/gui/icons/menu.svg"
-            toolTip: qsTr("Menu")
-            onClicked: root.menuClicked()
-        }
-
-        ToolbarIcon
-        {
-            id: infoBtn
-            source: "qrc:/view/gui/icons/info.svg"
-            toolTip: qsTr("About Qt")
-            onClicked: root.infoClicked()
-        }
-
-        ToolbarIcon
-        {
-            id: closeBtn
-            source: "qrc:/view/gui/icons/close.svg"
-            toolTip: qsTr("Exit")
-            onClicked: root.closeClicked()
-        }
-    }
 }
