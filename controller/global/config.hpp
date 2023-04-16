@@ -68,6 +68,10 @@ public:
     void setDbPath(const std::string &);
 #endif
 
+    std::string logPath();
+
+    void setLogPath(const std::string &);
+
     uint_fast16_t listenPort();
 
     void setListenPort(uint_fast16_t);

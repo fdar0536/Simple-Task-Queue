@@ -334,6 +334,18 @@ void Config::setDbPath(const std::string &in)
 }
 #endif
 
+std::string Config::logPath()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    return m_logPath;
+}
+
+void Config::setLogPath(const std::string &in)
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_logPath = in;
+}
+
 uint_fast16_t Config::listenPort()
 {
     std::unique_lock<std::mutex> lock(m_mutex);

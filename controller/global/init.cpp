@@ -33,6 +33,10 @@
 
 #include "spdlog/spdlog.h"
 
+#ifndef STQ_GUI
+#include "spdlog/sinks/daily_file_sink.h"
+#endif
+
 #include "model/utils.hpp"
 
 #include "init.hpp"
@@ -69,6 +73,10 @@ static UINT consoleOutputCP(0);
 
 static uint_fast8_t initConsole();
 
+#ifndef STQ_GUI
+static void initSpdlog();
+#endif
+
 uint_fast8_t init(int argc, char **argv)
 {
     if (initConsole())
@@ -92,6 +100,10 @@ uint_fast8_t init(int argc, char **argv)
 #endif
 
     Model::ErrMsg::init();
+
+#ifndef STQ_GUI
+    initSpdlog();
+#endif
     return 0;
 }
 
@@ -226,6 +238,16 @@ static uint_fast8_t initConsole()
     std::ios::sync_with_stdio(false);
     return 0;
 }
+
+#ifndef STQ_GUI
+static void initSpdlog()
+{
+    auto daily_logger = spdlog::daily_logger_mt(
+        "STQLog",
+        config.logPath() + "/STQLog.log");
+    spdlog::set_default_logger(daily_logger);
+}
+#endif
 
 } // end namespace Global
 
