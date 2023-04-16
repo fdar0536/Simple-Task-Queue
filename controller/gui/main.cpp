@@ -76,7 +76,6 @@ bool Main::init()
 #else
 
     sqliteInit();
-
     if ((Controller::Global::sqliteQueueList != nullptr) &&
         (Controller::Global::config.autoStartServer()))
     {

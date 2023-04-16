@@ -88,6 +88,7 @@ ApplicationWindow
             isNotInit = false;
             ctrl.Show.connect(onCtrlShow);
             ctrl.Exit.connect(onCtrlExit);
+            Global.AllCleaned.connect(onCtrlExit);
         }
     } // end onAfterSynchronizing
 } // end ApplicationWindow root
