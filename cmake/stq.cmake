@@ -34,11 +34,9 @@ set(STQ_LIBS
 if(ENABLE_GUI)
 
     list(APPEND CONTROLLER_SRC
-
-        # global
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
-
+        "controller/gui/logsink.hpp"
         "controller/gui/main.cpp"
         "controller/gui/main.hpp"
     )

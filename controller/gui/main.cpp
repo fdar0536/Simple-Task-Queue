@@ -21,22 +21,28 @@
  * SOFTWARE.
  */
 
-#include "main.hpp"
+#include "controller/gui/logsink.hpp"
+#include "spdlog/spdlog.h"
 
 #ifdef STQ_MOBILE
 #include "QGuiApplication"
 #else
 #include "QApplication"
 #include "QMenu"
+#include "QStandardPaths"
 #endif
+
+#include "controller/global/init.hpp"
+
+#include "main.hpp"
 
 namespace Controller
 {
 
-namespace GUI
-{
+namespace GUI{
 Main::Main(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    m_defaultLogger(nullptr)
 #ifndef STQ_MOBILE
     ,
     m_icon(nullptr),
@@ -48,6 +54,7 @@ Main::Main(QObject *parent) :
 
 Main::~Main()
 {
+#ifndef STQ_MOBILE
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
         if (m_icon) delete m_icon;
@@ -55,18 +62,76 @@ Main::~Main()
         if (m_showAction) delete m_showAction;
         if (m_exitAction) delete m_exitAction;
     }
+#endif
+
+    spdlog::set_default_logger(m_defaultLogger);
 }
 
 bool Main::init()
 {
+    spdlogInit();
+
+#ifdef STQ_MOBILE
+    return true;
+#else
+
+    sqliteInit();
+
+    if ((Controller::Global::sqliteQueueList != nullptr) &&
+        (Controller::Global::config.autoStartServer()))
+    {
+        if (Controller::Global::server.start())
+        {
+            spdlog::error("{}:{} Fail to start grpc server", __FILE__, __LINE__);
+        }
+    }
+
+    if (trayIconInit())
+    {
+        spdlog::error("{}:{} trayIconInit failed", __FILE__, __LINE__);
+        return false;
+    }
+
+    return true;
+#endif
+}
+
+// public slots
+void Main::AboutQt()
+{
+    qApp->aboutQt();
+}
+
+void Main::onSpdlogLog(const QString &in)
+{
+    emit LogEmitted(in);
+}
+
+// private slots
 #ifndef STQ_MOBILE
+void Main::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::Trigger ||
+        reason == QSystemTrayIcon::DoubleClick)
+    {
+        emit Show();
+    }
+}
+#endif
+
+// private member functions
+#ifndef STQ_MOBILE
+uint_fast8_t Main::trayIconInit()
+{
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
-        m_icon = new (std::nothrow) QSystemTrayIcon(QIcon(":/view/gui/icons/computer.svg"),
-                                                    this);
+        m_icon = new (std::nothrow) QSystemTrayIcon(
+            QIcon(":/view/gui/icons/computer.svg"),
+            this);
         if (!m_icon)
         {
-            return false;
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
         }
 
         m_icon->show();
@@ -75,19 +140,22 @@ bool Main::init()
         m_iconContextMenu = new (std::nothrow) QMenu;
         if (!m_iconContextMenu)
         {
-            return false;
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
         }
 
         m_showAction = new (std::nothrow) QAction("Show", this);
         if (!m_showAction)
         {
-            return false;
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
         }
 
         m_exitAction = new (std::nothrow) QAction("Exit", this);
         if (!m_exitAction)
         {
-            return false;
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
         }
 
         m_iconContextMenu->addAction(m_showAction);
@@ -110,28 +178,42 @@ bool Main::init()
                 this,
                 &Main::Exit);
     }
-#endif
 
-    return true;
+    return 0;
 }
 
-// public slots
-void Main::AboutQt()
+void Main::sqliteInit()
 {
-    qApp->aboutQt();
-}
-
-// private slots
-#ifndef STQ_MOBILE
-void Main::iconActivated(QSystemTrayIcon::ActivationReason reason)
-{
-    if (reason == QSystemTrayIcon::Trigger ||
-        reason == QSystemTrayIcon::DoubleClick)
+    if (Controller::Global::sqliteQueueList != nullptr)
     {
-        emit Show();
+        return;
+    }
+
+    QString dataPath = QStandardPaths::writableLocation(
+        QStandardPaths::AppLocalDataLocation);
+    if (dataPath.isEmpty())
+    {
+        spdlog::warn("{}:{} No writable location", __FILE__, __LINE__);
+        return;
+    }
+
+    Controller::Global::config.setDbPath(dataPath.toUtf8().toStdString());
+    if (Controller::Global::initSQLiteQueueList())
+    {
+        spdlog::error("{}:{} Fail to initialize SQLite", __FILE__, __LINE__);
     }
 }
+
 #endif
+
+void Main::spdlogInit()
+{
+    m_defaultLogger = spdlog::default_logger();
+    auto sink = std::make_shared<LogSink_mt>(this);
+    auto logger = std::make_shared<spdlog::logger>("STQLogger", sink);
+
+    spdlog::set_default_logger(logger);
+}
 
 } // namespace GUI
 

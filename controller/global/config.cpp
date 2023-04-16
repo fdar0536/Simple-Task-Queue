@@ -242,7 +242,6 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
 }
 
 #if defined(STQ_GUI) && !defined(STQ_MOBILE)
-
 uint_fast8_t Config::save(Config *obj, const std::string &path)
 {
     if (!obj)
@@ -256,15 +255,11 @@ uint_fast8_t Config::save(Config *obj, const std::string &path)
     try
     {
         inipp::Ini<char> ini;
-#if defined(STQ_GUI) && !defined(STQ_MOBILE)
         ini.sections["Settings"]["auto start server"] =
             std::to_string(obj->m_autoStartServer);
-#endif
 
-#ifndef STQ_MOBILE
         ini.sections["Settings"]["db path"] =
             obj->m_dbPath;
-#endif
 
         ini.sections["Settings"]["log path"] =
             obj->m_logPath;
@@ -322,6 +317,20 @@ std::string Config::dbPath()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     return m_dbPath;
+}
+
+void Config::setDbPath(const std::string &in)
+{
+    if (in.empty())
+    {
+        spdlog::error("{}:{} input is empty", __FILE__, __LINE__);
+        return;
+    }
+
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_dbPath = in;
+    }
 }
 #endif
 

@@ -21,68 +21,62 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GRPCSERVER_SERVER_HPP_
-#define _CONTROLLER_GRPCSERVER_SERVER_HPP_
+#ifndef _CONTROLLER_GUI_LOGSINK_HPP_
+#define _CONTROLLER_GUI_LOGSINK_HPP_
 
-#include <thread>
+#include "spdlog/sinks/base_sink.h"
 
-#include <cinttypes>
-
-#include "grpcpp/server.h"
-
-#include "controller/global/defines.hpp"
-#include "accessimpl.hpp"
-#include "queueimpl.hpp"
-#include "queuelistimpl.hpp"
-
-#ifndef STQ_GUI
-#include <future>
-#endif
+#include "main.hpp"
 
 namespace Controller
 {
 
-namespace GRPCServer
+namespace GUI
 {
 
-class Server
+template<typename Mutex>
+class LogSink : public spdlog::sinks::base_sink<Mutex>
 {
+
 public:
 
-    Server();
+    LogSink(Main *in)
+    {
+        m_main = in;
+    }
 
-    ~Server();
+    ~LogSink()
+    {
+        flush_();
+    }
 
-    uint_fast8_t start();
+protected:
 
-    void stop();
+    void sink_it_(const spdlog::details::log_msg &msg) override
+    {
+        spdlog::memory_buf_t formatted;
+        spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
+        spdlog::string_view_t str = spdlog::string_view_t(formatted.data(),
+                                                          formatted.size());
+        m_main->onSpdlogLog(QString::fromUtf8(
+                                str.data(),
+                                static_cast<int>(str.size())).trimmed());
+    }
+
+    void flush_() override {}
 
 private:
 
-#ifdef STQ_GUI
-    std::atomic<bool> m_isRunning;
-#endif
-
-#ifndef STQ_GUI
-    std::jthread m_thread;
-
-    std::promise<void> m_exitRequested;
-
-    std::future<void> m_future;
-#endif
-
-    std::unique_ptr<grpc::Server> m_server = nullptr;
-
-    AccessImpl m_accessImpl;
-
-    QueueImpl m_queueImpl;
-
-    QueueListImpl m_queueListImpl;
-
+    Main *m_main;
 };
 
-} // end namespace GRPCServer
+#include "spdlog/details/null_mutex.h"
+#include <mutex>
+using LogSink_mt = LogSink<std::mutex>;
+using LogSink_st = LogSink<spdlog::details::null_mutex>;
+
+} // namespace GUI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GRPCSERVER_SERVER_HPP_
+#endif // _CONTROLLER_GUI_LOGSINK_HPP_

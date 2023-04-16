@@ -64,6 +64,8 @@ public:
 
 #ifndef STQ_MOBILE
     std::string dbPath();
+
+    void setDbPath(const std::string &);
 #endif
 
     uint_fast16_t listenPort();

@@ -76,13 +76,13 @@ uint_fast8_t Server::start()
         spdlog::info("{}:{} Server is listening on {}", __FILE__, __LINE__,
                      listenAddr);
 
+#ifndef STQ_GUI
         auto serveFn = [this]()
         {
             this->m_server->Wait();
         };
 
         m_thread = std::jthread(serveFn);
-#ifndef STQ_GUI
         m_future = m_exitRequested.get_future();
         m_future.wait();
         m_server->Shutdown();
@@ -115,7 +115,6 @@ void Server::stop()
     try
     {
         m_server->Shutdown();
-        m_thread = std::jthread();
         m_server = nullptr;
         m_isRunning.store(false, std::memory_order_relaxed);
     }

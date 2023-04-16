@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include "spdlog/spdlog.h"
 #include "QObject"
 
 #ifndef STQ_MOBILE
@@ -51,22 +52,30 @@ public:
 
     Q_INVOKABLE bool init();
 
+    void onSpdlogLog(const QString &);
+
 signals:
 
     void Show();
 
     void Exit();
 
+    void LogEmitted(const QString &);
+
 public slots:
 
     void AboutQt();
 
-#ifndef STQ_MOBILE
 private slots:
-
+#ifndef STQ_MOBILE
     void iconActivated(QSystemTrayIcon::ActivationReason reason);
+#endif
 
 private:
+
+    std::shared_ptr<spdlog::logger> m_defaultLogger;
+
+#ifndef STQ_MOBILE
     QSystemTrayIcon *m_icon;
 
     QMenu *m_iconContextMenu;
@@ -74,8 +83,13 @@ private:
     QAction *m_showAction;
 
     QAction *m_exitAction;
+
+    uint_fast8_t trayIconInit();
+
+    void sqliteInit();
 #endif
 
+    void spdlogInit();
 }; // end class Main
 
 } // namespace GUI

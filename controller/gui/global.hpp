@@ -67,7 +67,7 @@ public:
 
     uint_fast8_t init();
 
-    Q_INVOKABLE bool isNotMobile() const;
+    bool isNotMobile() const;
 
     void setEngine(QQmlApplicationEngine *engine);
 
@@ -90,9 +90,9 @@ public:
 
     QSettings *settings();
 
-    Q_INVOKABLE void setState(QString, QJSValue);
+    Q_INVOKABLE void setState(const QString &, const QJSValue &);
 
-    Q_INVOKABLE QJSValue state(QString);
+    Q_INVOKABLE QJSValue state(const QString &);
 
     Q_INVOKABLE void notifyClosing();
 

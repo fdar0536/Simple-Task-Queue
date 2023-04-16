@@ -199,12 +199,12 @@ QSettings *Global::settings()
     return m_settings;
 }
 
-void Global::setState(QString key, QJSValue value)
+void Global::setState(const QString &key, const QJSValue &value)
 {
     m_state[key] = value;
 }
 
-QJSValue Global::state(QString key)
+QJSValue Global::state(const QString &key)
 {
     auto it = m_state.find(key);
     if (it == m_state.end())
