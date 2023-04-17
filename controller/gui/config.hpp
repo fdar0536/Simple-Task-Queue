@@ -52,6 +52,8 @@ public:
 
     bool isServerRunning() const;
 
+    Q_INVOKABLE int setLogLevel(int);
+
 private:
 
     std::atomic<bool> m_isInit;

@@ -61,6 +61,21 @@ bool Config::isServerRunning() const
 #endif
 }
 
+int Config::setLogLevel(int in)
+{
+    if (in < 0 || in > 6)
+    {
+        spdlog::error(
+            "{}:{} Invalid level, use default value", __FILE__, __LINE__);
+        in = 2;
+    }
+
+    Controller::Global::config.setLogLevel(
+        static_cast<spdlog::level::level_enum>(in));
+
+    return in;
+}
+
 } // namespace GUI
 
 } // end namespace Controller

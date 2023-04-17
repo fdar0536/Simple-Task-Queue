@@ -108,11 +108,19 @@ Item {
                         "Info",
                         "Warning",
                         "Error",
-                        "Critical"]
+                        "Critical",
+                        "Off"]
 
                     currentIndex: 2
                     onCurrentIndexChanged:
                     {
+                        var newIndex = ctrl.setLogLevel(currentIndex);
+                        if (newIndex === currentIndex)
+                        {
+                            return;
+                        }
+
+                        logLevel.currentIndex = newIndex;
                     }
                 }
             }
