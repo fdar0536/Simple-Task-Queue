@@ -90,10 +90,6 @@ public:
 
     QSettings *settings();
 
-    Q_INVOKABLE void setState(const QString &, const QJSValue &);
-
-    Q_INVOKABLE QJSValue state(const QString &);
-
     Q_INVOKABLE void notifyClosing();
 
     Q_INVOKABLE void notifyAllCleaned();
@@ -130,8 +126,6 @@ private:
 
     std::shared_ptr<Model::DAO::IQueue>
         m_grpcQueue;
-
-    std::unordered_map<QString, QJSValue> m_state;
 
 }; // and class Global
 
