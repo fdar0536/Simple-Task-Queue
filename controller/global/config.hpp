@@ -55,11 +55,13 @@ public:
 #if defined(STQ_GUI) && !defined(STQ_MOBILE)
     static uint_fast8_t save(Config *, const std::string &);
 
-    void setAutoStartServer(bool);
-
     bool autoStartServer();
 
+    void setAutoStartServer(bool);
+
     std::string configPath();
+
+    void setConfigPath(const std::string &);
 #endif
 
 #ifndef STQ_MOBILE

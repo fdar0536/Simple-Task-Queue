@@ -250,6 +250,12 @@ uint_fast8_t Config::save(Config *obj, const std::string &path)
         return 1;
     }
 
+    if (path.empty())
+    {
+        spdlog::warn("{}:{} invalid path", __FILE__, __LINE__);
+        return 1;
+    }
+
     std::unique_lock<std::mutex> lock(obj->m_mutex);
     std::fstream i;
     try
@@ -293,16 +299,16 @@ uint_fast8_t Config::save(Config *obj, const std::string &path)
     return 0;
 }
 
-void Config::setAutoStartServer(bool in)
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_autoStartServer = in;
-}
-
 bool Config::autoStartServer()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     return m_autoStartServer;
+}
+
+void Config::setAutoStartServer(bool in)
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_autoStartServer = in;
 }
 
 std::string Config::configPath()
@@ -310,6 +316,27 @@ std::string Config::configPath()
     std::unique_lock<std::mutex> lock(m_mutex);
     return m_configPath;
 }
+
+void Config::setConfigPath(const std::string &in)
+{
+    if (in.empty())
+    {
+        spdlog::error("{}:{} \"in\" is empty", __FILE__, __LINE__);
+        return;
+    }
+
+    if (Model::DAO::DirUtils::verifyFile(in))
+    {
+        spdlog::error("{}:{} Fail to verify \"in\"", __FILE__, __LINE__);
+        return;
+    }
+
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_configPath = in;
+    }
+}
+
 #endif
 
 #ifndef STQ_MOBILE
