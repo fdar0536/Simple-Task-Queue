@@ -33,7 +33,7 @@ ApplicationWindow
 {
     id: root
     visible: true
-    width: 1280
+    width: 640
     height: 720
     header: menuBar
 
