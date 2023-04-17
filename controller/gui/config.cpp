@@ -1,5 +1,4 @@
-/*
- * Simple Task Queue
+/* Simple Task Queue
  * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,72 +20,47 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GRPCSERVER_SERVER_HPP_
-#define _CONTROLLER_GRPCSERVER_SERVER_HPP_
-
-#include <thread>
-
-#include <cinttypes>
-
-#include "grpcpp/server.h"
-
-#include "controller/global/defines.hpp"
-#include "accessimpl.hpp"
-#include "queueimpl.hpp"
-#include "queuelistimpl.hpp"
-
-#ifndef STQ_GUI
-#include <future>
-#endif
+#include "controller/global/init.hpp"
+#include "config.hpp"
 
 namespace Controller
 {
 
-namespace GRPCServer
+namespace GUI
 {
 
-class Server
+Config::Config(QObject *parent) :
+    QObject(parent)
 {
-public:
+    m_isInit.store(false, std::memory_order_relaxed);
+}
 
-    Server();
+Config::~Config()
+{}
 
-    ~Server();
+bool Config::init()
+{
+    return true;
+}
 
-    uint_fast8_t start();
-
-    void stop();
-
-#ifdef STQ_GUI
-    bool isRunning() const;
+bool Config::isLocalAvailable() const
+{
+#ifdef STQ_MOBILE
+    return false;
+#else
+    return Controller::Global::sqliteQueueList != nullptr;
 #endif
+}
 
-private:
-
-#ifdef STQ_GUI
-    std::atomic<bool> m_isRunning;
+bool Config::isServerRunning() const
+{
+#ifdef STQ_MOBILE
+    return false;
+#else
+    return Controller::Global::server.isRunning();
 #endif
+}
 
-#ifndef STQ_GUI
-    std::jthread m_thread;
-
-    std::promise<void> m_exitRequested;
-
-    std::future<void> m_future;
-#endif
-
-    std::unique_ptr<grpc::Server> m_server = nullptr;
-
-    AccessImpl m_accessImpl;
-
-    QueueImpl m_queueImpl;
-
-    QueueListImpl m_queueListImpl;
-
-};
-
-} // end namespace GRPCServer
+} // namespace GUI
 
 } // end namespace Controller
-
-#endif // _CONTROLLER_GRPCSERVER_SERVER_HPP_

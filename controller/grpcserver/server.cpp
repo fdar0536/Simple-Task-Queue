@@ -127,6 +127,13 @@ void Server::stop()
 #endif
 }
 
+#ifdef STQ_GUI
+bool Server::isRunning() const
+{
+    return m_isRunning.load(std::memory_order_relaxed);
+}
+#endif
+
 } // end namespace GRPCServer
 
 } // end namespace Controller

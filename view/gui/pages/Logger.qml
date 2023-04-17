@@ -29,7 +29,7 @@ import QtQuick.Dialogs
 import Global
 import "../components"
 
-Item
+Column
 {
     id: root
 
@@ -68,10 +68,9 @@ Item
     ScrollView
     {
         id: scrollView
-        anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: saveBtn.top
+        height: parent.height - backBtn.height
 
         TextArea
         {
@@ -80,46 +79,40 @@ Item
         }
     }
 
-    ToolTipButton
+    Row
     {
-        id: saveBtn
-        enabled: Global.isNotMobile
-
+        id: row
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: clearBtn.top
 
-        text: qsTr("Save")
-        toolTip: qsTr("Save the log");
-        onClicked: function()
+        ToolTipButton
         {
-            fileDialog.open();
+            id: backBtn
+
+            text: qsTr("Go back")
+            toolTip: qsTr("Go Back")
+            onClicked: root.goBackClicked()
         }
-    }
 
-    ToolTipButton
-    {
-        id: clearBtn
+        ToolTipButton
+        {
+            id: saveBtn
+            enabled: Global.isNotMobile
+            text: qsTr("Save")
+            toolTip: qsTr("Save the log");
+            onClicked: function()
+            {
+                fileDialog.open();
+            }
+        }
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: backBtn.top
+        ToolTipButton
+        {
+            id: clearBtn
 
-        text: qsTr("Clear")
-        toolTip: qsTr("Clear the log")
-        onClicked: textArea.clear()
-    }
-
-    ToolTipButton
-    {
-        id: backBtn
-
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-
-        text: qsTr("Go back")
-        toolTip: qsTr("Go Back")
-        onClicked: root.goBackClicked()
+            text: qsTr("Clear")
+            toolTip: qsTr("Clear the log")
+            onClicked: textArea.clear()
+        }
     }
 }

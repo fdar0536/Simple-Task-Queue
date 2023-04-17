@@ -1,5 +1,4 @@
-/*
- * Simple Task Queue
+/* Simple Task Queue
  * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,72 +20,46 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GRPCSERVER_SERVER_HPP_
-#define _CONTROLLER_GRPCSERVER_SERVER_HPP_
+#ifndef _CONTROLLER_GUI_CONFIG_HPP_
+#define _CONTROLLER_GUI_CONFIG_HPP_
 
-#include <thread>
-
-#include <cinttypes>
-
-#include "grpcpp/server.h"
-
-#include "controller/global/defines.hpp"
-#include "accessimpl.hpp"
-#include "queueimpl.hpp"
-#include "queuelistimpl.hpp"
-
-#ifndef STQ_GUI
-#include <future>
-#endif
+#include <atomic>
+#include "QObject"
 
 namespace Controller
 {
 
-namespace GRPCServer
+namespace GUI
 {
 
-class Server
+class Config : public QObject
 {
+    Q_OBJECT
+
+    Q_PROPERTY(bool isLocalAvailable READ isLocalAvailable CONSTANT)
+
+    Q_PROPERTY(bool isServerRunning READ isServerRunning CONSTANT)
+
 public:
 
-    Server();
+    Config(QObject * = nullptr);
 
-    ~Server();
+    ~Config();
 
-    uint_fast8_t start();
+    bool init();
 
-    void stop();
+    bool isLocalAvailable() const;
 
-#ifdef STQ_GUI
-    bool isRunning() const;
-#endif
+    bool isServerRunning() const;
 
 private:
 
-#ifdef STQ_GUI
-    std::atomic<bool> m_isRunning;
-#endif
+    std::atomic<bool> m_isInit;
 
-#ifndef STQ_GUI
-    std::jthread m_thread;
+}; // end class Config
 
-    std::promise<void> m_exitRequested;
-
-    std::future<void> m_future;
-#endif
-
-    std::unique_ptr<grpc::Server> m_server = nullptr;
-
-    AccessImpl m_accessImpl;
-
-    QueueImpl m_queueImpl;
-
-    QueueListImpl m_queueListImpl;
-
-};
-
-} // end namespace GRPCServer
+} // namespace GUI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GRPCSERVER_SERVER_HPP_
+#endif // _CONTROLLER_GUI_CONFIG_HPP_

@@ -25,7 +25,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import Global
-import MainCtrl
+import Main as CTRL
 import "components"
 import "pages"
 
@@ -33,12 +33,11 @@ ApplicationWindow
 {
     id: root
     visible: true
-    property bool isNotInit: true
     width: 1280
     height: 720
     header: menuBar
 
-    MainCtrl
+    CTRL.Main
     {
         id: ctrl
     } // end Main
@@ -105,38 +104,33 @@ ApplicationWindow
         }
     }
 
-    onAfterSynchronizing: function()
+    Component.onCompleted:
     {
-        if (isNotInit)
+        Qt.font.pointSize = 25;
+        if (!ctrl.init())
         {
-            Qt.font.pointSize = 25;
-            if (!ctrl.init())
-            {
-                msgDialog.buttons = MessageDialog.Ok;
-                msgDialog.title = qsTr("Error");
-                msgDialog.text = qsTr("Fail to initialize");
-                msgDialog.accepted.connect(() => { Qt.exit(1) })
-                msgDialog.open();
-            }
-
-            isNotInit = false;
-
-            // controller
-            ctrl.Show.connect(onCtrlShow);
-            ctrl.Exit.connect(onCtrlExit);
-            ctrl.LogEmitted.connect(logger.addLog);
-
-            // logger
-            logger.goBackClicked.connect(onLoggerGoBackClicked);
-
-            // menuBar
-            menuBar.menuClicked.connect(mainMenu.open);
-            menuBar.logClicked.connect(onLogClicked);
-            menuBar.infoClicked.connect(ctrl.AboutQt);
-            menuBar.closeClicked.connect(onCtrlExit);
-            Global.AllCleaned.connect(onCtrlExit);
+            msgDialog.buttons = MessageDialog.Ok;
+            msgDialog.title = qsTr("Error");
+            msgDialog.text = qsTr("Fail to initialize");
+            msgDialog.accepted.connect(() => { Qt.exit(1) })
+            msgDialog.open();
         }
-    } // end onAfterSynchronizing
+
+        // controller
+        ctrl.Show.connect(onCtrlShow);
+        ctrl.Exit.connect(onCtrlExit);
+        ctrl.LogEmitted.connect(logger.addLog);
+
+        // logger
+        logger.goBackClicked.connect(onLoggerGoBackClicked);
+
+        // menuBar
+        menuBar.menuClicked.connect(mainMenu.open);
+        menuBar.logClicked.connect(onLogClicked);
+        menuBar.infoClicked.connect(ctrl.AboutQt);
+        menuBar.closeClicked.connect(onCtrlExit);
+        Global.AllCleaned.connect(onCtrlExit);
+    } // end Component.onCompleted
 
     Logger
     {

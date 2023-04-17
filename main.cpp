@@ -31,6 +31,7 @@
 
 #include "controller/global/init.hpp"
 
+#include "controller/gui/config.hpp"
 #include "controller/gui/main.hpp"
 
 #ifdef STQ_GUI
@@ -103,7 +104,8 @@ int main(int argc, char **argv)
                                   "Global",
                                   &Controller::Global::guiGlobal);
 
-    qmlRegisterType<Controller::GUI::Main>("MainCtrl", 1, 0, "MainCtrl");
+    qmlRegisterType<Controller::GUI::Main>("Main", 1, 0, "Main");
+    qmlRegisterType<Controller::GUI::Config>("Config", 1, 0, "Config");
 
     QQmlApplicationEngine engine;
     QQuickStyle::setStyle("Material");
