@@ -128,8 +128,20 @@ uint_fast8_t Config::parse(Config *in, int argc, char **argv)
     }
 
 #ifdef STQ_GUI
+    if (Model::DAO::DirUtils::verifyFile(in->m_configPath))
+    {
+        spdlog::error("{}:{} fail to parse config file", __FILE__, __LINE__);
+        return 1;
+    }
+
     if (parse(in, in->m_configPath))
 #else
+    if (Model::DAO::DirUtils::verifyFile(in->configFile))
+    {
+        spdlog::error("{}:{} fail to parse config file", __FILE__, __LINE__);
+        return 1;
+    }
+
     if (parse(in, configFile))
 #endif
     {
@@ -317,24 +329,20 @@ std::string Config::configPath()
     return m_configPath;
 }
 
-void Config::setConfigPath(const std::string &in)
+uint_fast8_t Config::setConfigPath(const std::string &in)
 {
-    if (in.empty())
-    {
-        spdlog::error("{}:{} \"in\" is empty", __FILE__, __LINE__);
-        return;
-    }
-
     if (Model::DAO::DirUtils::verifyFile(in))
     {
         spdlog::error("{}:{} Fail to verify \"in\"", __FILE__, __LINE__);
-        return;
+        return 1;
     }
 
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_configPath = in;
     }
+
+    return 0;
 }
 
 #endif
@@ -391,16 +399,17 @@ std::string Config::listenIP()
     return m_listenIP;
 }
 
-void Config::setListenIP(const std::string &in)
+uint_fast8_t Config::setListenIP(const std::string &in)
 {
     if (Model::Utils::verifyIP(in))
     {
         spdlog::error("{}:{} input is valid ipv4", __FILE__, __LINE__);
-        return;
+        return 1;
     }
 
     std::unique_lock<std::mutex> lock(m_mutex);
     m_listenIP = in;
+    return 0;
 }
 
 spdlog::level::level_enum Config::logLevel()

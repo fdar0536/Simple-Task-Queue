@@ -61,7 +61,7 @@ public:
 
     std::string configPath();
 
-    void setConfigPath(const std::string &);
+    uint_fast8_t setConfigPath(const std::string &);
 #endif
 
 #ifndef STQ_MOBILE
@@ -80,7 +80,7 @@ public:
 
     std::string listenIP();
 
-    void setListenIP(const std::string &);
+    uint_fast8_t setListenIP(const std::string &);
 
     spdlog::level::level_enum logLevel();
 

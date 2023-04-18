@@ -36,7 +36,6 @@ namespace GUI
 Global::Global(QObject *parent) :
     QObject(parent),
     m_isNotMobile(true),
-    m_settings(nullptr),
 #ifndef STQ_MOBILE
     m_backendMode(SQLITE)
 #endif
@@ -67,20 +66,21 @@ uint_fast8_t Global::init()
         return 1;
     }
 
-    m_settings = new (std::nothrow) QSettings("STQGuiSettings",
-                                              QSettings::NativeFormat);
-    if (!m_settings)
-    {
-        spdlog::error("{}:{} Failed to allocate memory", __FILE__, __LINE__);
-        return 1;
-    }
-
     return 0;
 }
 
 bool Global::isNotMobile() const
 {
     return m_isNotMobile;
+}
+
+bool Global::isLocalAvailable() const
+{
+#ifdef STQ_MOBILE
+    return false;
+#else
+    return Controller::Global::sqliteQueueList != nullptr;
+#endif
 }
 
 void Global::setEngine(QQmlApplicationEngine *in)
@@ -196,11 +196,6 @@ Global::queue() const
     }
     }
 #endif
-}
-
-QSettings *Global::settings()
-{
-    return m_settings;
 }
 
 void Global::notifyClosing()

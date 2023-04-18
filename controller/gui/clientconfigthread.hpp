@@ -20,11 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_CONFIG_HPP_
-#define _CONTROLLER_GUI_CONFIG_HPP_
+#ifndef _CONTROLLER_GUI_CLIENTCONFIGTHREAD_HPP_
+#define _CONTROLLER_GUI_CLIENTCONFIGTHREAD_HPP_
 
 #include <atomic>
-#include "QObject"
+
+#include "QSettings"
+#include "QThread"
 
 namespace Controller
 {
@@ -32,36 +34,75 @@ namespace Controller
 namespace GUI
 {
 
-class Config : public QObject
+class ClientConfigThread : public QThread
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool isLocalAvailable READ isLocalAvailable CONSTANT)
-
-    Q_PROPERTY(bool isServerRunning READ isServerRunning CONSTANT)
-
 public:
 
-    Config(QObject * = nullptr);
+    ClientConfigThread(QObject * = nullptr);
 
-    ~Config();
+    ~ClientConfigThread();
 
-    bool init();
+    Q_INVOKABLE void init();
 
-    bool isLocalAvailable() const;
+    Q_INVOKABLE QString name(int);
 
-    bool isServerRunning() const;
+    Q_INVOKABLE QString ip(int);
 
-    Q_INVOKABLE int setLogLevel(int);
+    Q_INVOKABLE int port(int);
+
+    Q_INVOKABLE bool saveSetting(const QString &, const QString &, const int);
+
+    QList<QVariant> data() const;
+
+    void setData(const QList<QVariant> &);
+
+    // pure virtual functions
+    void run() override;
+
+signals:
+
+    void InitDone();
+
+    void ServerConnected();
 
 private:
 
+    enum CondigRoles
+    {
+        IdRole = Qt::UserRole + 1,
+        NameRole
+    };
+
     std::atomic<bool> m_isInit;
 
-}; // end class Config
+    void initImpl();
+
+    void connectToServer();
+
+    typedef void (ClientConfigThread::*Handler)();
+
+    typedef enum Mode
+    {
+        INIT, CONNECT
+    } Mode;
+
+    Handler m_handler[2] =
+    {
+        &ClientConfigThread::initImpl,
+        &ClientConfigThread::connectToServer
+    };
+
+    std::atomic<Mode> m_mode;
+
+    QList<QVariant> m_data;
+
+    QSettings m_settings;
+}; // end class ClientConfig
 
 } // namespace GUI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GUI_CONFIG_HPP_
+#endif // _CONTROLLER_GUI_CLIENTCONFIGTHREAD_HPP_

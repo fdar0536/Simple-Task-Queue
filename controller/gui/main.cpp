@@ -24,6 +24,8 @@
 #include "controller/gui/logsink.hpp"
 #include "spdlog/spdlog.h"
 
+#include "QThreadPool"
+
 #ifdef STQ_MOBILE
 #include "QGuiApplication"
 #else

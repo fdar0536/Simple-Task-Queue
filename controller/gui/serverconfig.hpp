@@ -21,35 +21,61 @@
  * SOFTWARE.
  */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Controls.Material
+#ifndef _CONTROLLER_GUI_SERVERCONFIG_HPP_
+#define _CONTROLLER_GUI_SERVERCONFIG_HPP_
 
-import Global
+#include "QThread"
 
-import "../components"
+namespace Controller
+{
 
-Item {
-    id: root
+namespace GUI
+{
 
-    SwipeView
-    {
-        id: swipeView
-        anchors.fill: parent
+class ServerConfig : public QThread
+{
+    Q_OBJECT
 
-        ClientConfig
-        {}
+    Q_PROPERTY(bool isServerRunning READ isServerRunning CONSTANT)
 
-        ServerConfig
-        {}
-    } // end SwipeView swipeView
+    Q_PROPERTY(bool autoStartServer READ autoStartServer WRITE setAutoStartServer)
 
-    PageIndicator
-    {
-        count: swipeView.count
-        currentIndex: swipeView.currentIndex
+public:
 
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-    }
-} // end Item root
+    ServerConfig(QObject * = nullptr);
+
+    ~ServerConfig();
+
+    Q_INVOKABLE void init();
+
+    bool isServerRunning() const;
+
+    bool autoStartServer() const;
+
+    void setAutoStartServer(bool);
+
+    Q_INVOKABLE QString serverIP() const;
+
+    Q_INVOKABLE bool setServerIP(const QString &);
+
+    Q_INVOKABLE int serverPort() const;
+
+    Q_INVOKABLE void setServerPort(const int);
+
+    Q_INVOKABLE bool startServer();
+
+    Q_INVOKABLE void stopServer();
+
+    void run() override;
+
+signals:
+
+    void InitDone();
+
+}; // end class ServerConfig
+
+} // namespace GUI
+
+} // end namespace Controller
+
+#endif // _CONTROLLER_GUI_SERVERCONFIG_HPP_

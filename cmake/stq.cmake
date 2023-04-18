@@ -35,13 +35,17 @@ if(ENABLE_GUI)
 
     list(APPEND CONTROLLER_SRC
 
-        "controller/gui/config.cpp"
-        "controller/gui/config.hpp"
+        "controller/gui/clientconfig.cpp"
+        "controller/gui/clientconfig.hpp"
+        "controller/gui/clientconfigthread.cpp"
+        "controller/gui/clientconfigthread.hpp"
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
         "controller/gui/logsink.hpp"
         "controller/gui/main.cpp"
         "controller/gui/main.hpp"
+        "controller/gui/serverconfig.cpp"
+        "controller/gui/serverconfig.hpp"
     )
 
     qt_add_executable(STQ
@@ -61,6 +65,7 @@ if(ENABLE_GUI)
             "view/gui/main.qml"
 
             # components
+            "view/gui/components/MsgDialog.qml"
             "view/gui/components/MainMenu.qml"
             "view/gui/components/MenuBar.qml"
             "view/gui/components/TitleText.qml"
@@ -68,8 +73,10 @@ if(ENABLE_GUI)
             "view/gui/components/ToolTipButton.qml"
 
             # pages
+            "view/gui/pages/ClientConfig.qml"
             "view/gui/pages/Config.qml"
             "view/gui/pages/Logger.qml"
+            "view/gui/pages/ServerConfig.qml"
 
         RESOURCES
             "view/gui/stq.ico"

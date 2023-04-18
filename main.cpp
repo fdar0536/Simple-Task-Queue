@@ -31,8 +31,9 @@
 
 #include "controller/global/init.hpp"
 
-#include "controller/gui/config.hpp"
+#include "controller/gui/clientconfig.hpp"
 #include "controller/gui/main.hpp"
+#include "controller/gui/serverconfig.hpp"
 
 #ifdef STQ_GUI
 
@@ -105,7 +106,14 @@ int main(int argc, char **argv)
                                   &Controller::Global::guiGlobal);
 
     qmlRegisterType<Controller::GUI::Main>("Main", 1, 0, "Main");
-    qmlRegisterType<Controller::GUI::Config>("Config", 1, 0, "Config");
+
+    qmlRegisterType<Controller::GUI::ClientConfig>("ClientConfig",
+                                                    1, 0,
+                                                   "ClientConfig");
+
+    qmlRegisterType<Controller::GUI::ServerConfig>("ServerConfig",
+                                                   1, 0,
+                                                   "ServerConfig");
 
     QQmlApplicationEngine engine;
     QQuickStyle::setStyle("Material");
@@ -169,6 +177,7 @@ static bool isAdmin()
 static void sighandler(int signum)
 {
     UNUSED(signum);
+    spdlog::info("{}:{} Signaled: {}", __FILE__, __LINE__, signum);
     spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
 #ifdef STQ_GUI
 
@@ -187,6 +196,7 @@ static void sighandler(int signum)
 static BOOL eventHandler(DWORD dwCtrlType)
 {
     UNUSED(dwCtrlType);
+    spdlog::info("{}:{} Signaled: {}", __FILE__, __LINE__, dwCtrlType);
     sighandler(0);
     return TRUE;
 }

@@ -1,4 +1,5 @@
-/* Simple Task Queue
+/*
+ * Simple Task Queue
  * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,62 +21,30 @@
  * SOFTWARE.
  */
 
-#include "controller/global/init.hpp"
-#include "config.hpp"
+import QtQuick
+import QtQuick.Dialogs
+import QtQuick.Controls
+import QtQuick.Controls.Material
 
-namespace Controller
+MessageDialog
 {
+    id: root
 
-namespace GUI
-{
-
-Config::Config(QObject *parent) :
-    QObject(parent)
-{
-    m_isInit.store(false, std::memory_order_relaxed);
-}
-
-Config::~Config()
-{}
-
-bool Config::init()
-{
-    return true;
-}
-
-bool Config::isLocalAvailable() const
-{
-#ifdef STQ_MOBILE
-    return false;
-#else
-    return Controller::Global::sqliteQueueList != nullptr;
-#endif
-}
-
-bool Config::isServerRunning() const
-{
-#ifdef STQ_MOBILE
-    return false;
-#else
-    return Controller::Global::server.isRunning();
-#endif
-}
-
-int Config::setLogLevel(int in)
-{
-    if (in < 0 || in > 6)
+    function error(msg)
     {
-        spdlog::error(
-            "{}:{} Invalid level, use default value", __FILE__, __LINE__);
-        in = 2;
+        root.buttons = MessageDialog.Ok;
+        root.title = qsTr("Error");
+        root.text = msg;
+        root.accepted.connect(() => { root.close() })
+        root.open();
     }
 
-    Controller::Global::config.setLogLevel(
-        static_cast<spdlog::level::level_enum>(in));
-
-    return in;
+    function warn(msg)
+    {
+        root.buttons = MessageDialog.Ok;
+        root.title = qsTr("Warning");
+        root.text = msg;
+        root.accepted.connect(() => { root.close() })
+        root.open();
+    }
 }
-
-} // namespace GUI
-
-} // end namespace Controller

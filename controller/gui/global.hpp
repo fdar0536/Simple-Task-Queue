@@ -32,7 +32,6 @@
 
 #include "QObject"
 
-#include "QSettings"
 #include "QQmlApplicationEngine"
 
 #include "model/dao/iqueuelist.hpp"
@@ -54,6 +53,8 @@ class Global : public QObject
 
     Q_PROPERTY(bool isNotMobile READ isNotMobile CONSTANT)
 
+    Q_PROPERTY(bool isLocalAvailable READ isLocalAvailable CONSTANT)
+
 public:
 
     typedef enum BackendMode
@@ -68,6 +69,8 @@ public:
     uint_fast8_t init();
 
     bool isNotMobile() const;
+
+    bool isLocalAvailable() const;
 
     void setEngine(QQmlApplicationEngine *engine);
 
@@ -88,8 +91,6 @@ public:
     std::shared_ptr<Model::DAO::IQueue>
     queue() const;
 
-    QSettings *settings();
-
     Q_INVOKABLE void notifyClosing();
 
     Q_INVOKABLE void notifyAllCleaned();
@@ -109,8 +110,6 @@ private:
     std::atomic<bool> m_isInit;
 
     bool m_isNotMobile;
-
-    QSettings *m_settings;
 
     QQmlApplicationEngine *m_engine;
 
