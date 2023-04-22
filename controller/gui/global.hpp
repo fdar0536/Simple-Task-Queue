@@ -99,6 +99,10 @@ public:
     Q_INVOKABLE void saveFile(const QString &, const QString &);
 #endif
 
+    Q_INVOKABLE QJSValue getLog();
+
+    void onSpdlogLog(const QString &);
+
 signals:
 
     void WindowClosing();
@@ -125,6 +129,10 @@ private:
 
     std::shared_ptr<Model::DAO::IQueue>
         m_grpcQueue;
+
+    QList<QString> m_logBuf;
+
+    std::mutex m_logMutex;
 
 }; // and class Global
 

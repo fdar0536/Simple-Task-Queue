@@ -41,6 +41,16 @@ ClientConfig::ClientConfig(QObject *parent) :
 ClientConfig::~ClientConfig()
 {
     if (m_thread) delete m_thread;
+    if (m_data.length())
+    {
+        QSettings s;
+        s.setValue("Server List", m_data);
+    }
+}
+
+int ClientConfig::dataCount() const
+{
+    return m_data.length();
 }
 
 bool ClientConfig::init()
@@ -142,7 +152,6 @@ bool ClientConfig::saveSetting(const QString &name,
     map["ip"] = ip;
     map["port"] = port;
     m_data.push_back(map);
-    m_thread->setData(m_data);
 
     return true;
 }
@@ -184,9 +193,9 @@ QModelIndex ClientConfig::parent(const QModelIndex &) const
 }
 
 // private slots
-void ClientConfig::onThreadInitDone()
+void ClientConfig::onThreadInitDone(const QList<QVariant> &config)
 {
-    m_data = m_thread->data();
+    m_data = config;
     emit InitDone();
 }
 

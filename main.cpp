@@ -97,11 +97,13 @@ int main(int argc, char **argv)
 #endif // STQ_MOBILE
 
     app.setWindowIcon(QIcon(":/view/gui/stq.ico"));
+    QSettings::setDefaultFormat(QSettings::IniFormat);
+    qApp->setOrganizationName("fdar0536");
+    qApp->setApplicationName("STQ");
 
     qmlRegisterSingletonInstance
         <Controller::GUI::Global>("Global",
-                                  1,
-                                  0,
+                                  1, 0,
                                   "Global",
                                   &Controller::Global::guiGlobal);
 

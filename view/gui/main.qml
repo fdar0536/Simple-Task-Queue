@@ -27,7 +27,6 @@ import QtQuick.Dialogs
 import Global
 import Main as CTRL
 import "components"
-import "pages"
 
 ApplicationWindow
 {
@@ -76,19 +75,12 @@ ApplicationWindow
 
     function onLogClicked()
     {
-        if (stackView.depth !== 1)
-        {
-            return;
-        }
-
-        stackView.push(logger);
-        logger.visible = true;
+        loader.source = "qrc:/view/gui/pages/Logger.qml"
     }
 
-    function onLoggerGoBackClicked()
+    function onMainMenuItemClicked(src)
     {
-        logger.visible = false;
-        stackView.pop();
+        loader.source = src;
     }
 
     onClosing: function(close)
@@ -119,10 +111,6 @@ ApplicationWindow
         // controller
         ctrl.Show.connect(onCtrlShow);
         ctrl.Exit.connect(onCtrlExit);
-        ctrl.LogEmitted.connect(logger.addLog);
-
-        // logger
-        logger.goBackClicked.connect(onLoggerGoBackClicked);
 
         // menuBar
         menuBar.menuClicked.connect(mainMenu.open);
@@ -130,22 +118,15 @@ ApplicationWindow
         menuBar.infoClicked.connect(ctrl.AboutQt);
         menuBar.closeClicked.connect(onCtrlExit);
         Global.AllCleaned.connect(onCtrlExit);
+
+        // mainMemu
+        mainMenu.menuItemClicked.connect(onMainMenuItemClicked);
     } // end Component.onCompleted
 
-    Logger
+    Loader
     {
-        id: logger
-        visible: false
-    }
-
-    StackView
-    {
-        id: stackView
+        id: loader
         anchors.fill: parent
-        initialItem: Loader
-        {
-            id: loader
-            source: "qrc:/view/gui/pages/Config.qml"
-        }
+        source: "qrc:/view/gui/pages/ClientConfig.qml"
     }
 } // end ApplicationWindow root

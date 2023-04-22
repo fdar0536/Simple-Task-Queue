@@ -74,7 +74,6 @@ if(ENABLE_GUI)
 
             # pages
             "view/gui/pages/ClientConfig.qml"
-            "view/gui/pages/Config.qml"
             "view/gui/pages/Logger.qml"
             "view/gui/pages/ServerConfig.qml"
 

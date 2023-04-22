@@ -33,21 +33,22 @@ Column
 {
     id: root
 
-    signal goBackClicked()
-
-    function addLog(log)
+    function getLog()
     {
-        textArea.append(log);
-    }
+        var log = Global.getLog();
+        if (log.length === 0) return;
 
-    function onWindowClosing()
-    {
-        root.goBackClicked();
+        var i;
+        for (i = 0; i < log.length; ++i)
+        {
+            textArea.append(log[i]);
+        }
     }
 
     Component.onCompleted: function()
     {
-        Global.WindowClosing.connect(onWindowClosing);
+        Global.WindowClosing.connect(Global.notifyAllCleaned);
+        getLog();
     }
 
     FileDialog
@@ -70,7 +71,7 @@ Column
         id: scrollView
         anchors.left: parent.left
         anchors.right: parent.right
-        height: parent.height - backBtn.height
+        height: parent.height - refreshBtn.height
 
         TextArea
         {
@@ -87,11 +88,14 @@ Column
 
         ToolTipButton
         {
-            id: backBtn
+            id: refreshBtn
 
-            text: qsTr("Go back")
-            toolTip: qsTr("Go Back")
-            onClicked: root.goBackClicked()
+            text: qsTr("Refresh")
+            toolTip: qsTr("Refresh")
+            onClicked:
+            {
+                getLog();
+            }
         }
 
         ToolTipButton

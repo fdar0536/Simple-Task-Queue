@@ -46,34 +46,16 @@ public:
 
     Q_INVOKABLE void init();
 
-    Q_INVOKABLE QString name(int);
-
-    Q_INVOKABLE QString ip(int);
-
-    Q_INVOKABLE int port(int);
-
-    Q_INVOKABLE bool saveSetting(const QString &, const QString &, const int);
-
-    QList<QVariant> data() const;
-
-    void setData(const QList<QVariant> &);
-
     // pure virtual functions
     void run() override;
 
 signals:
 
-    void InitDone();
+    void InitDone(const QList<QVariant> &);
 
     void ServerConnected();
 
 private:
-
-    enum CondigRoles
-    {
-        IdRole = Qt::UserRole + 1,
-        NameRole
-    };
 
     std::atomic<bool> m_isInit;
 
@@ -95,10 +77,6 @@ private:
     };
 
     std::atomic<Mode> m_mode;
-
-    QList<QVariant> m_data;
-
-    QSettings m_settings;
 }; // end class ClientConfig
 
 } // namespace GUI

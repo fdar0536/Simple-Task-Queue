@@ -52,15 +52,11 @@ public:
 
     Q_INVOKABLE bool init();
 
-    void onSpdlogLog(const QString &);
-
 signals:
 
     void Show();
 
     void Exit();
-
-    void LogEmitted(const QString &);
 
 public slots:
 

@@ -55,7 +55,7 @@ Page
             return;
         }
 
-        if (ctrl.rowCount() <= 0)
+        if (ctrl.dataCount <= 0)
         {
             remoteList.currentIndex = -1;
             return;
@@ -163,14 +163,14 @@ Page
                 id: remoteList
                 model: ctrl
                 currentIndex: -1
-                delegate: ItemDelegate
+                delegate: Text
                 {
                     text: ctrl.name(index)
                 }
 
                 onCurrentIndexChanged:
                 {
-                    if (ctrl.rowCount() === 0)
+                    if (ctrl.dataCount === 0)
                     {
                         return;
                     }
@@ -229,6 +229,15 @@ Page
                 Button
                 {
                     text: qsTr("Save")
+                    onClicked:
+                    {
+                        if (!ctrl.saveSetting(remoteName.text,
+                                              remoteHost.text,
+                                              remotePort.value))
+                        {
+                            msgDialog.error(qsTr("Invalid ip or port"));
+                        }
+                    }
                 }
 
                 Button

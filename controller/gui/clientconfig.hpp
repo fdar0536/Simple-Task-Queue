@@ -39,11 +39,15 @@ class ClientConfig : public QAbstractItemModel
 {
     Q_OBJECT
 
+    Q_PROPERTY(int dataCount READ dataCount CONSTANT)
+
 public:
 
     ClientConfig(QObject * = nullptr);
 
     ~ClientConfig();
+
+    int dataCount() const;
 
     Q_INVOKABLE bool init();
 
@@ -78,7 +82,7 @@ signals:
 
 private slots:
 
-    void onThreadInitDone();
+    void onThreadInitDone(const QList<QVariant> &);
 
 private:
 

@@ -42,6 +42,8 @@ Global::Global(QObject *parent) :
 {
     m_isInit.store(false, std::memory_order_relaxed);
 
+    m_logBuf.reserve(128);
+
 #ifdef STQ_MOBILE
     m_isNotMobile = false;
 #else
@@ -225,6 +227,27 @@ void Global::saveFile(const QString &fileName, const QString &text)
     f.close();
 }
 #endif
+
+QJSValue Global::getLog()
+{
+    std::unique_lock<std::mutex> lock(m_logMutex);
+    QJSValue ret = m_engine->newArray(m_logBuf.length());
+    if (!m_logBuf.length()) return ret;
+
+    for (auto i = 0; i < m_logBuf.length(); ++i)
+    {
+        ret.setProperty(i, m_logBuf.at(i));
+    }
+
+    m_logBuf.clear();
+    return ret;
+}
+
+void Global::onSpdlogLog(const QString &in)
+{
+    std::unique_lock<std::mutex> lock(m_logMutex);
+    m_logBuf.push_back(in);
+}
 
 } // namespace GUI
 

@@ -33,86 +33,19 @@ namespace GUI
 {
 
 ClientConfigThread::ClientConfigThread(QObject *parent) :
-    QThread(parent),
-    m_settings("STQGuiSettings",
-               QSettings::NativeFormat)
+    QThread(parent)
 {
     m_isInit.store(false, std::memory_order_relaxed);
     m_mode.store(INIT, std::memory_order_relaxed);
 }
 
 ClientConfigThread::~ClientConfigThread()
-{
-    m_settings.setValue("Server List", m_data);
-}
+{}
 
 void ClientConfigThread::init()
 {
     m_mode.store(INIT, std::memory_order_relaxed);
     start();
-}
-
-QString ClientConfigThread::name(int in)
-{
-    if (in < 0 || in > (m_data.length() - 1))
-    {
-        return "";
-    }
-
-    return m_data.at(in).toMap()["name"].toString();
-}
-
-QString ClientConfigThread::ip(int in)
-{
-    if (in < 0 || in > (m_data.length() - 1))
-    {
-        return "";
-    }
-
-    return m_data.at(in).toMap()["ip"].toString();
-}
-
-int ClientConfigThread::port(int in)
-{
-    if (in < 0 || in > (m_data.length() - 1))
-    {
-        return 0;
-    }
-
-    return m_data.at(in).toMap()["port"].toInt();
-}
-
-bool ClientConfigThread::saveSetting(const QString &name,
-                               const QString &ip,
-                               const int port)
-{
-    if (Model::Utils::verifyIP(ip.toUtf8().toStdString()))
-    {
-        return false;
-    }
-
-    if (port < 0 || port > 65535)
-    {
-        return false;
-    }
-
-    QMap<QString, QVariant> map;
-    map["name"] = name;
-    map["ip"] = ip;
-    map["port"] = port;
-    m_data.push_back(map);
-
-    return true;
-}
-
-QList<QVariant> ClientConfigThread::data() const
-{
-    return m_data;
-}
-
-void ClientConfigThread::setData(const QList<QVariant> &in)
-{
-    m_data = in;
 }
 
 void ClientConfigThread::run()
@@ -133,30 +66,34 @@ void ClientConfigThread::initImpl()
     QList<QString> keys = {"name", "ip", "port"};
     QList<int> values = {QMetaType::QString, QMetaType::QString, QMetaType::Int};
     QMap<QString, QVariant> map;
-    m_data = m_settings.value("Server List", QList<QVariant>()).toList();
-    if (m_data.length())
+    QSettings settings;
+    QList<QVariant> data = settings.value("Server List", QList<QVariant>()).toList();
+
+    if (data.length())
     {
-        for (auto i = 0; i < m_data.length(); ++i)
+        for (auto i = 0; i < data.length(); ++i)
         {
-            if (m_data.at(i).userType() != QMetaType::QVariantMap)
+            if (data.at(i).userType() != QMetaType::QVariantMap)
             {
-                m_data.clear();
+                data.clear();
                 break;
             }
 
-            map = m_data.at(i).toMap();
+            map = data.at(i).toMap();
 
             for (int j = 0; j < 3; ++j)
             {
                 if (map[keys[j]].userType() != values[j])
                 {
-                    m_data.clear();
+                    data.clear();
+                    spdlog::warn("{}:{} Type failed", __FILE__, __LINE__);
                     goto typeFailed;
                 }
 
                 if (Model::Utils::verifyIP(map["ip"].toString().toUtf8().toStdString()))
                 {
-                    m_data.clear();
+                    data.clear();
+                    spdlog::warn("{}:{} Type failed", __FILE__, __LINE__);
                     goto typeFailed;
                 }
             }
@@ -168,7 +105,7 @@ typeFailed:
     if (!Controller::Global::guiGlobal.isNotMobile())
     {
         m_isInit.store(true, std::memory_order_relaxed);
-        emit InitDone();
+        emit InitDone(data);
         return;
     }
 
@@ -184,7 +121,7 @@ typeFailed:
     }
 
     m_isInit.store(true, std::memory_order_relaxed);
-    emit InitDone();
+    emit InitDone(data);
 }
 
 void ClientConfigThread::connectToServer()

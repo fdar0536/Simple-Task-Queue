@@ -29,7 +29,8 @@
 
 #include "spdlog/sinks/base_sink.h"
 
-#include "main.hpp"
+#include "controller/global/init.hpp"
+#include "global.hpp"
 
 namespace Controller
 {
@@ -43,10 +44,8 @@ class LogSink : public spdlog::sinks::base_sink<Mutex>
 
 public:
 
-    LogSink(Main *in)
-    {
-        m_main = in;
-    }
+    LogSink()
+    {}
 
     ~LogSink()
     {
@@ -61,16 +60,12 @@ protected:
         spdlog::sinks::base_sink<Mutex>::formatter_->format(msg, formatted);
         spdlog::string_view_t str = spdlog::string_view_t(formatted.data(),
                                                           formatted.size());
-        m_main->onSpdlogLog(QString::fromUtf8(
-                                str.data(),
-                                static_cast<int>(str.size())).trimmed());
+        Controller::Global::guiGlobal.onSpdlogLog(
+            QString::fromUtf8(str.data(),
+                              static_cast<int>(str.size())).trimmed());
     }
 
     void flush_() override {}
-
-private:
-
-    Main *m_main;
 };
 
 #include "spdlog/details/null_mutex.h"

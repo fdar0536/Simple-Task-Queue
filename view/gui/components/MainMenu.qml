@@ -53,8 +53,14 @@ Drawer
         {
             ListElement
             {
-                name: qsTr("Configuration");
-                source: "qrc:/view/gui/pages/Config.qml"
+                name: qsTr("Client config");
+                source: "qrc:/view/gui/pages/ClientConfig.qml"
+            }
+
+            ListElement
+            {
+                name: qsTr("Server config");
+                source: "qrc:/view/gui/pages/ServerConfig.qml"
             }
         }
 

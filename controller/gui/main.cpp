@@ -98,12 +98,6 @@ bool Main::init()
 #endif
 }
 
-
-void Main::onSpdlogLog(const QString &in)
-{
-    emit LogEmitted(in);
-}
-
 // public slots
 void Main::AboutQt()
 {
@@ -212,7 +206,7 @@ void Main::sqliteInit()
 void Main::spdlogInit()
 {
     m_defaultLogger = spdlog::default_logger();
-    auto sink = std::make_shared<LogSink_mt>(this);
+    auto sink = std::make_shared<LogSink_mt>();
     auto logger = std::make_shared<spdlog::logger>("STQLogger", sink);
 
     spdlog::set_default_logger(logger);
