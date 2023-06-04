@@ -20,12 +20,12 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_CLIENTCONFIG_HPP_
-#define _CONTROLLER_GUI_CLIENTCONFIG_HPP_
-
-#include <atomic>
+#ifndef _CONTROLLER_GUI_CLIENTCONFIGLIST_HPP_
+#define _CONTROLLER_GUI_CLIENTCONFIGLIST_HPP_
 
 #include "QObject"
+
+class QJSValue;
 
 namespace Controller
 {
@@ -37,7 +37,9 @@ class ClientConfigList : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(int dataCount READ dataCount CONSTANT)
+    Q_PROPERTY(int  dataPages READ dataPages CONSTANT)
+    Q_PROPERTY(int  pageIndex READ pageIndex CONSTANT)
+    Q_PROPERTY(bool isNoData  READ isNoData  CONSTANT)
 
 public:
 
@@ -45,7 +47,28 @@ public:
 
     ~ClientConfigList();
 
-    Q_INVOKABLE void
+    static uint_fast8_t data(QString &,
+                             QMap<QString, QVariant> &);
+
+    Q_INVOKABLE QJSValue data();
+
+    int dataPages() const;
+
+    int pageIndex() const;
+
+    bool isNoData() const;
+
+    static void updateData();
+
+    Q_INVOKABLE void updateDataQml();
+
+    static void setData(const QString &, const QMap<QString, QVariant> &);
+
+    static void setData(const QHash<QString, QVariant> &);
+
+    Q_INVOKABLE void setLastPage(int, int);
+
+    Q_INVOKABLE void deleteData(const QString &);
 
 }; // end class ClientConfig
 
@@ -53,4 +76,4 @@ public:
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GUI_CLIENTCONFIG_HPP_
+#endif // _CONTROLLER_GUI_CLIENTCONFIGLIST_HPP_

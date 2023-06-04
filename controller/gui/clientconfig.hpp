@@ -25,6 +25,7 @@
 
 #include <atomic>
 
+#include "QMap"
 #include "QThread"
 
 namespace Controller
@@ -37,7 +38,9 @@ class ClientConfig : public QThread
 {
     Q_OBJECT
 
-    Q_PROPERTY(int dataCount READ dataCount CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(QString ip   READ ip   CONSTANT)
+    Q_PROPERTY(int     port READ port CONSTANT)
 
 public:
 
@@ -45,23 +48,21 @@ public:
 
     ~ClientConfig();
 
-    int dataCount() const;
-
     Q_INVOKABLE bool init();
 
     Q_INVOKABLE int logLevel() const;
 
     Q_INVOKABLE int setLogLevel(int);
 
-    Q_INVOKABLE QString name(int);
+    QString name();
 
-    Q_INVOKABLE QString ip(int);
+    QString ip();
 
-    Q_INVOKABLE int port(int);
+    int port();
 
     Q_INVOKABLE bool saveSetting(const QString &, const QString &, const int);
 
-    static QList<QVariant> *data();
+    Q_INVOKABLE void updateData();
 
     void run() override;
 
@@ -95,6 +96,10 @@ private:
     std::atomic<Mode> m_mode;
 
     std::atomic<bool> m_isRunning;
+
+    QString m_dataName;
+
+    QMap<QString, QVariant> m_data;
 }; // end class ClientConfig
 
 } // namespace GUI

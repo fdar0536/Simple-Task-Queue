@@ -25,6 +25,7 @@
 #include "controller/global/init.hpp"
 #include "model/utils.hpp"
 #include "global.hpp"
+#include "clientconfiglist.hpp"
 #include "clientconfig.hpp"
 
 namespace Controller
@@ -32,8 +33,6 @@ namespace Controller
 
 namespace GUI
 {
-
-static QList<QVariant> m_data;
 
 ClientConfig::ClientConfig(QObject *parent) :
     QThread(parent)
@@ -43,18 +42,7 @@ ClientConfig::ClientConfig(QObject *parent) :
 }
 
 ClientConfig::~ClientConfig()
-{
-    if (m_data.length())
-    {
-        QSettings s;
-        s.setValue("Server List", m_data);
-    }
-}
-
-int ClientConfig::dataCount() const
-{
-    return m_data.length();
-}
+{}
 
 bool ClientConfig::init()
 {
@@ -89,34 +77,19 @@ int ClientConfig::setLogLevel(int in)
     return in;
 }
 
-QString ClientConfig::name(int in)
+QString ClientConfig::name()
 {
-    if (in < 0 || in > (m_data.length() - 1))
-    {
-        return "";
-    }
-
-    return m_data.at(in).toMap()["name"].toString();
+    return m_dataName;
 }
 
-QString ClientConfig::ip(int in)
+QString ClientConfig::ip()
 {
-    if (in < 0 || in > (m_data.length() - 1))
-    {
-        return "";
-    }
-
-    return m_data.at(in).toMap()["ip"].toString();
+    return m_data["ip"].toString();
 }
 
-int ClientConfig::port(int in)
+int ClientConfig::port()
 {
-    if (in < 0 || in > (m_data.length() - 1))
-    {
-        return 0;
-    }
-
-    return m_data.at(in).toMap()["port"].toInt();
+    return m_data["port"].toInt();
 }
 
 bool ClientConfig::saveSetting(const QString &name,
@@ -134,17 +107,22 @@ bool ClientConfig::saveSetting(const QString &name,
     }
 
     QMap<QString, QVariant> map;
-    map["name"] = name;
     map["ip"] = ip;
     map["port"] = port;
-    m_data.push_back(map);
 
+    ClientConfigList::setData(name, map);
     return true;
 }
 
-QList<QVariant> *ClientConfig::data()
+void ClientConfig::updateData()
 {
-    return &m_data;
+    ClientConfigList::updateData();
+    if (ClientConfigList::data(m_dataName, m_data))
+    {
+        m_dataName = "";
+        m_data.clear();
+        return;
+    }
 }
 
 void ClientConfig::run()
@@ -158,25 +136,24 @@ void ClientConfig::run()
 void ClientConfig::initImpl()
 {
     // verify settings
-    QList<QString> keys = {"name", "ip", "port"};
-    QList<int> values = {QMetaType::QString, QMetaType::QString, QMetaType::Int};
+    QList<QString> keys = {"ip", "port"};
+    QList<int> values = {QMetaType::QString, QMetaType::Int};
     QMap<QString, QVariant> map;
     QSettings settings;
-    QList<QVariant> data = settings.value("Server List", QList<QVariant>()).toList();
+    QHash<QString, QVariant> data = settings.value("Server List", QHash<QString, QVariant>()).toHash();
 
-    if (data.length())
+    if (data.count())
     {
-        for (auto i = 0; i < data.length(); ++i)
+        for (auto it = data.begin(); it != data.end(); ++it)
         {
-            if (data.at(i).userType() != QMetaType::QVariantMap)
+            if (it.value().userType() != QMetaType::QVariantMap)
             {
                 data.clear();
                 break;
             }
 
-            map = data.at(i).toMap();
-
-            for (int j = 0; j < 3; ++j)
+            map = it.value().toMap();
+            for (int j = 0; j < 2; ++j)
             {
                 if (map[keys[j]].userType() != values[j])
                 {
@@ -184,16 +161,19 @@ void ClientConfig::initImpl()
                     spdlog::warn("{}:{} Type failed", __FILE__, __LINE__);
                     goto typeFailed;
                 }
+            }
 
-                if (Model::Utils::verifyIP(map["ip"].toString().toUtf8().toStdString()))
-                {
-                    data.clear();
-                    spdlog::warn("{}:{} Type failed", __FILE__, __LINE__);
-                    goto typeFailed;
-                }
+            if (Model::Utils::verifyIP(map["ip"].toString().toUtf8().toStdString()))
+            {
+                data.clear();
+                spdlog::warn("{}:{} Type failed", __FILE__, __LINE__);
+                goto typeFailed;
             }
         } // end for (auto i = 0; i < m_data.length(); ++i)
-    } // end if (m_data.length())
+    } // end if (data.count())
+
+    ClientConfigList::setData(data);
+    ClientConfigList::updateData();
 
 typeFailed:
 
