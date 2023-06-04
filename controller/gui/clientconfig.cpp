@@ -21,6 +21,7 @@
  */
 
 #include "QCoreApplication"
+#include "QSettings"
 #include "controller/global/init.hpp"
 #include "model/utils.hpp"
 #include "global.hpp"
@@ -32,15 +33,17 @@ namespace Controller
 namespace GUI
 {
 
+static QList<QVariant> m_data;
+
 ClientConfig::ClientConfig(QObject *parent) :
-    QAbstractItemModel(parent)
+    QThread(parent)
 {
     m_isInit.store(false, std::memory_order_relaxed);
+    m_isRunning.store(false, std::memory_order_relaxed);
 }
 
 ClientConfig::~ClientConfig()
 {
-    if (m_thread) delete m_thread;
     if (m_data.length())
     {
         QSettings s;
@@ -61,25 +64,8 @@ bool ClientConfig::init()
         return true;
     }
 
-    m_thread = new (std::nothrow) ClientConfigThread;
-    if (!m_thread)
-    {
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return false;
-    }
-
-    connect(m_thread,
-            &ClientConfigThread::InitDone,
-            this,
-            &ClientConfig::onThreadInitDone);
-
-    connect(m_thread,
-            &ClientConfigThread::ServerConnected,
-            this,
-            &ClientConfig::ServerConnected);
-
-    m_thread->init();
-    m_isInit.store(true, std::memory_order_relaxed);
+    m_mode.store(INIT, std::memory_order_relaxed);
+    start();
     return true;
 }
 
@@ -156,48 +142,85 @@ bool ClientConfig::saveSetting(const QString &name,
     return true;
 }
 
-int ClientConfig::rowCount(const QModelIndex &) const
+QList<QVariant> *ClientConfig::data()
 {
-    return m_data.length();
+    return &m_data;
 }
 
-int ClientConfig::columnCount(const QModelIndex &) const
+void ClientConfig::run()
 {
-    return 2;
+    m_isRunning.store(true, std::memory_order_relaxed);
+    (this->*m_handler[m_mode])();
+    m_isRunning.store(false, std::memory_order_relaxed);
 }
 
-QVariant ClientConfig::data(const QModelIndex &index, int role) const
+// private member functions
+void ClientConfig::initImpl()
 {
-    if (index.row() < 0 ||
-        index.row() >= m_data.length() ||
-        index.column() < 0 ||
-        index.column() > 2)
-        return QVariant();
+    // verify settings
+    QList<QString> keys = {"name", "ip", "port"};
+    QList<int> values = {QMetaType::QString, QMetaType::QString, QMetaType::Int};
+    QMap<QString, QVariant> map;
+    QSettings settings;
+    QList<QVariant> data = settings.value("Server List", QList<QVariant>()).toList();
 
-    if (role == IdRole)
-        return index.row();
-    else if (role == NameRole)
-        return m_data.at(index.row()).toMap()["name"];
-    return QVariant();
-}
+    if (data.length())
+    {
+        for (auto i = 0; i < data.length(); ++i)
+        {
+            if (data.at(i).userType() != QMetaType::QVariantMap)
+            {
+                data.clear();
+                break;
+            }
 
-QModelIndex ClientConfig::index(int, int, const QModelIndex &) const
-{
-    return QModelIndex();
-}
+            map = data.at(i).toMap();
 
+            for (int j = 0; j < 3; ++j)
+            {
+                if (map[keys[j]].userType() != values[j])
+                {
+                    data.clear();
+                    spdlog::warn("{}:{} Type failed", __FILE__, __LINE__);
+                    goto typeFailed;
+                }
 
-QModelIndex ClientConfig::parent(const QModelIndex &) const
-{
-    return QModelIndex();
-}
+                if (Model::Utils::verifyIP(map["ip"].toString().toUtf8().toStdString()))
+                {
+                    data.clear();
+                    spdlog::warn("{}:{} Type failed", __FILE__, __LINE__);
+                    goto typeFailed;
+                }
+            }
+        } // end for (auto i = 0; i < m_data.length(); ++i)
+    } // end if (m_data.length())
 
-// private slots
-void ClientConfig::onThreadInitDone(const QList<QVariant> &config)
-{
-    m_data = config;
+typeFailed:
+
+    if (!Controller::Global::guiGlobal.isNotMobile())
+    {
+        m_isInit.store(true, std::memory_order_relaxed);
+        emit InitDone();
+        return;
+    }
+
+    uint_fast8_t count(0);
+    while (!Controller::Global::guiGlobal.isLocalAvailable())
+    {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+        ++count;
+        if (count > 5)
+        {
+            break;
+        }
+    }
+
+    m_isInit.store(true, std::memory_order_relaxed);
     emit InitDone();
 }
+
+void ClientConfig::connectToServerImpl()
+{}
 
 } // namespace GUI
 

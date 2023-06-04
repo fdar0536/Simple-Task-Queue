@@ -25,9 +25,7 @@
 
 #include <atomic>
 
-#include "QAbstractItemModel"
-
-#include "clientconfigthread.hpp"
+#include "QThread"
 
 namespace Controller
 {
@@ -35,7 +33,7 @@ namespace Controller
 namespace GUI
 {
 
-class ClientConfig : public QAbstractItemModel
+class ClientConfig : public QThread
 {
     Q_OBJECT
 
@@ -63,16 +61,9 @@ public:
 
     Q_INVOKABLE bool saveSetting(const QString &, const QString &, const int);
 
-    // pure virtual functions
-    Q_INVOKABLE int rowCount(const QModelIndex & = QModelIndex()) const override;
+    static QList<QVariant> *data();
 
-    Q_INVOKABLE int columnCount(const QModelIndex & = QModelIndex()) const override;
-
-    Q_INVOKABLE QVariant data(const QModelIndex &, int = Qt::DisplayRole) const override;
-
-    QModelIndex index(int, int, const QModelIndex & = QModelIndex()) const override;
-
-    QModelIndex parent(const QModelIndex &) const override;
+    void run() override;
 
 signals:
 
@@ -80,23 +71,30 @@ signals:
 
     void ServerConnected();
 
-private slots:
-
-    void onThreadInitDone(const QList<QVariant> &);
-
 private:
-
-    enum ConfigRoles
-    {
-        IdRole = Qt::UserRole + 1,
-        NameRole
-    };
 
     std::atomic<bool> m_isInit;
 
-    ClientConfigThread *m_thread;
+    void initImpl();
 
-    QList<QVariant> m_data;
+    void connectToServerImpl();
+
+    typedef void (ClientConfig::*Handler)();
+
+    typedef enum Mode
+    {
+        INIT, CONNECT
+    } Mode;
+
+    Handler m_handler[2] =
+    {
+        &ClientConfig::initImpl,
+        &ClientConfig::connectToServerImpl
+    };
+
+    std::atomic<Mode> m_mode;
+
+    std::atomic<bool> m_isRunning;
 }; // end class ClientConfig
 
 } // namespace GUI

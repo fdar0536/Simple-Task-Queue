@@ -27,6 +27,7 @@
 #include "windows.h"
 #endif
 
+#include "QSettings"
 #include "spdlog/spdlog.h"
 
 #include "controller/global/init.hpp"

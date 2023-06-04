@@ -20,13 +20,12 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_CLIENTCONFIGTHREAD_HPP_
-#define _CONTROLLER_GUI_CLIENTCONFIGTHREAD_HPP_
+#ifndef _CONTROLLER_GUI_CLIENTCONFIG_HPP_
+#define _CONTROLLER_GUI_CLIENTCONFIG_HPP_
 
 #include <atomic>
 
-#include "QSettings"
-#include "QThread"
+#include "QObject"
 
 namespace Controller
 {
@@ -34,53 +33,24 @@ namespace Controller
 namespace GUI
 {
 
-class ClientConfigThread : public QThread
+class ClientConfigList : public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(int dataCount READ dataCount CONSTANT)
+
 public:
 
-    ClientConfigThread(QObject * = nullptr);
+    ClientConfigList(QObject * = nullptr);
 
-    ~ClientConfigThread();
+    ~ClientConfigList();
 
-    Q_INVOKABLE void init();
+    Q_INVOKABLE void
 
-    // pure virtual functions
-    void run() override;
-
-signals:
-
-    void InitDone(const QList<QVariant> &);
-
-    void ServerConnected();
-
-private:
-
-    std::atomic<bool> m_isInit;
-
-    void initImpl();
-
-    void connectToServer();
-
-    typedef void (ClientConfigThread::*Handler)();
-
-    typedef enum Mode
-    {
-        INIT, CONNECT
-    } Mode;
-
-    Handler m_handler[2] =
-    {
-        &ClientConfigThread::initImpl,
-        &ClientConfigThread::connectToServer
-    };
-
-    std::atomic<Mode> m_mode;
 }; // end class ClientConfig
 
 } // namespace GUI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GUI_CLIENTCONFIGTHREAD_HPP_
+#endif // _CONTROLLER_GUI_CLIENTCONFIG_HPP_

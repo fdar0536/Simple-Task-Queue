@@ -54,7 +54,7 @@ ApplicationWindow
     MainMenu
     {
         id: mainMenu
-        width: Math.min(root.width, root.height) / 3 * 2
+        width: Math.min(root.width, root.height) / 3
         height: root.height
     }
 
