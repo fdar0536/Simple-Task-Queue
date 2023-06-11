@@ -186,7 +186,7 @@ void writeConsole(const std::string &in)
     wchar_t buf[4096] = {};
     if (utf8ToUtf16(in, buf, 4096))
     {
-        spdlog::error("{}:{} Fail to input", __FILE__, __LINE__);
+        spdlog::error("{}:{} Fail to output", __FILE__, __LINE__);
         return;
     }
 
