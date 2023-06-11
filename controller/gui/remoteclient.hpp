@@ -40,12 +40,11 @@ class RemoteClient : public QThread
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString name      READ name      CONSTANT)
-    Q_PROPERTY(QString ip        READ ip        CONSTANT)
-    Q_PROPERTY(int     port      READ port      CONSTANT)
-    Q_PROPERTY(int     dataPages READ dataPages CONSTANT)
-    Q_PROPERTY(int     pageIndex READ pageIndex CONSTANT)
-    Q_PROPERTY(bool    isNoData  READ isNoData  CONSTANT)
+    Q_PROPERTY(QString name        READ name        CONSTANT)
+    Q_PROPERTY(QString ip          READ ip          CONSTANT)
+    Q_PROPERTY(int     port        READ port        CONSTANT)
+    Q_PROPERTY(bool    hasPrevPage READ hasPrevPage CONSTANT)
+    Q_PROPERTY(bool    hasNextPage READ hasNextPage CONSTANT)
 
 public:
 
@@ -65,11 +64,13 @@ public:
 
     int port() const;
 
-    int dataPages() const;
+    bool hasPrevPage() const;
 
-    int pageIndex() const;
+    Q_INVOKABLE bool prevPage();
 
-    bool isNoData() const;
+    bool hasNextPage() const;
+
+    Q_INVOKABLE bool nextPage();
 
     Q_INVOKABLE bool saveSetting(const QString &, const QString &, const int);
 
@@ -77,7 +78,7 @@ public:
 
     Q_INVOKABLE QJSValue data();
 
-    Q_INVOKABLE void setLastPage(int, int);
+    Q_INVOKABLE bool setLastDataIndex(int);
 
     Q_INVOKABLE void deleteData(const QString &);
 

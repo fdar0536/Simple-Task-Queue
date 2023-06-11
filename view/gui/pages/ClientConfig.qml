@@ -40,6 +40,7 @@ Page
     {
         busyIndicator.running = false;
         updateRemoteList();
+        updatePrevNextBtn();
         if (!Global.isNotMobile)
         {
             useRemote.checkState = Qt.Checked;
@@ -57,12 +58,16 @@ Page
         }
     }
 
-    function updateRemoteList()
+    function updateRemoteInfo()
     {
         remoteName.text = ctrl.name;
         remoteHost.text = ctrl.ip;
         remotePort.value = ctrl.port;
+    }
 
+    function updateRemoteList()
+    {
+        updateRemoteInfo();
         var data = ctrl.data();
         remoteListModel.clear();
         if (data.length <= 0)
@@ -77,6 +82,12 @@ Page
         }
 
         remoteList.currentIndex = 0;
+    }
+
+    function updatePrevNextBtn()
+    {
+        prevBtn.enabled = ctrl.hasPrevPage;
+        nextBtn.enabled = ctrl.hasNextPage;
     }
 
     MsgDialog
@@ -155,8 +166,17 @@ Page
         enabled: false
         onClicked:
         {
-            remoteConfig.enabled =
-                    (useRemote.checkState === Qt.Checked);
+            var isRemote = (useRemote.checkState === Qt.Checked);
+            remoteConfig.enabled = isRemote;
+
+            if (isRemote)
+            {
+                Global.backendMode = 0; // grpc
+            }
+            else
+            {
+                Global.backendMode = 1; // local
+            }
         }
     }
 
@@ -189,6 +209,17 @@ Page
                     model: ListModel
                     {
                         id: remoteListModel
+                    }
+
+                    onCurrentIndexChanged:
+                    {
+                        if (currentIndex === -1) return;
+                        var res = ctrl.setLastDataIndex(currentIndex);
+                        updateRemoteInfo();
+                        if (!res)
+                        {
+                            msgDialog.error(qsTr("Fail to set last data index"));
+                        }
                     }
                 }
             }
@@ -229,16 +260,44 @@ Page
             {
                 ToolTipButton
                 {
+                    id: prevBtn
                     text: qsTr("Prev")
                     toolTip: qsTr("Previous page of profile")
                     enabled: false
+
+                    onClicked:
+                    {
+                        var res = ctrl.prevPage();
+                        updatePrevNextBtn();
+                        if (!res)
+                        {
+                            msgDialog.error(qsTr("Fail to switch to previous page"));
+                            return;
+                        }
+
+                        updateRemoteList();
+                    }
                 }
 
                 ToolTipButton
                 {
+                    id: nextBtn
                     text: qsTr("Next")
                     toolTip: qsTr("Next page of profile")
                     enabled: false
+
+                    onClicked:
+                    {
+                        var res = ctrl.nextPage();
+                        updatePrevNextBtn();
+                        if (!res)
+                        {
+                            msgDialog.error(qsTr("Fail to switch to next page"));
+                            return;
+                        }
+
+                        updateRemoteList();
+                    }
                 }
 
                 Button

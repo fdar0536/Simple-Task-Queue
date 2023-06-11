@@ -118,19 +118,54 @@ int RemoteClient::port() const
     return m_data["port"].toInt();
 }
 
-int RemoteClient::dataPages() const
+bool RemoteClient::hasPrevPage() const
 {
-    return _state.totalPages;
+    return _state.lastPage; // if last page == 0, then here has no prev page
 }
 
-int RemoteClient::pageIndex() const
+bool RemoteClient::prevPage()
 {
-    return _state.lastPage;
+    if (!hasPrevPage())
+    {
+        return false;
+    }
+
+    --_state.lastPage;
+    _state.lastDataIndex = 0;
+
+    if (dataInternal())
+    {
+        m_dataName = "";
+        m_data.clear();
+        return false;
+    }
+
+    return true;
 }
 
-bool RemoteClient::isNoData() const
+bool RemoteClient::hasNextPage() const
 {
-    return _state.dataCache.empty();
+    return (_state.lastPage + 1) < _state.totalPages;
+}
+
+bool RemoteClient::nextPage()
+{
+    if (!hasNextPage())
+    {
+        return false;
+    }
+
+    ++_state.lastPage;
+    _state.lastDataIndex = 0;
+
+    if (dataInternal())
+    {
+        m_dataName = "";
+        m_data.clear();
+        return false;
+    }
+
+    return true;
 }
 
 bool RemoteClient::saveSetting(const QString &name,
@@ -217,17 +252,23 @@ QJSValue RemoteClient::data()
     return ret;
 }
 
-void RemoteClient::setLastPage(int pageIndex, int index)
+bool RemoteClient::setLastDataIndex(int index)
 {
-    int dataIndex = DATA_INDEX(pageIndex, index);
-    if (IS_NOT_VALID_INDEX(dataIndex))
+    if (index >= COUNT_PER_PAGE || index < 0)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, "invalid index");
-        return;
+        return false;
     }
 
-    _state.lastPage = pageIndex;
     _state.lastDataIndex = index;
+    if (dataInternal())
+    {
+        m_dataName = "";
+        m_data.clear();
+        return false;
+    }
+
+    return true;
 }
 
 void RemoteClient::deleteData(const QString &name)
