@@ -82,6 +82,7 @@ Page
         }
 
         remoteList.currentIndex = 0;
+        deleteBtn.enabled = true;
     }
 
     function updatePrevNextBtn()
@@ -325,6 +326,24 @@ Page
 
                         ctrl.updateData();
                         updateRemoteList();
+                        updatePrevNextBtn();
+                    }
+                }
+
+                ToolTipButton
+                {
+                    id: deleteBtn
+                    text: qsTr("Delete")
+                    toolTip: qsTr("Delete current profile")
+                    enabled: false
+
+                    onClicked:
+                    {
+                        deleteBtn.enabled = false;
+                        ctrl.deleteData(remoteList.currentText);
+                        ctrl.updateData();
+                        updateRemoteList();
+                        updatePrevNextBtn();
                     }
                 }
 

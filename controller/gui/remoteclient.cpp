@@ -273,7 +273,7 @@ bool RemoteClient::setLastDataIndex(int index)
 
 void RemoteClient::deleteData(const QString &name)
 {
-    auto it = _state.data.find(name);
+    QHash<QString, QVariant>::const_iterator it = _state.data.find(name);
     if (it == _state.data.end())
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, "invalid name");
