@@ -196,7 +196,7 @@ Page
 
                         ctrl.setServerPort(serverPort.value);
 
-                        if (ctrl.startServer())
+                        if (!ctrl.startServer())
                         {
                             msgDialog.error(qsTr("Fail to start server"));
                             return;

@@ -66,6 +66,7 @@ void GRPCConnect::startConnect(ErrMsg &msg,
     }
 
     std::string ip = target;
+    ip += ":";
     ip += std::to_string(port);
     std::unique_ptr<stq::Access::Stub> stub;
 
