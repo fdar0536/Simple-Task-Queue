@@ -312,7 +312,7 @@ bool RemoteClient::startConnect(const QString &ip, const int port)
 void RemoteClient::run()
 {
     m_isRunning.store(true, std::memory_order_relaxed);
-    (this->*m_handler[m_mode])();
+    (this->*m_handler[m_mode.load(std::memory_order_relaxed)])();
     m_isRunning.store(false, std::memory_order_relaxed);
 }
 
