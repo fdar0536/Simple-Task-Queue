@@ -86,6 +86,11 @@ public:
 
     int backendModeQml() const;
 
+    void setConnectToken(BackendMode, std::shared_ptr<Model::DAO::IConnect> &);
+
+    std::shared_ptr<Model::DAO::IConnect>
+    connectToken() const;
+
     void
     setQueueList(BackendMode, std::shared_ptr<Model::DAO::IQueueList> &);
 
@@ -128,9 +133,15 @@ private:
 #ifndef STQ_MOBILE
     BackendMode m_backendMode;
 
+    std::shared_ptr<Model::DAO::IConnect>
+        m_sqliteConnect;
+
     std::shared_ptr<Model::DAO::IQueue>
         m_sqliteQueue;
 #endif
+
+    std::shared_ptr<Model::DAO::IConnect>
+        m_grpcConnect;
 
     std::shared_ptr<Model::DAO::IQueueList>
         m_grpcQueueList;

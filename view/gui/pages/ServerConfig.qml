@@ -188,13 +188,13 @@ Page
                     text: qsTr("Start")
                     onClicked:
                     {
-                        if (!ctrl.serverIP(serverIp.text))
+                        if (!ctrl.setServerIP(serverIp.text))
                         {
                             msgDialog.error(qsTr("Invalid ip"));
                             return;
                         }
 
-                        ctrl.serverPort(serverPort.value);
+                        ctrl.setServerPort(serverPort.value);
 
                         if (ctrl.startServer())
                         {

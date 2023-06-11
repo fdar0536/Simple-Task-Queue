@@ -31,11 +31,14 @@ import "../components"
 
 Page
 {
+    id: root
+
     CTRL.RemoteClient
     {
         id: ctrl
     }
 
+    // functions
     function onCtrlInitDone()
     {
         busyIndicator.running = false;
@@ -43,6 +46,7 @@ Page
         updatePrevNextBtn();
         if (!Global.isNotMobile)
         {
+            // is mobile
             useRemote.checkState = Qt.Checked;
             useRemote.enabled = false;
             remoteConfig.enabled = true;
@@ -51,7 +55,17 @@ Page
 
         if (Global.isLocalAvailable)
         {
-            useRemote.checkState = Qt.Unchecked;
+            if (Global.backendMode === 0)
+            {
+                // grpc
+                useRemote.checkState = Qt.Checked;
+            }
+            else
+            {
+                // local
+                useRemote.checkState = Qt.Unchecked;
+            }
+
             useRemote.enabled = true;
             remoteConfig.enabled = false;
             return;
@@ -91,6 +105,21 @@ Page
         nextBtn.enabled = ctrl.hasNextPage;
     }
 
+    function onCtrlServerConnectDone(res)
+    {
+        busyIndicator.running = false;
+        root.enabled = true;
+        if (res)
+        {
+            msgDialog.info(qsTr("Done"),
+                           qsTr("Connect to server successfully"));
+        }
+        else
+        {
+            msgDialog.error(qsTr("Fail to connect to Server"));
+        }
+    }
+
     MsgDialog
     {
         id: msgDialog
@@ -99,6 +128,7 @@ Page
     Component.onCompleted:
     {
         ctrl.InitDone.connect(onCtrlInitDone);
+        ctrl.ServerConnectDone.connect(onCtrlServerConnectDone);
         if (!ctrl.init())
         {
             msgDialog.error(qsTr("Fail to initialize"));
@@ -322,6 +352,7 @@ Page
                                               remotePort.value))
                         {
                             msgDialog.error(qsTr("Invalid ip or port"));
+                            return;
                         }
 
                         ctrl.updateData();
@@ -350,6 +381,17 @@ Page
                 Button
                 {
                     text: qsTr("Connect")
+                    onClicked:
+                    {
+                        if (!ctrl.startConnect(remoteHost.text, remotePort.value))
+                        {
+                            msgDialog.error(qsTr("Fail to switch to next page"));
+                            return;
+                        }
+
+                        root.enabled = false;
+                        busyIndicator.running = true;
+                    }
                 }
             } // end Row
         } // end colunm

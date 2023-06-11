@@ -47,4 +47,13 @@ MessageDialog
         root.accepted.connect(() => { root.close() })
         root.open();
     }
+
+    function info(title, msg)
+    {
+        root.buttons = MessageDialog.Ok;
+        root.title = title;
+        root.text = msg;
+        root.accepted.connect(() => { root.close() })
+        root.open();
+    }
 }

@@ -82,13 +82,15 @@ public:
 
     Q_INVOKABLE void deleteData(const QString &);
 
+    Q_INVOKABLE bool startConnect(const QString &, const int);
+
     void run() override;
 
 signals:
 
     void InitDone();
 
-    void ServerConnected();
+    void ServerConnectDone(bool);
 
 private:
 
@@ -118,6 +120,10 @@ private:
     QMap<QString, QVariant> m_data;
 
     uint_fast8_t dataInternal();
+
+    std::string m_targetIP;
+
+    int_fast32_t m_targetPort;
 
 }; // end class ClientConfig
 

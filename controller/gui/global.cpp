@@ -102,6 +102,7 @@ void Global::setBackendMode(BackendMode in)
     return;
 #else
     m_backendMode = in;
+    m_grpcConnect = nullptr;
 #endif
 }
 
@@ -127,6 +128,7 @@ void Global::setBackendModeQml(int in)
     }
 
     m_backendMode = static_cast<BackendMode>(in);
+    m_grpcConnect = nullptr;
 #endif
 }
 
@@ -136,6 +138,50 @@ int Global::backendModeQml() const
     return static_cast<int>(GRPC);
 #else
     return static_cast<int>(m_backendMode);
+#endif
+}
+
+void
+Global::setConnectToken(BackendMode mode,
+                        std::shared_ptr<Model::DAO::IConnect> &in)
+{
+#ifdef STQ_MOBILE
+    UNUSED(mode);
+    m_grpcConnect = in;
+#else
+    switch(mode)
+    {
+    case GRPC:
+    {
+        m_grpcConnect = in;
+        break;
+    }
+    case SQLITE:
+    {
+        m_sqliteConnect = in;
+        break;
+    }
+    }
+#endif
+}
+
+std::shared_ptr<Model::DAO::IConnect>
+Global::connectToken() const
+{
+#ifdef STQ_MOBILE
+    return m_grpcConnect;
+#else
+    switch(m_backendMode)
+    {
+    case GRPC:
+    {
+        return m_grpcConnect;
+    }
+    case SQLITE:
+    {
+        return m_sqliteConnect;
+    }
+    }
 #endif
 }
 

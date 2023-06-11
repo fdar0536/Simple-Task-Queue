@@ -22,6 +22,11 @@
 
 #include "QCoreApplication"
 #include "QSettings"
+
+#include "model/dao/grpcconnect.hpp"
+#include "model/dao/grpcqueuelist.hpp"
+#include "model/dao/grpcqueue.hpp"
+
 #include "controller/global/init.hpp"
 #include "model/utils.hpp"
 #include "global.hpp"
@@ -284,6 +289,26 @@ void RemoteClient::deleteData(const QString &name)
     _state.dataIsDirty = true;
 }
 
+bool RemoteClient::startConnect(const QString &ip, const int port)
+{
+    if (port > 65535 || port < 0)
+    {
+        return false;
+    }
+
+    m_targetIP = ip.toUtf8().toStdString();
+    if (Model::Utils::verifyIP(m_targetIP))
+    {
+        return false;
+    }
+
+    m_targetPort = port;
+    m_mode.store(CONNECT, std::memory_order_relaxed);
+    start();
+
+    return true;
+}
+
 void RemoteClient::run()
 {
     m_isRunning.store(true, std::memory_order_relaxed);
@@ -360,7 +385,61 @@ typeFailed:
 }
 
 void RemoteClient::connectToServerImpl()
-{}
+{
+    std::shared_ptr<Model::DAO::IConnect> connectPtr;
+    std::shared_ptr<Model::DAO::IQueueList> queueListPtr;
+
+    Model::DAO::GRPCConnect *connect = new (std::nothrow) Model::DAO::GRPCConnect();
+    if (!connect)
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to allocate memory");
+        emit ServerConnectDone(false);
+        return;
+    }
+
+    Model::ErrMsg errMsg;
+    Model::ErrMsg::ErrCode code;
+    connect->startConnect(errMsg, m_targetIP, m_targetPort);
+    errMsg.msg(&code, nullptr);
+
+    if (code != Model::ErrMsg::OK)
+    {
+        delete connect;
+        emit ServerConnectDone(false);
+        return;
+    }
+
+    connectPtr.reset(connect);
+    Controller::Global::guiGlobal.setConnectToken(Controller::GUI::Global::GRPC,
+                                                  connectPtr);
+
+    Model::DAO::GRPCQueueList *queueList = new (std::nothrow) Model::DAO::GRPCQueueList();
+    if (!queueList)
+    {
+        std::shared_ptr<Model::DAO::IConnect> tmp = nullptr;
+        Controller::Global::guiGlobal.setConnectToken(Controller::GUI::Global::GRPC,
+                                                      tmp);
+        emit ServerConnectDone(false);
+        return;
+    }
+
+    queueList->init(connectPtr, errMsg);
+    errMsg.msg(&code, nullptr);
+    if (code != Model::ErrMsg::OK)
+    {
+        delete queueList;
+        std::shared_ptr<Model::DAO::IConnect> tmp = nullptr;
+        Controller::Global::guiGlobal.setConnectToken(Controller::GUI::Global::GRPC,
+                                                      tmp);
+        emit ServerConnectDone(false);
+        return;
+    }
+
+    queueListPtr.reset(queueList);
+    Controller::Global::guiGlobal.setQueueList(Controller::GUI::Global::GRPC,
+                                               queueListPtr);
+    emit ServerConnectDone(true);
+}
 
 uint_fast8_t RemoteClient::dataInternal()
 {
