@@ -20,13 +20,15 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_CLIENTCONFIG_HPP_
-#define _CONTROLLER_GUI_CLIENTCONFIG_HPP_
+#ifndef _CONTROLLER_GUI_REMOTECLIENT_HPP_
+#define _CONTROLLER_GUI_REMOTECLIENT_HPP_
 
 #include <atomic>
 
 #include "QMap"
 #include "QThread"
+
+class QJSValue;
 
 namespace Controller
 {
@@ -34,19 +36,22 @@ namespace Controller
 namespace GUI
 {
 
-class ClientConfig : public QThread
+class RemoteClient : public QThread
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString ip   READ ip   CONSTANT)
-    Q_PROPERTY(int     port READ port CONSTANT)
+    Q_PROPERTY(QString name      READ name      CONSTANT)
+    Q_PROPERTY(QString ip        READ ip        CONSTANT)
+    Q_PROPERTY(int     port      READ port      CONSTANT)
+    Q_PROPERTY(int     dataPages READ dataPages CONSTANT)
+    Q_PROPERTY(int     pageIndex READ pageIndex CONSTANT)
+    Q_PROPERTY(bool    isNoData  READ isNoData  CONSTANT)
 
 public:
 
-    ClientConfig(QObject * = nullptr);
+    RemoteClient(QObject * = nullptr);
 
-    ~ClientConfig();
+    ~RemoteClient();
 
     Q_INVOKABLE bool init();
 
@@ -54,15 +59,27 @@ public:
 
     Q_INVOKABLE int setLogLevel(int);
 
-    QString name();
+    QString name() const;
 
-    QString ip();
+    QString ip() const;
 
-    int port();
+    int port() const;
+
+    int dataPages() const;
+
+    int pageIndex() const;
+
+    bool isNoData() const;
 
     Q_INVOKABLE bool saveSetting(const QString &, const QString &, const int);
 
     Q_INVOKABLE void updateData();
+
+    Q_INVOKABLE QJSValue data();
+
+    Q_INVOKABLE void setLastPage(int, int);
+
+    Q_INVOKABLE void deleteData(const QString &);
 
     void run() override;
 
@@ -74,13 +91,11 @@ signals:
 
 private:
 
-    std::atomic<bool> m_isInit;
-
     void initImpl();
 
     void connectToServerImpl();
 
-    typedef void (ClientConfig::*Handler)();
+    typedef void (RemoteClient::*Handler)();
 
     typedef enum Mode
     {
@@ -89,8 +104,8 @@ private:
 
     Handler m_handler[2] =
     {
-        &ClientConfig::initImpl,
-        &ClientConfig::connectToServerImpl
+        &RemoteClient::initImpl,
+        &RemoteClient::connectToServerImpl
     };
 
     std::atomic<Mode> m_mode;
@@ -100,10 +115,13 @@ private:
     QString m_dataName;
 
     QMap<QString, QVariant> m_data;
+
+    uint_fast8_t dataInternal();
+
 }; // end class ClientConfig
 
 } // namespace GUI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GUI_CLIENTCONFIG_HPP_
+#endif // _CONTROLLER_GUI_REMOTECLIENT_HPP_

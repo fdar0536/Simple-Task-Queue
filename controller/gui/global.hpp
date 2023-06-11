@@ -55,6 +55,8 @@ class Global : public QObject
 
     Q_PROPERTY(bool isLocalAvailable READ isLocalAvailable CONSTANT)
 
+    Q_PROPERTY(int backendMode READ backendModeQml WRITE setBackendModeQml NOTIFY BackendModeQmlChanged)
+
 public:
 
     typedef enum BackendMode
@@ -79,6 +81,10 @@ public:
     void setBackendMode(BackendMode);
 
     BackendMode backendMode() const;
+
+    void setBackendModeQml(int);
+
+    int backendModeQml() const;
 
     void
     setQueueList(BackendMode, std::shared_ptr<Model::DAO::IQueueList> &);
@@ -108,6 +114,8 @@ signals:
     void WindowClosing();
 
     void AllCleaned();
+
+    void BackendModeQmlChanged();
 
 private:
 

@@ -114,6 +114,31 @@ Global::BackendMode Global::backendMode() const
 #endif
 }
 
+void Global::setBackendModeQml(int in)
+{
+#ifdef STQ_MOBILE
+    UNUSED(in);
+    return;
+#else
+    if (in > 1 || in < 0)
+    {
+        spdlog::error("{}:{} Invalid mode: {}", __FILE__, __LINE__, in);
+        return;
+    }
+
+    m_backendMode = static_cast<BackendMode>(in);
+#endif
+}
+
+int Global::backendModeQml() const
+{
+#ifdef STQ_MOBILE
+    return static_cast<int>(GRPC);
+#else
+    return static_cast<int>(m_backendMode);
+#endif
+}
+
 void
 Global::setQueueList(BackendMode mode,
                      std::shared_ptr<Model::DAO::IQueueList> &in)

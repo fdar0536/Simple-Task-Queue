@@ -32,7 +32,7 @@
 
 #include "controller/global/init.hpp"
 
-#include "controller/gui/clientconfig.hpp"
+#include "controller/gui/remoteclient.hpp"
 #include "controller/gui/main.hpp"
 #include "controller/gui/serverconfig.hpp"
 
@@ -110,9 +110,9 @@ int main(int argc, char **argv)
 
     qmlRegisterType<Controller::GUI::Main>("Main", 1, 0, "Main");
 
-    qmlRegisterType<Controller::GUI::ClientConfig>("ClientConfig",
+    qmlRegisterType<Controller::GUI::RemoteClient>("RemoteClient",
                                                     1, 0,
-                                                   "ClientConfig");
+                                                   "RemoteClient");
 
     qmlRegisterType<Controller::GUI::ServerConfig>("ServerConfig",
                                                    1, 0,

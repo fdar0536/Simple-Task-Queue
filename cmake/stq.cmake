@@ -35,10 +35,8 @@ if(ENABLE_GUI)
 
     list(APPEND CONTROLLER_SRC
 
-        "controller/gui/clientconfig.cpp"
-        "controller/gui/clientconfig.hpp"
-        "controller/gui/clientconfiglist.cpp"
-        "controller/gui/clientconfiglist.hpp"
+        "controller/gui/remoteclient.cpp"
+        "controller/gui/remoteclient.hpp"
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
         "controller/gui/logsink.hpp"

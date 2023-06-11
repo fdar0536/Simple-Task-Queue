@@ -26,12 +26,12 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import Global
-import ClientConfig as CTRL
+import RemoteClient as CTRL
 import "../components"
 
 Page
 {
-    CTRL.ClientConfig
+    CTRL.RemoteClient
     {
         id: ctrl
     }
@@ -39,6 +39,7 @@ Page
     function onCtrlInitDone()
     {
         busyIndicator.running = false;
+        updateRemoteList();
         if (!Global.isNotMobile)
         {
             useRemote.checkState = Qt.Checked;
@@ -54,11 +55,25 @@ Page
             remoteConfig.enabled = false;
             return;
         }
+    }
 
-        if (ctrl.dataCount <= 0)
+    function updateRemoteList()
+    {
+        remoteName.text = ctrl.name;
+        remoteHost.text = ctrl.ip;
+        remotePort.value = ctrl.port;
+
+        var data = ctrl.data();
+        remoteListModel.clear();
+        if (data.length <= 0)
         {
             remoteList.currentIndex = -1;
             return;
+        }
+
+        for (let i = 0; i < data.length; ++i)
+        {
+            remoteListModel.append(data[i]);
         }
 
         remoteList.currentIndex = 0;
@@ -158,26 +173,23 @@ Page
         {
             spacing: 5
 
-            ComboBox
+            Row
             {
-                id: remoteList
-                model: ctrl
-                currentIndex: -1
-                delegate: Text
+                TitleText
                 {
-                    text: ctrl.name(index)
+                    text: qsTr("Profile: ")
+                    anchors.verticalCenter: remoteList.verticalCenter
                 }
 
-                onCurrentIndexChanged:
+                ComboBox
                 {
-                    if (ctrl.dataCount === 0)
-                    {
-                        return;
-                    }
+                    id: remoteList
+                    currentIndex: -1
 
-                    remoteName.text = ctrl.name(currentIndex);
-                    remoteHost.text = ctrl.ip(currentIndex);
-                    remotePort.value = ctrl.port(currentIndex);
+                    model: ListModel
+                    {
+                        id: remoteListModel
+                    }
                 }
             }
 
@@ -215,6 +227,20 @@ Page
 
             Row
             {
+                ToolTipButton
+                {
+                    text: qsTr("Prev")
+                    toolTip: qsTr("Previous page of profile")
+                    enabled: false
+                }
+
+                ToolTipButton
+                {
+                    text: qsTr("Next")
+                    toolTip: qsTr("Next page of profile")
+                    enabled: false
+                }
+
                 Button
                 {
                     text: qsTr("Clear")
@@ -237,6 +263,9 @@ Page
                         {
                             msgDialog.error(qsTr("Invalid ip or port"));
                         }
+
+                        ctrl.updateData();
+                        updateRemoteList();
                     }
                 }
 
