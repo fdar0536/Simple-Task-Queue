@@ -35,20 +35,10 @@ namespace GUI
 
 Global::Global(QObject *parent) :
     QObject(parent),
-    m_isNotMobile(true),
-#ifndef STQ_MOBILE
     m_backendMode(SQLITE)
-#endif
 {
     m_isInit.store(false, std::memory_order_relaxed);
-
-    m_logBuf.reserve(128);
-
-#ifdef STQ_MOBILE
-    m_isNotMobile = false;
-#else
-    m_isNotMobile = true;
-#endif
+    m_logBuf.reserve(1024);
 }
 
 Global::~Global()
@@ -62,93 +52,29 @@ uint_fast8_t Global::init()
         return 0;
     }
 
-    if (!m_engine)
-    {
-        spdlog::warn("{}:{} engine is nullptr", __FILE__, __LINE__);
-        return 1;
-    }
-
     return 0;
-}
-
-bool Global::isNotMobile() const
-{
-    return m_isNotMobile;
 }
 
 bool Global::isLocalAvailable() const
 {
-#ifdef STQ_MOBILE
-    return false;
-#else
     return Controller::Global::sqliteQueueList != nullptr;
-#endif
-}
-
-void Global::setEngine(QQmlApplicationEngine *in)
-{
-    m_engine = in;
-}
-
-QQmlApplicationEngine *Global::engine() const
-{
-    return m_engine;
 }
 
 void Global::setBackendMode(BackendMode in)
 {
-#ifdef STQ_MOBILE
-    UNUSED(in);
-    return;
-#else
     m_backendMode = in;
     m_grpcConnect = nullptr;
-#endif
 }
 
 Global::BackendMode Global::backendMode() const
 {
-#ifdef STQ_MOBILE
-    return GRPC;
-#else
     return m_backendMode;
-#endif
-}
-
-void Global::setBackendModeQml(int in)
-{
-#ifdef STQ_MOBILE
-    UNUSED(in);
-    return;
-#else
-    if (in > 1 || in < 0)
-    {
-        spdlog::error("{}:{} Invalid mode: {}", __FILE__, __LINE__, in);
-        return;
-    }
-
-    m_backendMode = static_cast<BackendMode>(in);
-    m_grpcConnect = nullptr;
-#endif
-}
-
-int Global::backendModeQml() const
-{
-#ifdef STQ_MOBILE
-    return static_cast<int>(GRPC);
-#else
-    return static_cast<int>(m_backendMode);
-#endif
 }
 
 void
 Global::setConnectToken(BackendMode mode,
                         std::shared_ptr<Model::DAO::IConnect> &in)
 {
-#ifdef STQ_MOBILE
-    UNUSED(mode);
-    m_grpcConnect = in;
-#else
     switch(mode)
     {
     case GRPC:
@@ -162,15 +88,11 @@ Global::setConnectToken(BackendMode mode,
         break;
     }
     }
-#endif
 }
 
 std::shared_ptr<Model::DAO::IConnect>
 Global::connectToken() const
 {
-#ifdef STQ_MOBILE
-    return m_grpcConnect;
-#else
     switch(m_backendMode)
     {
     case GRPC:
@@ -182,17 +104,12 @@ Global::connectToken() const
         return m_sqliteConnect;
     }
     }
-#endif
 }
 
 void
 Global::setQueueList(BackendMode mode,
                      std::shared_ptr<Model::DAO::IQueueList> &in)
 {
-#ifdef STQ_MOBILE
-    UNUSED(mode);
-    m_grpcQueueList = in;
-#else
     switch(mode)
     {
     case GRPC:
@@ -206,15 +123,11 @@ Global::setQueueList(BackendMode mode,
         break;
     }
     }
-#endif
 }
 
 std::shared_ptr<Model::DAO::IQueueList>
 Global::queueList() const
 {
-#ifdef STQ_MOBILE
-    return m_grpcQueueList;
-#else
     switch(m_backendMode)
     {
     case GRPC:
@@ -226,15 +139,10 @@ Global::queueList() const
         return Controller::Global::sqliteQueueList;
     }
     }
-#endif
 }
 
 void Global::setQueue(BackendMode mode, std::shared_ptr<Model::DAO::IQueue> &in)
 {
-#ifdef STQ_MOBILE
-    UNUSED(mode);
-    m_sqliteQueue = in;
-#else
     switch(mode)
     {
     case GRPC:
@@ -248,15 +156,11 @@ void Global::setQueue(BackendMode mode, std::shared_ptr<Model::DAO::IQueue> &in)
         break;
     }
     }
-#endif
 }
 
 std::shared_ptr<Model::DAO::IQueue>
 Global::queue() const
 {
-#ifdef STQ_MOBILE
-    return m_sqliteQueue;
-#else
     switch(m_backendMode)
     {
     case GRPC:
@@ -268,50 +172,13 @@ Global::queue() const
         return m_sqliteQueue;
     }
     }
-#endif
 }
 
-void Global::notifyClosing()
-{
-    emit WindowClosing();
-}
-
-void Global::notifyAllCleaned()
-{
-    emit AllCleaned();
-}
-
-#ifndef STQ_MOBILE
-void Global::saveFile(const QString &fileName, const QString &text)
-{
-    std::fstream f;
-    f.open(fileName.toUtf8().toStdString(),
-           std::ifstream::out | std::ifstream::trunc);
-    if (f.fail())
-    {
-        spdlog::error("{}:{} Fail to open file", __FILE__, __LINE__);
-        return;
-    }
-
-    std::string output = text.toUtf8().toStdString();
-    f.write(output.c_str(), output.size());
-    f.close();
-}
-#endif
-
-QJSValue Global::getLog()
+void Global::getLog(QList<QString> &out)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
-    QJSValue ret = m_engine->newArray(m_logBuf.length());
-    if (!m_logBuf.length()) return ret;
-
-    for (auto i = 0; i < m_logBuf.length(); ++i)
-    {
-        ret.setProperty(i, m_logBuf.at(i));
-    }
-
+    out = m_logBuf;
     m_logBuf.clear();
-    return ret;
 }
 
 void Global::onSpdlogLog(const QString &in)

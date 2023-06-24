@@ -32,10 +32,6 @@
 
 #include "controller/global/init.hpp"
 
-#include "controller/gui/remoteclient.hpp"
-#include "controller/gui/main.hpp"
-#include "controller/gui/serverconfig.hpp"
-
 #ifdef STQ_GUI
 
 #ifdef STQ_MOBILE
@@ -48,6 +44,7 @@
 #include "QQuickStyle"
 
 #include "controller/gui/global.hpp"
+#include "controller/gui/mainwindow.hpp"
 
 #endif // STQ_GUI
 
@@ -91,50 +88,20 @@ int main(int argc, char **argv)
     int ret(0);
 #ifdef STQ_GUI
 
-#ifdef STQ_MOBILE
-    QGuiApplication app(argc, argv);
-#else
     QApplication app(argc, argv);
-#endif // STQ_MOBILE
-
     app.setWindowIcon(QIcon(":/view/gui/stq.ico"));
     QSettings::setDefaultFormat(QSettings::IniFormat);
     qApp->setOrganizationName("fdar0536");
     qApp->setApplicationName("STQ");
 
-    qmlRegisterSingletonInstance
-        <Controller::GUI::Global>("Global",
-                                  1, 0,
-                                  "Global",
-                                  &Controller::Global::guiGlobal);
-
-    qmlRegisterType<Controller::GUI::Main>("Main", 1, 0, "Main");
-
-    qmlRegisterType<Controller::GUI::RemoteClient>("RemoteClient",
-                                                    1, 0,
-                                                   "RemoteClient");
-
-    qmlRegisterType<Controller::GUI::ServerConfig>("ServerConfig",
-                                                   1, 0,
-                                                   "ServerConfig");
-
-    QQmlApplicationEngine engine;
-    QQuickStyle::setStyle("Material");
-    Controller::Global::guiGlobal.setEngine(&engine);
-    engine.load(QUrl(QStringLiteral("qrc:/view/gui/main.qml")));
-    if (engine.rootObjects().isEmpty())
+    Controller::GUI::MainWindow w;
+    if (w.init())
     {
-        spdlog::error("{}:{} Fail to load qml", __FILE__, __LINE__);
-        ret = 1;
+        spdlog::error("{}:{} Fail to initialize MainWindow", __FILE__, __LINE__);
         goto exit;
     }
 
-#ifdef STQ_MOBILE
-    QObject::connect(&engine, &QQmlApplicationEngine::quit, &QGuiApplication::quit);
-#else
-    QObject::connect(&engine, &QQmlApplicationEngine::quit, &QApplication::quit);
-#endif // STQ_MOBILE
-
+    w.show();
     ret = app.exec();
 #else
     if (Controller::Global::server.start())

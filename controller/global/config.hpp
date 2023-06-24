@@ -52,7 +52,7 @@ public:
 
     static uint_fast8_t parse(Config *, const std::string &);
 
-#if defined(STQ_GUI) && !defined(STQ_MOBILE)
+#ifdef STQ_GUI
     static uint_fast8_t save(Config *, const std::string &);
 
     bool autoStartServer();
@@ -64,11 +64,9 @@ public:
     uint_fast8_t setConfigPath(const std::string &);
 #endif
 
-#ifndef STQ_MOBILE
     std::string dbPath();
 
     void setDbPath(const std::string &);
-#endif
 
     std::string logPath();
 
@@ -90,15 +88,13 @@ private:
 
     static void printHelp(char **argv);
 
-#if defined(STQ_GUI) && !defined(STQ_MOBILE)
+#ifdef STQ_GUI
     std::string m_configPath = "";
 
     bool m_autoStartServer = false;
 #endif
 
-#ifndef STQ_MOBILE
     std::string m_dbPath;
-#endif
 
     std::string m_logPath = "";
 

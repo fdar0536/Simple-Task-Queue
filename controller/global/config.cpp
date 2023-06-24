@@ -46,7 +46,7 @@ Config::Config()
 
 Config::~Config()
 {
-#if defined(STQ_GUI) && !defined(STQ_MOBILE)
+#ifdef STQ_GUI
     if (!m_configPath.empty())
     {
         UNUSED(save(this, m_configPath));
@@ -56,13 +56,6 @@ Config::~Config()
 
 uint_fast8_t Config::parse(Config *in, int argc, char **argv)
 {
-#ifdef STQ_MOBILE
-    UNUSED(in);
-    UNSUED(argc);
-    UNSUED(argv);
-    return 0;
-#else
-
     if (!in)
     {
         spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
@@ -150,7 +143,6 @@ uint_fast8_t Config::parse(Config *in, int argc, char **argv)
     }
 
     return 0;
-#endif
 }
 
 template <typename CharT, typename T>
@@ -193,17 +185,15 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
         ini.parse(i);
         i.close();
 
-#if defined(STQ_GUI) && !defined(STQ_MOBILE)
+#ifdef STQ_GUI
         UNUSED(get_value(ini.sections["Settings"],
                                     "auto start server",
                                     obj->m_autoStartServer));
 #endif
 
-#ifndef STQ_MOBILE
         UNUSED(get_value(ini.sections["Settings"],
                          "db path",
                          obj->m_dbPath));
-#endif
 
         UNUSED(get_value(ini.sections["Settings"],
                          "log path",
@@ -253,7 +243,7 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
     return 0;
 }
 
-#if defined(STQ_GUI) && !defined(STQ_MOBILE)
+#ifdef STQ_GUI
 uint_fast8_t Config::save(Config *obj, const std::string &path)
 {
     if (!obj)
@@ -347,7 +337,6 @@ uint_fast8_t Config::setConfigPath(const std::string &in)
 
 #endif
 
-#ifndef STQ_MOBILE
 std::string Config::dbPath()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
@@ -367,7 +356,6 @@ void Config::setDbPath(const std::string &in)
         m_dbPath = in;
     }
 }
-#endif
 
 std::string Config::logPath()
 {

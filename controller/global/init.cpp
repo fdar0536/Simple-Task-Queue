@@ -53,11 +53,9 @@ namespace Global
 
 Config config;
 
-#ifndef STQ_MOBILE
 GRPCServer::Server server;
 
 std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList = nullptr;
-#endif
 
 #ifdef STQ_GUI
 Controller::GUI::Global guiGlobal;
@@ -91,13 +89,11 @@ uint_fast8_t init(int argc, char **argv)
         return 1;
     }
 
-#ifndef STQ_MOBILE
     if (initSQLiteQueueList())
     {
         spdlog::error("{}:{} Fail to initialize sqlite queue list", __FILE__, __LINE__);
         return 1;
     }
-#endif
 
     Model::ErrMsg::init();
 
@@ -117,7 +113,6 @@ void fin()
 #endif
 }
 
-#ifndef STQ_MOBILE
 uint_fast8_t initSQLiteQueueList()
 {
 #ifdef STQ_GUI
@@ -179,7 +174,6 @@ uint_fast8_t initSQLiteQueueList()
     sqliteQueueList = std::shared_ptr<Model::DAO::IQueueList>(sqlPtr);
     return 0;
 }
-#endif
 
 static uint_fast8_t initConsole()
 {

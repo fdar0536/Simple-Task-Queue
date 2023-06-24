@@ -1,6 +1,5 @@
-/*
- * Simple Task Queue
- * Copyright (c) 2020-2023 fdar0536
+/* Simple Task Queue
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +20,50 @@
  * SOFTWARE.
  */
 
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#include <new>
 
-#define STQ_VERSION "@STQ_VERSION@"
-#define STQ_NAME "@STQ_NAME@"
-#define STQ_CLIENT_TIMEOUT @CLIENT_TIMEOUT@
+#include "spdlog/spdlog.h"
 
-#cmakedefine STQ_GUI
+#include "mainwindow.hpp"
+#include "../../view/gui/ui_mainwindow.h"
 
-#endif // _CONFIG_H_
+namespace Controller
+{
+
+namespace GUI
+{
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    m_ui(nullptr)
+{}
+
+MainWindow::~MainWindow()
+{
+    if (m_ui) delete m_ui;
+}
+
+uint_fast8_t MainWindow::init()
+{
+    if (m_ui)
+    {
+        spdlog::error("{}:{} MainWindow is already initialized.",
+                      __FILE__, __LINE__);
+        return 1;
+    }
+
+    m_ui = new (std::nothrow) Ui::MainWindow;
+    if (!m_ui)
+    {
+        spdlog::error("{}:{} MainWindow is already initialized.",
+                      __FILE__, __LINE__);
+        return 1;
+    }
+
+    m_ui->setupUi(this);
+    return 0;
+}
+
+} // namespace GUI
+
+} // end namespace Controller

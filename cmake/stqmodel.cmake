@@ -9,6 +9,14 @@ set(MODEL_SRC
     model/dao/dirutils.cpp
     model/dao/dirutils.hpp
 
+    #sqlite
+    model/dao/sqliteconnect.cpp
+    model/dao/sqliteconnect.hpp
+    model/dao/sqlitequeuelist.cpp
+    model/dao/sqlitequeuelist.hpp
+    model/dao/sqlitequeue.cpp
+    model/dao/sqlitequeue.hpp
+
     # proc
     model/proc/iproc.cpp
     model/proc/iproc.hpp
@@ -36,7 +44,7 @@ if (ENABLE_GUI)
     )
 endif (ENABLE_GUI)
 
-if (WIN32 AND (NOT ENABLE_MOBILE))
+if (WIN32)
     list(APPEND MODEL_SRC
         model/proc/winproc.cpp
         model/proc/winproc.hpp
@@ -45,22 +53,9 @@ if (WIN32 AND (NOT ENABLE_MOBILE))
         model/win32-code/getopt.h
         model/win32-code/getopt_long.c
     )
-elseif ((NOT WIN32) AND (NOT ENABLE_MOBILE))
+elseif ((NOT WIN32))
     list(APPEND MODEL_SRC
         model/posixprocess.cpp
         model/posixprocess.hpp
     )
-endif (WIN32 AND (NOT ENABLE_MOBILE))
-
-if (NOT ENABLE_MOBILE)
-    list(APPEND MODEL_SRC
-
-        #sqlite
-        model/dao/sqliteconnect.cpp
-        model/dao/sqliteconnect.hpp
-        model/dao/sqlitequeuelist.cpp
-        model/dao/sqlitequeuelist.hpp
-        model/dao/sqlitequeue.cpp
-        model/dao/sqlitequeue.hpp
-    )
-endif (NOT ENABLE_MOBILE)
+endif (WIN32)

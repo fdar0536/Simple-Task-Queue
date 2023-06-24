@@ -1,6 +1,5 @@
-/*
- * Simple Task Queue
- * Copyright (c) 2020-2023 fdar0536
+/* Simple Task Queue
+ * Copyright (c) 2023 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +20,44 @@
  * SOFTWARE.
  */
 
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef _CONTROLLER_GUI_MAINWINDOW_HPP_
+#define _CONTROLLER_GUI_MAINWINDOW_HPP_
 
-#define STQ_VERSION "@STQ_VERSION@"
-#define STQ_NAME "@STQ_NAME@"
-#define STQ_CLIENT_TIMEOUT @CLIENT_TIMEOUT@
+#include "QMainWindow"
 
-#cmakedefine STQ_GUI
+namespace Ui
+{
 
-#endif // _CONFIG_H_
+class MainWindow;
+
+}
+
+namespace Controller
+{
+
+namespace GUI
+{
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+
+    MainWindow(QWidget * = nullptr);
+
+    ~MainWindow();
+
+    uint_fast8_t init();
+
+private:
+
+    Ui::MainWindow *m_ui;
+
+}; // end class MainWindow
+
+} // namespace GUI
+
+} // end namespace Controller
+
+#endif // _CONTROLLER_GUI_MAINWINDOW_HPP_

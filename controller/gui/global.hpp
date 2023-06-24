@@ -32,13 +32,9 @@
 
 #include "QObject"
 
-#include "QQmlApplicationEngine"
-
 #include "model/dao/iqueuelist.hpp"
 
-#ifndef STQ_MOBILE
 #include "model/dao/sqliteconnect.hpp"
-#endif
 
 namespace Controller
 {
@@ -50,12 +46,6 @@ class Global : public QObject
 {
 
     Q_OBJECT
-
-    Q_PROPERTY(bool isNotMobile READ isNotMobile CONSTANT)
-
-    Q_PROPERTY(bool isLocalAvailable READ isLocalAvailable CONSTANT)
-
-    Q_PROPERTY(int backendMode READ backendModeQml WRITE setBackendModeQml NOTIFY BackendModeQmlChanged)
 
 public:
 
@@ -70,21 +60,11 @@ public:
 
     uint_fast8_t init();
 
-    bool isNotMobile() const;
-
     bool isLocalAvailable() const;
-
-    void setEngine(QQmlApplicationEngine *engine);
-
-    QQmlApplicationEngine *engine() const;
 
     void setBackendMode(BackendMode);
 
     BackendMode backendMode() const;
-
-    void setBackendModeQml(int);
-
-    int backendModeQml() const;
 
     void setConnectToken(BackendMode, std::shared_ptr<Model::DAO::IConnect> &);
 
@@ -102,35 +82,14 @@ public:
     std::shared_ptr<Model::DAO::IQueue>
     queue() const;
 
-    Q_INVOKABLE void notifyClosing();
-
-    Q_INVOKABLE void notifyAllCleaned();
-
-#ifndef STQ_MOBILE
-    Q_INVOKABLE void saveFile(const QString &, const QString &);
-#endif
-
-    Q_INVOKABLE QJSValue getLog();
+    void getLog(QList<QString> &);
 
     void onSpdlogLog(const QString &);
-
-signals:
-
-    void WindowClosing();
-
-    void AllCleaned();
-
-    void BackendModeQmlChanged();
 
 private:
 
     std::atomic<bool> m_isInit;
 
-    bool m_isNotMobile;
-
-    QQmlApplicationEngine *m_engine;
-
-#ifndef STQ_MOBILE
     BackendMode m_backendMode;
 
     std::shared_ptr<Model::DAO::IConnect>
@@ -138,7 +97,6 @@ private:
 
     std::shared_ptr<Model::DAO::IQueue>
         m_sqliteQueue;
-#endif
 
     std::shared_ptr<Model::DAO::IConnect>
         m_grpcConnect;

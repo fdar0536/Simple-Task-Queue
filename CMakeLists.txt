@@ -45,16 +45,10 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
 option(ENABLE_GUI "enable GUI" on)
-option(ENABLE_MOBILE "enable qt for mobile device" off)
 
 if (ENABLE_GUI)
     set(STQ_GUI ON)
 endif (ENABLE_GUI)
-
-if (ENABLE_MOBILE)
-    set(STQ_GUI ON)
-    set(STQ_MOBILE ON)
-endif (ENABLE_MOBILE)
 
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
@@ -63,19 +57,12 @@ include(GNUInstallDirs)
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(SQLite3 REQUIRED)
 find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
 
 if (ENABLE_GUI)
-    if(ENABLE_MOBILE)
-        find_package(Qt6 6.5 COMPONENTS Quick Gui QuickControls2 REQUIRED)
-    else()
-        find_package(Qt6 6.5 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
-    endif(ENABLE_MOBILE)
+    find_package(Qt6 6.5 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
 endif (ENABLE_GUI)
-
-if (NOT ENABLE_MOBILE)
-    find_package(SQLite3 REQUIRED)
-endif (NOT ENABLE_MOBILE)
 
 set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
 include(cmake/protoc.cmake)

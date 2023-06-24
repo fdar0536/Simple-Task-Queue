@@ -6,22 +6,17 @@ set(CONTROLLER_SRC
     controller/global/config.hpp
     controller/global/init.cpp
     controller/global/init.hpp
+
+    # grpc
+    controller/grpcserver/accessimpl.cpp
+    controller/grpcserver/accessimpl.hpp
+    controller/grpcserver/queueimpl.cpp
+    controller/grpcserver/queueimpl.hpp
+    controller/grpcserver/queuelistimpl.cpp
+    controller/grpcserver/queuelistimpl.hpp
+    controller/grpcserver/server.cpp
+    controller/grpcserver/server.hpp
 )
-
-if (NOT ENABLE_MOBILE)
-    list(APPEND CONTROLLER_SRC
-
-        # grpc
-        controller/grpcserver/accessimpl.cpp
-        controller/grpcserver/accessimpl.hpp
-        controller/grpcserver/queueimpl.cpp
-        controller/grpcserver/queueimpl.hpp
-        controller/grpcserver/queuelistimpl.cpp
-        controller/grpcserver/queuelistimpl.hpp
-        controller/grpcserver/server.cpp
-        controller/grpcserver/server.hpp
-    )
-endif (NOT ENABLE_MOBILE)
 
 set(STQ_LIBS
     protobuf::libprotobuf
@@ -38,14 +33,12 @@ if(ENABLE_GUI)
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
         "controller/gui/logsink.hpp"
-        "controller/gui/main.cpp"
-        "controller/gui/main.hpp"
-        "controller/gui/queuelist.cpp"
-        "controller/gui/queuelist.hpp"
-        "controller/gui/remoteclient.cpp"
-        "controller/gui/remoteclient.hpp"
-        "controller/gui/serverconfig.cpp"
-        "controller/gui/serverconfig.hpp"
+        "controller/gui/mainwindow.cpp"
+        "controller/gui/mainwindow.hpp"
+    )
+
+    set(VIEW_SRC
+        "view/gui/mainwindow.ui"
     )
 
     qt_add_executable(STQ
@@ -54,40 +47,9 @@ if(ENABLE_GUI)
 
         ${MODEL_SRC}
         ${CONTROLLER_SRC}
+        ${VIEW_SRC}
 
         main.cpp)
-
-    qt_add_qml_module(STQ
-        URI "stq"
-        NO_RESOURCE_TARGET_PATH
-
-        QML_FILES
-            "view/gui/main.qml"
-
-            # components
-            "view/gui/components/MsgDialog.qml"
-            "view/gui/components/MainMenu.qml"
-            "view/gui/components/MenuBar.qml"
-            "view/gui/components/TitleText.qml"
-            "view/gui/components/ToolbarIcon.qml"
-            "view/gui/components/ToolTipButton.qml"
-
-            # pages
-            "view/gui/pages/ClientConfig.qml"
-            "view/gui/pages/Logger.qml"
-            "view/gui/pages/QueueList.qml"
-            "view/gui/pages/ServerConfig.qml"
-
-        RESOURCES
-            "view/gui/stq.ico"
-
-            # icons
-            "view/gui/icons/close.svg"
-            "view/gui/icons/computer.svg"
-            "view/gui/icons/event.svg"
-            "view/gui/icons/info.svg"
-            "view/gui/icons/menu.svg"
-    )
 
     add_dependencies(STQ grpc_common)
 
@@ -97,23 +59,15 @@ if(ENABLE_GUI)
         Qt6::QuickControls2
     )
 
-    if(ENABLE_MOBILE)
-        target_link_libraries(STQ
-            PRIVATE
+    target_link_libraries(STQ
+        PRIVATE
 
-            ${STQ_LIBS}
-        )
-    else()
-        target_link_libraries(STQ
-            PRIVATE
+        ${STQ_LIBS}
+        SQLite::SQLite3
 
-            ${STQ_LIBS}
-            SQLite::SQLite3
-
-            # Qt
-            Qt6::Widgets
-        )
-    endif()
+        # Qt
+        Qt6::Widgets
+    )
 else()
     add_executable(STQ
         ${MODEL_SRC}
