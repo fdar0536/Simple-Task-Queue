@@ -26,8 +26,6 @@
 
 #include "QWidget"
 
-#include "waitforinit.hpp"
-
 namespace Ui
 {
 
@@ -55,8 +53,6 @@ public:
 
 private slots:
 
-    void onWaitForInitDone();
-
     void onAutoStartClicked(bool);
 
     void onServerEditFinished();
@@ -70,8 +66,6 @@ private slots:
 private:
 
     Ui::ServerConfig *m_ui;
-
-    WaitForInit *m_waitForInit;
 
     void connectHook();
 

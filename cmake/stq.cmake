@@ -37,13 +37,12 @@ if(ENABLE_GUI)
         "controller/gui/mainwindow.hpp"
         "controller/gui/serverconfig.cpp"
         "controller/gui/serverconfig.hpp"
-        "controller/gui/waitforinit.cpp"
-        "controller/gui/waitforinit.hpp"
     )
 
     set(VIEW_SRC
         "view/gui/mainwindow.ui"
         "view/gui/serverconfig.ui"
+        "view/gui/resource.qrc"
     )
 
     qt_add_executable(STQ

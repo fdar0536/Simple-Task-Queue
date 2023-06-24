@@ -89,7 +89,7 @@ int main(int argc, char **argv)
 #ifdef STQ_GUI
 
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/view/gui/stq.ico"));
+    app.setWindowIcon(QIcon(":/stq.ico"));
     QSettings::setDefaultFormat(QSettings::IniFormat);
     qApp->setOrganizationName("fdar0536");
     qApp->setApplicationName("STQ");

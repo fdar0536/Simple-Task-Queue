@@ -24,6 +24,8 @@
 #define _CONTROLLER_GUI_MAINWINDOW_HPP_
 
 #include "QMainWindow"
+#include "QSystemTrayIcon"
+#include "spdlog/spdlog.h"
 
 namespace Ui
 {
@@ -54,6 +56,8 @@ private:
 
     Ui::MainWindow *m_ui;
 
+    std::shared_ptr<spdlog::logger> m_defaultLogger;
+
     typedef enum class CenterWidget
     {
         ServerConfig,
@@ -66,6 +70,18 @@ private:
     } CenterWidget;
 
     CenterWidget m_centerWidget;
+
+    QSystemTrayIcon *m_icon;
+
+    QMenu *m_iconContextMenu;
+
+    QAction *m_showAction;
+
+    void sqliteInit();
+
+    void spdlogInit();
+
+    uint_fast8_t trayIconInit();
 
     void connectHook();
 

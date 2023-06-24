@@ -41,15 +41,13 @@ namespace GUI
 
 ServerConfig::ServerConfig(QWidget *parent) :
     QWidget(parent),
-    m_ui(nullptr),
-    m_waitForInit(nullptr)
+    m_ui(nullptr)
 {
 }
 
 ServerConfig::~ServerConfig()
 {
     if (m_ui) delete m_ui;
-    if (m_waitForInit) delete m_waitForInit;
 }
 
 uint_fast8_t ServerConfig::init()
@@ -69,25 +67,9 @@ uint_fast8_t ServerConfig::init()
         return 1;
     }
 
-    m_waitForInit = new (std::nothrow) WaitForInit(this);
-    if (!m_waitForInit)
-    {
-        delete m_ui;
-        m_ui = nullptr;
-        spdlog::error("{}:{} Fail to allocate memory",
-                      __FILE__, __LINE__);
-        return 1;
-    }
-
     m_ui->setupUi(this);
     connectHook();
-    m_waitForInit->start();
-    return 0;
-}
 
-// private slots
-void ServerConfig::onWaitForInitDone()
-{
     m_ui->ip->setText(QString::fromStdString(Controller::Global::config.listenIP()));
     m_ui->port->setValue(Controller::Global::config.listenPort());
     if (!Controller::Global::config.autoStartServer())
@@ -100,8 +82,11 @@ void ServerConfig::onWaitForInitDone()
 
 exit:
     setEnabled(true);
+
+    return 0;
 }
 
+// private slots
 void ServerConfig::onAutoStartClicked(bool)
 {
     if (m_ui->autostart->checkState() == Qt::Unchecked)
@@ -164,13 +149,6 @@ void ServerConfig::onStopClicked(bool)
 // private member functions
 void ServerConfig::connectHook()
 {
-    connect(
-        m_waitForInit,
-        &WaitForInit::done,
-        this,
-        &ServerConfig::onWaitForInitDone
-    );
-
     connect(
         m_ui->autostart,
         &QCheckBox::clicked,

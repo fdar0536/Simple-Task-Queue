@@ -22,7 +22,11 @@
 
 #include <new>
 
-#include "spdlog/spdlog.h"
+#include "QMenu"
+#include "QStandardPaths"
+
+#include "controller/global/init.hpp"
+#include "controller/gui/logsink.hpp"
 
 #include "mainwindow.hpp"
 #include "serverconfig.hpp"
@@ -43,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     if (m_ui) delete m_ui;
+    spdlog::set_default_logger(m_defaultLogger);
 }
 
 uint_fast8_t MainWindow::init()
@@ -53,6 +58,9 @@ uint_fast8_t MainWindow::init()
                       __FILE__, __LINE__);
         return 1;
     }
+
+    sqliteInit();
+    spdlogInit();
 
     m_ui = new (std::nothrow) Ui::MainWindow;
     if (!m_ui)
@@ -74,6 +82,14 @@ uint_fast8_t MainWindow::init()
         return 1;
     }
 
+    if (trayIconInit())
+    {
+        spdlog::error("{}:{} trayIconInit failed", __FILE__, __LINE__);
+        delete m_ui;
+        m_ui = nullptr;
+        return 1;
+    }
+
     if (serverConfig->init())
     {
         delete m_ui;
@@ -86,6 +102,76 @@ uint_fast8_t MainWindow::init()
     }
 
     setCentralWidget(serverConfig);
+    return 0;
+}
+
+// private member functions
+void MainWindow::sqliteInit()
+{
+    if (Controller::Global::sqliteQueueList != nullptr)
+    {
+        return;
+    }
+
+    QString dataPath = QStandardPaths::writableLocation(
+        QStandardPaths::AppLocalDataLocation);
+    if (dataPath.isEmpty())
+    {
+        spdlog::warn("{}:{} No writable location", __FILE__, __LINE__);
+        return;
+    }
+
+    Controller::Global::config.setDbPath(dataPath.toUtf8().toStdString());
+    if (Controller::Global::initSQLiteQueueList())
+    {
+        spdlog::error("{}:{} Fail to initialize SQLite", __FILE__, __LINE__);
+    }
+}
+
+void MainWindow::spdlogInit()
+{
+    m_defaultLogger = spdlog::default_logger();
+    auto sink = std::make_shared<LogSink_mt>();
+    auto logger = std::make_shared<spdlog::logger>("STQLogger", sink);
+
+    spdlog::set_default_logger(logger);
+}
+
+uint_fast8_t MainWindow::trayIconInit()
+{
+    if (QSystemTrayIcon::isSystemTrayAvailable())
+    {
+        m_icon = new (std::nothrow) QSystemTrayIcon(
+            QIcon(":/icons/computer.svg"),
+            this);
+        if (!m_icon)
+        {
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
+        }
+
+        m_icon->show();
+
+        //iconContextMenu
+        m_iconContextMenu = new (std::nothrow) QMenu;
+        if (!m_iconContextMenu)
+        {
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
+        }
+
+        m_showAction = new (std::nothrow) QAction("Show", this);
+        if (!m_showAction)
+        {
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
+        }
+
+        m_iconContextMenu->addAction(m_showAction);
+        m_iconContextMenu->addAction(m_ui->actionExit);
+        m_icon->setContextMenu(m_iconContextMenu);
+    }
+
     return 0;
 }
 
