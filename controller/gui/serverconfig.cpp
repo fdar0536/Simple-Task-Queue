@@ -21,11 +21,16 @@
  * SOFTWARE.
  */
 
+#include <new>
+
 #include "QCoreApplication"
+#include "QMessageBox"
 
 #include "controller/global/init.hpp"
 #include "controller/gui/global.hpp"
 #include "serverconfig.hpp"
+
+#include "../../view/gui/ui_serverconfig.h"
 
 namespace Controller
 {
@@ -33,129 +38,146 @@ namespace Controller
 namespace GUI
 {
 
-ServerConfig::ServerConfig(QObject *parent) :
-    QThread(parent)
+ServerConfig::ServerConfig(QWidget *parent) :
+    QWidget(parent),
+    m_ui(nullptr),
+    m_waitForInit(nullptr)
 {
 }
 
 ServerConfig::~ServerConfig()
-{}
-
-void ServerConfig::init()
 {
-    start();
+    if (m_ui) delete m_ui;
+    if (m_waitForInit) delete m_waitForInit;
 }
 
-bool ServerConfig::isServerRunning() const
+uint_fast8_t ServerConfig::init()
 {
-#ifdef STQ_MOBILE
-    return false;
-#else
-    return Controller::Global::server.isRunning();
-#endif
-}
-
-bool ServerConfig::autoStartServer() const
-{
-#ifdef STQ_MOBILE
-    return false;
-#else
-    return Controller::Global::config.autoStartServer();
-#endif
-}
-
-void ServerConfig::setAutoStartServer(bool in)
-{
-#ifdef STQ_MOBILE
-    static_cast<void>(in);
-#else
-    Controller::Global::config.setAutoStartServer(in);
-#endif
-}
-
-QString ServerConfig::serverIP() const
-{
-#ifdef STQ_MOBILE
-    return "";
-#else
-    return QString::fromStdString(Controller::Global::config.listenIP());
-#endif
-}
-
-bool ServerConfig::setServerIP(const QString &in)
-{
-#ifdef STQ_MOBILE
-    static_cast<void>(in);
-    return false;
-#else
-    if (Controller::Global::config.setListenIP(in.toUtf8().toStdString()))
+    if (m_ui)
     {
-        return false;
+        spdlog::error("{}:{} Server config is already initialized",
+                      __FILE__, __LINE__);
+        return 1;
     }
 
-    return true;
-#endif
-}
+    m_ui = new (std::nothrow) Ui::ServerConfig;
+    if (!m_ui)
+    {
+        spdlog::error("{}:{} Fail to allocate memory",
+                      __FILE__, __LINE__);
+        return 1;
+    }
 
-int ServerConfig::serverPort() const
-{
-#ifdef STQ_MOBILE
+    m_waitForInit = new (std::nothrow) WaitForInit(this);
+    if (!m_waitForInit)
+    {
+        delete m_ui;
+        m_ui = nullptr;
+        spdlog::error("{}:{} Fail to allocate memory",
+                      __FILE__, __LINE__);
+        return 1;
+    }
+
+    m_ui->setupUi(this);
+    connectHook();
+    m_waitForInit->start();
     return 0;
-#else
-    return static_cast<int>(Controller::Global::config.listenPort());
-#endif
 }
 
-void ServerConfig::setServerPort(const int in)
+// private slots
+void ServerConfig::onWaitForInitDone()
 {
-#ifdef STQ_MOBILE
-    static_cast<void>(in);
-#else
-    Controller::Global::config.setListenPort(static_cast<uint_fast16_t>(in));
-#endif
-}
-
-bool ServerConfig::startServer()
-{
-#ifdef STQ_MOBILE
-    return false;
-#else
-    if (Controller::Global::server.start())
+    if (!Controller::Global::config.autoStartServer())
     {
-        return false;
+        goto exit;
     }
 
-    return true;
-#endif
+    m_ui->autostart->setChecked(true);
+    onStartClicked(true);
+
+exit:
+    setEnabled(true);
 }
 
-void ServerConfig::stopServer()
+void ServerConfig::onAutoStartClicked(bool checked)
 {
-#ifndef STQ_MOBILE
-    Controller::Global::server.stop();
-#endif
+    Controller::Global::config.setAutoStartServer(checked);
 }
 
-void ServerConfig::run()
+void ServerConfig::onClearClicked(bool)
 {
-    if (!Controller::Global::guiGlobal.isNotMobile())
+    m_ui->ip->clear();
+    m_ui->port->setValue(12345);
+}
+
+void ServerConfig::onStartClicked(bool)
+{
+    if (Controller::Global::config.setListenIP(m_ui->ip->text().toUtf8().toStdString()))
     {
-        emit InitDone();
+        QMessageBox::critical(this, tr("Error"), tr("Invalid ip"));
         return;
     }
 
-    uint_fast8_t count(0);
-    while (!Controller::Global::guiGlobal.isLocalAvailable())
+    if (Controller::Global::server.start())
     {
-        QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-        ++count;
-        if (count > 5)
-        {
-            break;
-        }
+        QMessageBox::critical(this, tr("Error"), tr("Fail to start server"));
+        return;
     }
 
-    emit InitDone();
+    m_ui->ip->setEnabled(false);
+    m_ui->port->setEnabled(false);
+    m_ui->clear->setEnabled(false);
+    m_ui->start->setEnabled(false);
+    m_ui->stop->setEnabled(true);
+}
+
+void ServerConfig::onStopClicked(bool)
+{
+    Controller::Global::server.stop();
+    m_ui->ip->setEnabled(true);
+    m_ui->port->setEnabled(true);
+    m_ui->clear->setEnabled(true);
+    m_ui->start->setEnabled(true);
+    m_ui->stop->setEnabled(false);
+}
+
+// private member functions
+void ServerConfig::connectHook()
+{
+    connect(
+        m_waitForInit,
+        &WaitForInit::done,
+        this,
+        &ServerConfig::onWaitForInitDone
+    );
+
+    connect(
+        m_ui->autostart,
+        &QCheckBox::clicked,
+        this,
+        &ServerConfig::onAutoStartClicked
+    );
+
+    connect(
+        m_ui->clear,
+        &QPushButton::clicked,
+        this,
+        &ServerConfig::onClearClicked
+    );
+
+    connect(
+        m_ui->start,
+        &QPushButton::clicked,
+        this,
+        &ServerConfig::onStartClicked
+    );
+
+    connect(
+        m_ui->stop,
+        &QPushButton::clicked,
+        this,
+        &ServerConfig::onStopClicked
+    );
 }
 
 } // namespace GUI

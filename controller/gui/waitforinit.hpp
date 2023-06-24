@@ -21,19 +21,10 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_SERVERCONFIG_HPP_
-#define _CONTROLLER_GUI_SERVERCONFIG_HPP_
+#ifndef _CONTROLLER_GUI_WAITFORINIT_HPP_
+#define _CONTROLLER_GUI_WAITFORINIT_HPP_
 
-#include "QWidget"
-
-#include "waitforinit.hpp"
-
-namespace Ui
-{
-
-class ServerConfig;
-
-}
+#include "QThread"
 
 namespace Controller
 {
@@ -41,42 +32,26 @@ namespace Controller
 namespace GUI
 {
 
-class ServerConfig : public QWidget
+class WaitForInit : public QThread
 {
     Q_OBJECT
 
 public:
 
-    ServerConfig(QWidget * = nullptr);
+    WaitForInit(QObject * = nullptr);
 
-    ~ServerConfig();
+    ~WaitForInit();
 
-    uint_fast8_t init();
+    void run() override;
 
-private slots:
+signals:
 
-    void onWaitForInitDone();
+    void done();
 
-    void onAutoStartClicked(bool);
-
-    void onClearClicked(bool);
-
-    void onStartClicked(bool);
-
-    void onStopClicked(bool);
-
-private:
-
-    Ui::ServerConfig *m_ui;
-
-    WaitForInit *m_waitForInit;
-
-    void connectHook();
-
-}; // end class ServerConfig
+}; // end class WaitForInit
 
 } // namespace GUI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GUI_SERVERCONFIG_HPP_
+#endif // _CONTROLLER_GUI_WAITFORINIT_HPP_

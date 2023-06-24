@@ -54,6 +54,21 @@ private:
 
     Ui::MainWindow *m_ui;
 
+    typedef enum class CenterWidget
+    {
+        ServerConfig,
+        ClientConfig,
+        QueueList,
+        Queued,
+        Done,
+        Console,
+        Log
+    } CenterWidget;
+
+    CenterWidget m_centerWidget;
+
+    void connectHook();
+
 }; // end class MainWindow
 
 } // namespace GUI

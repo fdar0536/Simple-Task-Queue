@@ -25,6 +25,7 @@
 #include "spdlog/spdlog.h"
 
 #include "mainwindow.hpp"
+#include "serverconfig.hpp"
 #include "../../view/gui/ui_mainwindow.h"
 
 namespace Controller
@@ -35,7 +36,8 @@ namespace GUI
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    m_ui(nullptr)
+    m_ui(nullptr),
+    m_centerWidget(CenterWidget::ServerConfig)
 {}
 
 MainWindow::~MainWindow()
@@ -55,12 +57,35 @@ uint_fast8_t MainWindow::init()
     m_ui = new (std::nothrow) Ui::MainWindow;
     if (!m_ui)
     {
-        spdlog::error("{}:{} MainWindow is already initialized.",
+        spdlog::error("{}:{} Fail to allocate memory",
                       __FILE__, __LINE__);
         return 1;
     }
 
     m_ui->setupUi(this);
+
+    ServerConfig *serverConfig = new (std::nothrow) ServerConfig(this);
+    if (!serverConfig)
+    {
+        delete m_ui;
+        m_ui = nullptr;
+        spdlog::error("{}:{} Fail to allocate memory",
+                      __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (serverConfig->init())
+    {
+        delete m_ui;
+        m_ui = nullptr;
+        delete serverConfig;
+        serverConfig = nullptr;
+        spdlog::error("{}:{} Fail to initialize server config",
+                      __FILE__, __LINE__);
+        return 1;
+    }
+
+    setCentralWidget(serverConfig);
     return 0;
 }
 

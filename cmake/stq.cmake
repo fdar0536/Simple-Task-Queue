@@ -35,10 +35,15 @@ if(ENABLE_GUI)
         "controller/gui/logsink.hpp"
         "controller/gui/mainwindow.cpp"
         "controller/gui/mainwindow.hpp"
+        "controller/gui/serverconfig.cpp"
+        "controller/gui/serverconfig.hpp"
+        "controller/gui/waitforinit.cpp"
+        "controller/gui/waitforinit.hpp"
     )
 
     set(VIEW_SRC
         "view/gui/mainwindow.ui"
+        "view/gui/serverconfig.ui"
     )
 
     qt_add_executable(STQ

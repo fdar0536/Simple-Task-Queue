@@ -38,6 +38,7 @@
    <addaction name="actionDone"/>
    <addaction name="actionConsole"/>
    <addaction name="actionLog"/>
+   <addaction name="actionAbout_Qt"/>
    <addaction name="actionExit"/>
   </widget>
   <action name="actionServer_Config">
@@ -78,6 +79,11 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>
