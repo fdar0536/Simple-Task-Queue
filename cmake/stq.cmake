@@ -35,13 +35,15 @@ if(ENABLE_GUI)
 
     list(APPEND CONTROLLER_SRC
 
-        "controller/gui/remoteclient.cpp"
-        "controller/gui/remoteclient.hpp"
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
         "controller/gui/logsink.hpp"
         "controller/gui/main.cpp"
         "controller/gui/main.hpp"
+        "controller/gui/queuelist.cpp"
+        "controller/gui/queuelist.hpp"
+        "controller/gui/remoteclient.cpp"
+        "controller/gui/remoteclient.hpp"
         "controller/gui/serverconfig.cpp"
         "controller/gui/serverconfig.hpp"
     )
@@ -73,6 +75,7 @@ if(ENABLE_GUI)
             # pages
             "view/gui/pages/ClientConfig.qml"
             "view/gui/pages/Logger.qml"
+            "view/gui/pages/QueueList.qml"
             "view/gui/pages/ServerConfig.qml"
 
         RESOURCES

@@ -125,7 +125,7 @@ private:
 
     int_fast32_t m_targetPort;
 
-}; // end class ClientConfig
+}; // end class RemoteClient
 
 } // namespace GUI
 

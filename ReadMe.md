@@ -2,8 +2,8 @@
 
 ## Introduction
 
-As its name, and just for reference.  
-"computer_black_48dp.svg" and "STQ.ico" are from [material design](https://material.io/resources/icons/), distributed under [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0) by [Google](https://www.google.com).
+This is a simple tool that allow you can manage the task queue by remote or in local.  
+***Warning: DO NOT RUN IS PROGRAM AS SUPER USER OR ADMINISTRATOR***
 
 ## Dependency
 
@@ -12,9 +12,9 @@ As its name, and just for reference.
   - [gRPC](https://grpc.io)
   - [spdlog](https://github.com/gabime/spdlog)
   - [inipp](https://github.com/mcmtroffaes/inipp)
+  - [SQLite](https://www.sqlite.org)
 - Optional
   - [Qt](https://www.qt.io) 6.5 or later
-  - [SQLite](https://www.sqlite.org)
 - Supported OS (Others are not tested yet)
   - Windows 10 1903 or later with UTF-8 enabled
   - Arch Linux
