@@ -24,6 +24,7 @@
 #include <new>
 
 #include "QCoreApplication"
+#include "QKeyEvent"
 #include "QMessageBox"
 
 #include "controller/global/init.hpp"
@@ -87,6 +88,8 @@ uint_fast8_t ServerConfig::init()
 // private slots
 void ServerConfig::onWaitForInitDone()
 {
+    m_ui->ip->setText(QString::fromStdString(Controller::Global::config.listenIP()));
+    m_ui->port->setValue(Controller::Global::config.listenPort());
     if (!Controller::Global::config.autoStartServer())
     {
         goto exit;
@@ -99,9 +102,26 @@ exit:
     setEnabled(true);
 }
 
-void ServerConfig::onAutoStartClicked(bool checked)
+void ServerConfig::onAutoStartClicked(bool)
 {
-    Controller::Global::config.setAutoStartServer(checked);
+    if (m_ui->autostart->checkState() == Qt::Unchecked)
+    {
+        Controller::Global::config.setAutoStartServer(false);
+    }
+    else
+    {
+        Controller::Global::config.setAutoStartServer(true);
+    }
+}
+
+void ServerConfig::onServerEditFinished()
+{
+    if (m_ui->ip->text().isEmpty())
+    {
+        return;
+    }
+
+    onStartClicked(true);
 }
 
 void ServerConfig::onClearClicked(bool)
@@ -156,6 +176,13 @@ void ServerConfig::connectHook()
         &QCheckBox::clicked,
         this,
         &ServerConfig::onAutoStartClicked
+    );
+
+    connect(
+        m_ui->ip,
+        &QLineEdit::returnPressed,
+        this,
+        &ServerConfig::onServerEditFinished
     );
 
     connect(

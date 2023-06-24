@@ -59,6 +59,8 @@ private slots:
 
     void onAutoStartClicked(bool);
 
+    void onServerEditFinished();
+
     void onClearClicked(bool);
 
     void onStartClicked(bool);
