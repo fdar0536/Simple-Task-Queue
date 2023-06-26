@@ -22,14 +22,17 @@
 
 #include <new>
 
+#include "QCloseEvent"
 #include "QMenu"
 #include "QStandardPaths"
 
 #include "controller/global/init.hpp"
 #include "controller/gui/logsink.hpp"
 
-#include "mainwindow.hpp"
+#include "log.hpp"
 #include "serverconfig.hpp"
+
+#include "mainwindow.hpp"
 #include "../../view/gui/ui_mainwindow.h"
 
 namespace Controller
@@ -40,13 +43,14 @@ namespace GUI
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    m_ui(nullptr),
-    m_centerWidget(CenterWidget::ServerConfig)
+    m_ui(nullptr)
 {}
 
 MainWindow::~MainWindow()
 {
     if (m_ui) delete m_ui;
+    trayIconFin();
+
     spdlog::set_default_logger(m_defaultLogger);
 }
 
@@ -72,6 +76,16 @@ uint_fast8_t MainWindow::init()
 
     m_ui->setupUi(this);
 
+    if (trayIconInit())
+    {
+        spdlog::error("{}:{} trayIconInit failed", __FILE__, __LINE__);
+        delete m_ui;
+        m_ui = nullptr;
+        trayIconFin();
+        return 1;
+    }
+
+    connectHook();
     ServerConfig *serverConfig = new (std::nothrow) ServerConfig(this);
     if (!serverConfig)
     {
@@ -82,20 +96,13 @@ uint_fast8_t MainWindow::init()
         return 1;
     }
 
-    if (trayIconInit())
-    {
-        spdlog::error("{}:{} trayIconInit failed", __FILE__, __LINE__);
-        delete m_ui;
-        m_ui = nullptr;
-        return 1;
-    }
-
     if (serverConfig->init())
     {
         delete m_ui;
         m_ui = nullptr;
         delete serverConfig;
         serverConfig = nullptr;
+        trayIconFin();
         spdlog::error("{}:{} Fail to initialize server config",
                       __FILE__, __LINE__);
         return 1;
@@ -103,6 +110,60 @@ uint_fast8_t MainWindow::init()
 
     setCentralWidget(serverConfig);
     return 0;
+}
+
+// protected member functions
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    event->ignore();
+    hide();
+}
+
+// privatew slots
+void
+MainWindow::onIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::Trigger ||
+        reason == QSystemTrayIcon::DoubleClick)
+    {
+        show();
+    }
+}
+
+void MainWindow::onServerConfigActionTriggered(bool)
+{
+    updateCentralWidget<ServerConfig>();
+}
+
+void MainWindow::onLogActionTriggered(bool)
+{
+    updateCentralWidget<Log>();
+}
+
+void MainWindow::onAboutQtActionTriggered(bool)
+{
+    QMessageBox::aboutQt(this);
+}
+
+void MainWindow::onExitActionTriggered(bool)
+{
+    show();
+    auto res = QMessageBox::question(this,
+                                     tr("Exit"),
+                                     tr("Are you sure to exit?"),
+                                     QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+    if (res != QMessageBox::Yes)
+    {
+        return;
+    }
+
+    QApplication::exit(0);
+}
+
+void MainWindow::onShowActionTriggered(bool)
+{
+    show();
 }
 
 // private member functions
@@ -156,6 +217,7 @@ uint_fast8_t MainWindow::trayIconInit()
         m_iconContextMenu = new (std::nothrow) QMenu;
         if (!m_iconContextMenu)
         {
+            trayIconFin();
             spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
             return 1;
         }
@@ -163,6 +225,7 @@ uint_fast8_t MainWindow::trayIconInit()
         m_showAction = new (std::nothrow) QAction("Show", this);
         if (!m_showAction)
         {
+            trayIconFin();
             spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
             return 1;
         }
@@ -173,6 +236,70 @@ uint_fast8_t MainWindow::trayIconInit()
     }
 
     return 0;
+}
+
+void MainWindow::trayIconFin()
+{
+    if (QSystemTrayIcon::isSystemTrayAvailable())
+    {
+        if (m_icon)
+        {
+            delete m_icon;
+            m_icon = nullptr;
+        }
+
+        if (m_iconContextMenu)
+        {
+            delete m_iconContextMenu;
+            m_iconContextMenu = nullptr;
+        }
+
+        if (m_showAction)
+        {
+            delete m_showAction;
+            m_showAction = nullptr;
+        }
+    }
+}
+
+void MainWindow::connectHook()
+{
+    connect(
+        m_ui->actionServer_Config,
+        &QAction::triggered,
+        this,
+        &MainWindow::onServerConfigActionTriggered
+    );
+
+    connect(
+        m_ui->actionLog,
+        &QAction::triggered,
+        this,
+        &MainWindow::onLogActionTriggered
+    );
+
+    connect(m_ui->actionAbout_Qt,
+            &QAction::triggered,
+            this,
+            &MainWindow::onAboutQtActionTriggered);
+
+    connect(m_ui->actionExit,
+            &QAction::triggered,
+            this,
+            &MainWindow::onExitActionTriggered);
+
+    if (QSystemTrayIcon::isSystemTrayAvailable())
+    {
+        connect(m_icon,
+                &QSystemTrayIcon::activated,
+                this,
+                &MainWindow::onIconActivated);
+
+        connect(m_showAction,
+                &QAction::triggered,
+                this,
+                &MainWindow::onShowActionTriggered);
+    }
 }
 
 } // namespace GUI

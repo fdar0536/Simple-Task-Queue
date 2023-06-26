@@ -32,6 +32,8 @@ if(ENABLE_GUI)
 
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
+        "controller/gui/log.cpp"
+        "controller/gui/log.hpp"
         "controller/gui/logsink.hpp"
         "controller/gui/mainwindow.cpp"
         "controller/gui/mainwindow.hpp"
@@ -40,6 +42,7 @@ if(ENABLE_GUI)
     )
 
     set(VIEW_SRC
+        "view/gui/log.ui"
         "view/gui/mainwindow.ui"
         "view/gui/serverconfig.ui"
         "view/gui/resource.qrc"

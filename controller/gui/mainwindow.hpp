@@ -24,6 +24,7 @@
 #define _CONTROLLER_GUI_MAINWINDOW_HPP_
 
 #include "QMainWindow"
+#include "QMessageBox"
 #include "QSystemTrayIcon"
 #include "spdlog/spdlog.h"
 
@@ -52,24 +53,29 @@ public:
 
     uint_fast8_t init();
 
+protected:
+
+    virtual void closeEvent(QCloseEvent *) override;
+
+private slots:
+    void onIconActivated(QSystemTrayIcon::ActivationReason);
+
+    // action
+    void onServerConfigActionTriggered(bool);
+
+    void onLogActionTriggered(bool);
+
+    void onAboutQtActionTriggered(bool);
+
+    void onExitActionTriggered(bool);
+
+    void onShowActionTriggered(bool);
+
 private:
 
     Ui::MainWindow *m_ui;
 
     std::shared_ptr<spdlog::logger> m_defaultLogger;
-
-    typedef enum class CenterWidget
-    {
-        ServerConfig,
-        ClientConfig,
-        QueueList,
-        Queued,
-        Done,
-        Console,
-        Log
-    } CenterWidget;
-
-    CenterWidget m_centerWidget;
 
     QSystemTrayIcon *m_icon;
 
@@ -83,7 +89,35 @@ private:
 
     uint_fast8_t trayIconInit();
 
+    void trayIconFin();
+
     void connectHook();
+
+    template<class T>
+    void updateCentralWidget()
+    {
+        T *newWidget = new (std::nothrow) T(this);
+        if (!newWidget)
+        {
+            QMessageBox::critical(this, tr("Error"), tr("Fail to allocate memory"));
+            spdlog::error("{}:{} Fail to allocate memory",
+                          __FILE__, __LINE__);
+            return;
+        }
+
+        if (newWidget->init())
+        {
+            delete newWidget;
+            QMessageBox::critical(this, tr("Error"), tr("Fail to initialize widget"));
+            spdlog::error("{}:{} Fail to initialize widget",
+                          __FILE__, __LINE__);
+            return;
+        }
+
+        QWidget *toRemove = takeCentralWidget();
+        delete toRemove;
+        setCentralWidget(newWidget);
+    }
 
 }; // end class MainWindow
 
