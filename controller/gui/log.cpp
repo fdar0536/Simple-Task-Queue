@@ -72,7 +72,18 @@ uint_fast8_t Log::init()
         return 1;
     }
 
-    m_ui->setupUi(this);
+    try
+    {
+        m_ui->setupUi(this);
+    }
+    catch(...)
+    {
+        delete m_ui;
+        m_ui = nullptr;
+        spdlog::error("{}:{} Fail to allocate memory",
+                      __FILE__, __LINE__);
+        return 1;
+    }
 
     m_timer = new (std::nothrow) QTimer(this);
     if (!m_timer)

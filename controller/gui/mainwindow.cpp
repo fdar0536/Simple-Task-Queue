@@ -29,6 +29,7 @@
 #include "controller/global/init.hpp"
 #include "controller/gui/logsink.hpp"
 
+#include "clientconfig.hpp"
 #include "log.hpp"
 #include "serverconfig.hpp"
 
@@ -74,7 +75,18 @@ uint_fast8_t MainWindow::init()
         return 1;
     }
 
-    m_ui->setupUi(this);
+    try
+    {
+        m_ui->setupUi(this);
+    }
+    catch(...)
+    {
+        delete m_ui;
+        m_ui = nullptr;
+        spdlog::error("{}:{} Fail to allocate memory",
+                      __FILE__, __LINE__);
+        return 1;
+    }
 
     if (trayIconInit())
     {
@@ -133,6 +145,11 @@ MainWindow::onIconActivated(QSystemTrayIcon::ActivationReason reason)
 void MainWindow::onServerConfigActionTriggered(bool)
 {
     updateCentralWidget<ServerConfig>();
+}
+
+void MainWindow::onClientConfigActionTriggered(bool)
+{
+    updateCentralWidget<ClientConfig>();
 }
 
 void MainWindow::onLogActionTriggered(bool)
@@ -269,6 +286,13 @@ void MainWindow::connectHook()
         &QAction::triggered,
         this,
         &MainWindow::onServerConfigActionTriggered
+    );
+
+    connect(
+        m_ui->actionClient_Config,
+        &QAction::triggered,
+        this,
+        &MainWindow::onClientConfigActionTriggered
     );
 
     connect(

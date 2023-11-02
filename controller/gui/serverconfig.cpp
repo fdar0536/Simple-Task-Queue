@@ -39,11 +39,12 @@ namespace Controller
 namespace GUI
 {
 
+static std::atomic<bool> isNotInit = std::atomic<bool>(true);
+
 ServerConfig::ServerConfig(QWidget *parent) :
     QWidget(parent),
     m_ui(nullptr)
-{
-}
+{}
 
 ServerConfig::~ServerConfig()
 {
@@ -67,18 +68,52 @@ uint_fast8_t ServerConfig::init()
         return 1;
     }
 
-    m_ui->setupUi(this);
+    try
+    {
+        m_ui->setupUi(this);
+    }
+    catch(...)
+    {
+        delete m_ui;
+        m_ui = nullptr;
+        spdlog::error("{}:{} Fail to allocate memory",
+                      __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (Controller::Global::sqliteQueueList == nullptr)
+    {
+        setEnabled(false);
+        return 0;
+    }
+
     connectHook();
 
     m_ui->ip->setText(QString::fromStdString(Controller::Global::config.listenIP()));
     m_ui->port->setValue(Controller::Global::config.listenPort());
-    if (!Controller::Global::config.autoStartServer())
-    {
-        goto exit;
-    }
 
-    m_ui->autostart->setChecked(true);
-    onStartClicked(true);
+    if (isNotInit.load(std::memory_order_relaxed))
+    {
+        if (!Controller::Global::config.autoStartServer())
+        {
+            goto exit;
+        }
+
+        m_ui->autostart->setChecked(true);
+        onStartClicked(true);
+        isNotInit.store(false, std::memory_order_relaxed);
+    }
+    else
+    {
+        if (Controller::Global::server.isRunning())
+        {
+            m_ui->ip->setEnabled(false);
+            m_ui->port->setEnabled(false);
+            m_ui->clear->setEnabled(false);
+            m_ui->start->setEnabled(false);
+            m_ui->stop->setEnabled(true);
+        }
+    }
 
 exit:
     setEnabled(true);

@@ -63,6 +63,8 @@ private slots:
     // action
     void onServerConfigActionTriggered(bool);
 
+    void onClientConfigActionTriggered(bool);
+
     void onLogActionTriggered(bool);
 
     void onAboutQtActionTriggered(bool);

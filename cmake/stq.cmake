@@ -30,6 +30,10 @@ if(ENABLE_GUI)
 
     list(APPEND CONTROLLER_SRC
 
+        "controller/gui/clientconfig.cpp"
+        "controller/gui/clientconfig.hpp"
+        "controller/gui/clientconfigthread.cpp"
+        "controller/gui/clientconfigthread.hpp"
         "controller/gui/global.cpp"
         "controller/gui/global.hpp"
         "controller/gui/log.cpp"
@@ -42,6 +46,7 @@ if(ENABLE_GUI)
     )
 
     set(VIEW_SRC
+        "view/gui/clientconfig.ui"
         "view/gui/log.ui"
         "view/gui/mainwindow.ui"
         "view/gui/serverconfig.ui"
