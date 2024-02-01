@@ -41,7 +41,6 @@
 #endif // STQ_MOBILE
 
 #include "QIcon"
-#include "QQuickStyle"
 
 #include "controller/gui/global.hpp"
 #include "controller/gui/mainwindow.hpp"
@@ -98,6 +97,7 @@ int main(int argc, char **argv)
     if (w.init())
     {
         spdlog::error("{}:{} Fail to initialize MainWindow", __FILE__, __LINE__);
+        ret = 1;
         goto exit;
     }
 

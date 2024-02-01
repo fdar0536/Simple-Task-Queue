@@ -61,7 +61,7 @@ find_package(SQLite3 REQUIRED)
 find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
 
 if (ENABLE_GUI)
-    find_package(Qt6 6.5 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
+    find_package(Qt6 6.5 COMPONENTS Widgets REQUIRED)
 endif (ENABLE_GUI)
 
 set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)

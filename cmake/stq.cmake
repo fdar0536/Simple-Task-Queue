@@ -65,12 +65,6 @@ if(ENABLE_GUI)
 
     add_dependencies(STQ grpc_common)
 
-    list(APPEND STQ_LIBS
-
-        Qt6::Quick
-        Qt6::QuickControls2
-    )
-
     target_link_libraries(STQ
         PRIVATE
 

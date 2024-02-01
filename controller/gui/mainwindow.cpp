@@ -121,6 +121,7 @@ uint_fast8_t MainWindow::init()
     }
 
     setCentralWidget(serverConfig);
+    setFixedSize(700, 360);
     return 0;
 }
 
