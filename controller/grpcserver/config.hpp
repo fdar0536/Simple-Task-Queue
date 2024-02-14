@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GLOBAL_CONFIG_HPP_
-#define _CONTROLLER_GLOBAL_CONFIG_HPP_
+#ifndef _CONTROLLER_GRPCSERVER_CONFIG_HPP_
+#define _CONTROLLER_GRPCSERVER_CONFIG_HPP_
 
 #include <mutex>
 #include <string>
@@ -32,12 +32,12 @@
 
 #include "spdlog/spdlog.h"
 
-#include "defines.hpp"
+#include "controller/global/defines.hpp"
 
 namespace Controller
 {
 
-namespace Global
+namespace GRPCServer
 {
 
 class Config
@@ -51,18 +51,6 @@ public:
     static uint_fast8_t parse(Config *in, int argc, char **argv);
 
     static uint_fast8_t parse(Config *, const std::string &);
-
-#ifdef STQ_GUI
-    static uint_fast8_t save(Config *, const std::string &);
-
-    bool autoStartServer();
-
-    void setAutoStartServer(bool);
-
-    std::string configPath();
-
-    uint_fast8_t setConfigPath(const std::string &);
-#endif
 
     std::string dbPath();
 
@@ -88,12 +76,6 @@ private:
 
     static void printHelp(char **argv);
 
-#ifdef STQ_GUI
-    std::string m_configPath = "";
-
-    bool m_autoStartServer = false;
-#endif
-
     std::string m_dbPath;
 
     std::string m_logPath = "";
@@ -107,8 +89,8 @@ private:
     std::mutex m_mutex = std::mutex();
 };
 
-} // end namespace Global
+} // end namespace GRPCServer
 
 } // end namespace Model
 
-#endif // _CONTROLLER_GLOBAL_CONFIG_HPP_
+#endif // _CONTROLLER_GRPCSERVER_CONFIG_HPP_

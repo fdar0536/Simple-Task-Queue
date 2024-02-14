@@ -26,7 +26,7 @@
 
 #include "server.hpp"
 
-#include "controller/global/init.hpp"
+#include "controller/grpcserver/init.hpp"
 
 namespace Controller
 {
@@ -35,11 +35,7 @@ namespace GRPCServer
 {
 
 Server::Server()
-{
-#ifdef STQ_GUI
-    m_isRunning.store(false, std::memory_order_relaxed);
-#endif
-}
+{}
 
 Server::~Server()
 {
@@ -48,19 +44,11 @@ Server::~Server()
 
 uint_fast8_t Server::start()
 {
-#ifdef STQ_GUI
-    if (m_isRunning.load(std::memory_order_relaxed))
-    {
-        spdlog::warn("{}:{} Server is running", __FILE__, __LINE__);
-        return 0;
-    }
-#endif
-
     try
     {
         grpc::ServerBuilder builder;
-        std::string listenAddr = Global::config.listenIP() + ":" +
-                                 std::to_string(Global::config.listenPort());
+        std::string listenAddr = GRPCServer::config.listenIP() + ":" +
+                                 std::to_string(GRPCServer::config.listenPort());
         int actualPort(0);
         builder.AddListeningPort(listenAddr,
                                  grpc::InsecureServerCredentials(),
@@ -69,14 +57,10 @@ uint_fast8_t Server::start()
         builder.RegisterService(&m_accessImpl);
         builder.RegisterService(&m_queueImpl);
         builder.RegisterService(&m_queueListImpl);
-#ifdef STQ_GUI
-        m_isRunning.store(true, std::memory_order_relaxed);
-#endif
         m_server = builder.BuildAndStart();
         spdlog::info("{}:{} Server is listening on {}", __FILE__, __LINE__,
                      listenAddr);
 
-#ifndef STQ_GUI
         auto serveFn = [this]()
         {
             this->m_server->Wait();
@@ -88,15 +72,11 @@ uint_fast8_t Server::start()
         m_server->Shutdown();
         m_thread = std::jthread();
         m_server = nullptr;
-#endif
     }
     catch (...)
     {
         spdlog::error("{}:{} Fail to start server", __FILE__, __LINE__);
         m_server = nullptr;
-#ifdef STQ_GUI
-        m_isRunning.store(false, std::memory_order_relaxed);
-#endif
         return 1;
     }
 
@@ -105,34 +85,8 @@ uint_fast8_t Server::start()
 
 void Server::stop()
 {
-#ifdef STQ_GUI
-    if (!m_isRunning.load(std::memory_order_relaxed))
-    {
-        spdlog::warn("{}:{} Server is not running", __FILE__, __LINE__);
-        return;
-    }
-
-    try
-    {
-        m_server->Shutdown();
-        m_server = nullptr;
-        m_isRunning.store(false, std::memory_order_relaxed);
-    }
-    catch (...)
-    {
-        spdlog::error("{}:{} Fail to stop server", __FILE__, __LINE__);
-    }
-#else
     m_exitRequested.set_value();
-#endif
 }
-
-#ifdef STQ_GUI
-bool Server::isRunning() const
-{
-    return m_isRunning.load(std::memory_order_relaxed);
-}
-#endif
 
 } // end namespace GRPCServer
 

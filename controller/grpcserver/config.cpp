@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,21 +38,14 @@
 namespace Controller
 {
 
-namespace Global
+namespace GRPCServer
 {
 
 Config::Config()
 {}
 
 Config::~Config()
-{
-#ifdef STQ_GUI
-    if (!m_configPath.empty())
-    {
-        UNUSED(save(this, m_configPath));
-    }
-#endif
-}
+{}
 
 uint_fast8_t Config::parse(Config *in, int argc, char **argv)
 {
@@ -81,20 +74,15 @@ uint_fast8_t Config::parse(Config *in, int argc, char **argv)
     };
 
     int c(0);
-#ifndef STQ_GUI
     std::string configFile("");
-#endif
+
     while ((c = getopt_long(argc, argv, "c:", opts, NULL)) != -1)
     {
         switch (c)
         {
         case 'c':
         {
-#ifdef STQ_GUI
-            in->m_configPath = optarg;
-#else
             configFile = optarg;
-#endif
             if (Model::DAO::DirUtils::verifyFile(optarg))
             {
                 spdlog::error("{}:{} Fail to verify config file", __FILE__, __LINE__);
@@ -110,33 +98,13 @@ uint_fast8_t Config::parse(Config *in, int argc, char **argv)
         } // end switch(c)
     }
 
-#ifdef STQ_GUI
-    if (in->m_configPath.empty())
-#else
     if (configFile.empty())
-#endif
     {
         spdlog::warn("{}:{} no config file", __FILE__, __LINE__);
         return 0;
     }
 
-#ifdef STQ_GUI
-    if (Model::DAO::DirUtils::verifyFile(in->m_configPath))
-    {
-        spdlog::error("{}:{} fail to parse config file", __FILE__, __LINE__);
-        return 1;
-    }
-
-    if (parse(in, in->m_configPath))
-#else
-    if (Model::DAO::DirUtils::verifyFile(in->configFile))
-    {
-        spdlog::error("{}:{} fail to parse config file", __FILE__, __LINE__);
-        return 1;
-    }
-
     if (parse(in, configFile))
-#endif
     {
         spdlog::error("{}:{} fail to parse config file", __FILE__, __LINE__);
         return 1;
@@ -184,12 +152,6 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
         inipp::Ini<char> ini;
         ini.parse(i);
         i.close();
-
-#ifdef STQ_GUI
-        UNUSED(get_value(ini.sections["Settings"],
-                                    "auto start server",
-                                    obj->m_autoStartServer));
-#endif
 
         UNUSED(get_value(ini.sections["Settings"],
                          "db path",
@@ -242,100 +204,6 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
 
     return 0;
 }
-
-#ifdef STQ_GUI
-uint_fast8_t Config::save(Config *obj, const std::string &path)
-{
-    if (!obj)
-    {
-        spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
-        return 1;
-    }
-
-    if (path.empty())
-    {
-        spdlog::warn("{}:{} invalid path", __FILE__, __LINE__);
-        return 1;
-    }
-
-    std::unique_lock<std::mutex> lock(obj->m_mutex);
-    std::fstream i;
-    try
-    {
-        inipp::Ini<char> ini;
-        ini.sections["Settings"]["auto start server"] =
-            std::to_string(obj->m_autoStartServer);
-
-        ini.sections["Settings"]["db path"] =
-            obj->m_dbPath;
-
-        ini.sections["Settings"]["log path"] =
-            obj->m_logPath;
-
-        ini.sections["Settings"]["port"] =
-            std::to_string(obj->m_listenPort);
-
-        ini.sections["Settings"]["ip"] =
-            obj->m_listenIP;
-
-        ini.sections["Settings"]["log level"] =
-            std::to_string(static_cast<uint_fast8_t>(obj->m_logLevel));
-
-        i.open(path, std::ifstream::out | std::ifstream::trunc);
-        if (i.fail())
-        {
-            spdlog::warn("{}:{} Fail to open file: {}", __FILE__, __LINE__, path);
-            return 1;
-        }
-
-        ini.generate(i);
-        i.close();
-    }
-    catch(...)
-    {
-        i.close();
-        spdlog::error("{}:{} error caught", __FILE__, __LINE__);
-        return 1;
-    }
-
-    return 0;
-}
-
-bool Config::autoStartServer()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    return m_autoStartServer;
-}
-
-void Config::setAutoStartServer(bool in)
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_autoStartServer = in;
-}
-
-std::string Config::configPath()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    return m_configPath;
-}
-
-uint_fast8_t Config::setConfigPath(const std::string &in)
-{
-    if (Model::DAO::DirUtils::verifyFile(in))
-    {
-        spdlog::error("{}:{} Fail to verify \"in\"", __FILE__, __LINE__);
-        return 1;
-    }
-
-    {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_configPath = in;
-    }
-
-    return 0;
-}
-
-#endif
 
 std::string Config::dbPath()
 {
@@ -430,6 +298,6 @@ void Config::printHelp(char **argv)
     Model::Utils::writeConsole("--config-file <file>, -c <file>: set config file\n");
 }
 
-} // end namespace Global
+} // end namespace GRPCServer
 
 } // end namespace Model

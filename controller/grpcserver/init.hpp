@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2024 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,37 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_ALIAS_HPP_
-#define _MODEL_ALIAS_HPP_
+#ifndef _CONTROLLER_GRPCSERVER_INIT_HPP_
+#define _CONTROLLER_GRPCSERVER_INIT_HPP_
 
-#define u8  uint_fast8_t
-#define u16 uint_fast16_t
-#define u32 uint_fast32_t
-#define u64 uint_fast64_t
+#include <inttypes.h>
 
-#define i8  int_fast8_t
-#define i16 int_fast16_t
-#define i32 int_fast32_t
-#define i64 int_fast64_t
+#include "config.hpp"
+#include "controller/global/defines.hpp"
 
-#endif // _MODEL_ALIAS_HPP_
+#include "controller/grpcserver/server.hpp"
+#include "model/dao/sqlitequeuelist.hpp"
+
+namespace Controller
+{
+
+namespace GRPCServer
+{
+
+extern Config config;
+
+extern GRPCServer::Server server;
+
+extern std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList;
+
+u8 init(int argc, char **argv);
+
+void fin();
+
+u8 initSQLiteQueueList();
+
+} // end namespace GRPCServer
+
+} // end namespace Controller
+
+#endif // _CONTROLLER_GRPCSERVER_INIT_HPP_

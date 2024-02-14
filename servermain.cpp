@@ -27,25 +27,9 @@
 #include "windows.h"
 #endif
 
-#include "QSettings"
 #include "spdlog/spdlog.h"
 
-#include "controller/global/init.hpp"
-
-#ifdef STQ_GUI
-
-#ifdef STQ_MOBILE
-#include "QGuiApplication"
-#else
-#include "QApplication"
-#endif // STQ_MOBILE
-
-#include "QIcon"
-
-#include "controller/gui/global.hpp"
-#include "controller/gui/mainwindow.hpp"
-
-#endif // STQ_GUI
+#include "controller/grpcserver/init.hpp"
 
 static bool isAdmin();
 
@@ -67,7 +51,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (Controller::Global::init(argc, argv))
+    if (Controller::GRPCServer::init(argc, argv))
     {
         spdlog::error("{}:{} Fail to initialize", __FILE__, __LINE__);
         return 1;
@@ -85,34 +69,14 @@ int main(int argc, char **argv)
 #endif
 
     int ret(0);
-#ifdef STQ_GUI
 
-    QApplication app(argc, argv);
-    app.setWindowIcon(QIcon(":/stq.ico"));
-    QSettings::setDefaultFormat(QSettings::IniFormat);
-    qApp->setOrganizationName("fdar0536");
-    qApp->setApplicationName("STQ");
-
-    Controller::GUI::MainWindow w;
-    if (w.init())
-    {
-        spdlog::error("{}:{} Fail to initialize MainWindow", __FILE__, __LINE__);
-        ret = 1;
-        goto exit;
-    }
-
-    w.show();
-    ret = app.exec();
-#else
-    if (Controller::Global::server.start())
+    if (Controller::GRPCServer::server.start())
     {
         spdlog::error("{}:{} Fail to start server", __FILE__, __LINE__);
         ret = 1;
     }
-#endif // STQ_GUI
 
-exit:
-    Controller::Global::fin();
+    Controller::GRPCServer::fin();
     return ret;
 }
 
@@ -149,17 +113,7 @@ static void sighandler(int signum)
     UNUSED(signum);
     spdlog::info("{}:{} Signaled: {}", __FILE__, __LINE__, signum);
     spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
-#ifdef STQ_GUI
-
-#ifdef STQ_MOBILE
-    QGuiApplication::quit();
-#else
-    QApplication::quit();
-#endif // STQ_MOBILE
-
-#else
-    Controller::Global::server.stop();
-#endif // STQ_GUI
+    Controller::GRPCServer::server.stop();
 }
 
 #ifdef _WIN32

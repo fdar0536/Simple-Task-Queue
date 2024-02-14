@@ -33,7 +33,7 @@
 #include "grpcpp/grpcpp.h"
 #endif
 
-#include "alias.hpp"
+#include "controller/global/defines.hpp"
 
 #define ErrCode_OK               0
 #define ErrCode_INVALID_ARGUMENT 1

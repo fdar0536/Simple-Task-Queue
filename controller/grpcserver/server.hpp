@@ -35,9 +35,7 @@
 #include "queueimpl.hpp"
 #include "queuelistimpl.hpp"
 
-#ifndef STQ_GUI
 #include <future>
-#endif
 
 namespace Controller
 {
@@ -53,27 +51,17 @@ public:
 
     ~Server();
 
-    uint_fast8_t start();
+    u8 start();
 
     void stop();
 
-#ifdef STQ_GUI
-    bool isRunning() const;
-#endif
-
 private:
 
-#ifdef STQ_GUI
-    std::atomic<bool> m_isRunning;
-#endif
-
-#ifndef STQ_GUI
     std::jthread m_thread;
 
     std::promise<void> m_exitRequested;
 
     std::future<void> m_future;
-#endif
 
     std::unique_ptr<grpc::Server> m_server = nullptr;
 

@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,22 +33,18 @@
 
 #include "spdlog/spdlog.h"
 
-#ifndef STQ_GUI
 #include "spdlog/sinks/daily_file_sink.h"
-#endif
 
+#include "model/errmsg.hpp"
 #include "model/utils.hpp"
+#include "model/dao/sqliteconnect.hpp"
 
 #include "init.hpp"
-
-#ifdef STQ_GUI
-#include "controller/gui/global.hpp"
-#endif
 
 namespace Controller
 {
 
-namespace Global
+namespace GRPCServer
 {
 
 Config config;
@@ -57,23 +53,13 @@ GRPCServer::Server server;
 
 std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList = nullptr;
 
-#ifdef STQ_GUI
-Controller::GUI::Global guiGlobal;
-#endif
-
-#ifndef STQ_GUI
 #ifdef _WIN32
 static UINT consoleCP(0);
 
 static UINT consoleOutputCP(0);
 #endif
-#endif
-
 static uint_fast8_t initConsole();
-
-#ifndef STQ_GUI
 static void initSpdlog();
-#endif
 
 uint_fast8_t init(int argc, char **argv)
 {
@@ -97,32 +83,20 @@ uint_fast8_t init(int argc, char **argv)
 
     Model::ErrMsg::init();
 
-#ifndef STQ_GUI
     initSpdlog();
-#endif
     return 0;
 }
 
 void fin()
 {
-#ifndef STQ_GUI
 #ifdef _WIN32
     SetConsoleCP(consoleCP);
     SetConsoleOutputCP(consoleOutputCP);
-#endif
 #endif
 }
 
 uint_fast8_t initSQLiteQueueList()
 {
-#ifdef STQ_GUI
-    if (config.dbPath().empty())
-    {
-        spdlog::warn("{}:{} SQLite is not initialized", __FILE__, __LINE__);
-        return 0;
-    }
-#endif
-
     Model::DAO::SQLiteConnect *conn(nullptr);
     try
     {
@@ -139,11 +113,7 @@ uint_fast8_t initSQLiteQueueList()
         return 1;
     }
 
-    Model::ErrMsg msg;
-    Model::ErrMsg::ErrCode code;
-    conn->startConnect(msg, config.dbPath());
-    msg.msg(&code, nullptr);
-    if (code != Model::ErrMsg::OK)
+    if (conn->startConnect(config.dbPath()))
     {
         delete conn;
         spdlog::error("{}:{} Fail to initialize sqlite", __FILE__, __LINE__);
@@ -162,9 +132,7 @@ uint_fast8_t initSQLiteQueueList()
         return 1;
     }
 
-    sqlPtr->init(connPtr, msg);
-    msg.msg(&code, nullptr);
-    if (code != Model::ErrMsg::OK)
+    if (sqlPtr->init(connPtr))
     {
         spdlog::error("{}:{} Fail to initialize sqlite queue list", __FILE__, __LINE__);
         delete sqlPtr;
@@ -178,7 +146,7 @@ uint_fast8_t initSQLiteQueueList()
 static uint_fast8_t initConsole()
 {
     fflush(stdout);
-#ifndef STQ_GUI
+
 #ifdef _MSC_VER
 #   pragma region WIN_UNICODE_SUPPORT_MAIN
 #endif
@@ -228,12 +196,11 @@ static uint_fast8_t initConsole()
 #ifdef _MSC_VER
 #   pragma endregion
 #endif
-#endif // STQ_GUI
+
     std::ios::sync_with_stdio(false);
     return 0;
 }
 
-#ifndef STQ_GUI
 static void initSpdlog()
 {
     auto daily_logger = spdlog::daily_logger_mt(
@@ -241,8 +208,7 @@ static void initSpdlog()
         config.logPath() + "/STQLog.log");
     spdlog::set_default_logger(daily_logger);
 }
-#endif
 
-} // end namespace Global
+} // end namespace GRPCServer
 
 } // end namespace Model

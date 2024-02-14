@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,10 @@
 
 #include "spdlog/spdlog.h"
 
-#include "controller/global/init.hpp"
+#include "controller/global/defines.hpp"
+#include "model/errmsg.hpp"
+#include "init.hpp"
+
 #include "queuelistimpl.hpp"
 
 namespace Controller
@@ -54,15 +57,11 @@ QueueListImpl::Create(grpc::ServerContext *ctx,
                             "\"name\" is empty string");
     }
 
-    Model::ErrMsg msg;
-    Model::ErrMsg::ErrCode code;
-    std::string errMsg;
-    Global::sqliteQueueList->createQueue(req->name(), msg);
-    msg.msg(&code, &errMsg);
-    if (code != Model::ErrMsg::OK)
+    u8 code = sqliteQueueList->createQueue(req->name());
+    if (code)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return Model::ErrMsg::toGRPCStatus(code, errMsg);
+        return Model::ErrMsg::toGRPCStatus(code, "Fail to create queue");
     }
 
     return grpc::Status::OK;
@@ -90,15 +89,11 @@ QueueListImpl::Rename(grpc::ServerContext *ctx,
                             "\"oldName\" or \"newName\" is empty string");
     }
 
-    Model::ErrMsg msg;
-    Model::ErrMsg::ErrCode code;
-    std::string errMsg;
-    Global::sqliteQueueList->renameQueue(req->oldname(), req->newname(), msg);
-    msg.msg(&code, &errMsg);
-    if (code != Model::ErrMsg::OK)
+    u8 code = sqliteQueueList->renameQueue(req->oldname(), req->newname());
+    if (code)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return Model::ErrMsg::toGRPCStatus(code, errMsg);
+        return Model::ErrMsg::toGRPCStatus(code, "Fail to rename");
     }
 
     return grpc::Status::OK;
@@ -126,15 +121,11 @@ QueueListImpl::Delete(grpc::ServerContext *ctx,
                             "\"name\" is empty string");
     }
 
-    Model::ErrMsg msg;
-    Model::ErrMsg::ErrCode code;
-    std::string errMsg;
-    Global::sqliteQueueList->deleteQueue(req->name(), msg);
-    msg.msg(&code, &errMsg);
-    if (code != Model::ErrMsg::OK)
+    u8 code = sqliteQueueList->deleteQueue(req->name());
+    if (code)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return Model::ErrMsg::toGRPCStatus(code, errMsg);
+        return Model::ErrMsg::toGRPCStatus(code, "Fail to delete");
     }
 
     return grpc::Status::OK;
@@ -156,15 +147,11 @@ QueueListImpl::List(grpc::ServerContext *ctx,
     }
 
     std::vector<std::string> out;
-    Model::ErrMsg msg;
-    Model::ErrMsg::ErrCode code;
-    std::string errMsg;
-    Global::sqliteQueueList->listQueue(out, msg);
-    msg.msg(&code, &errMsg);
-    if (code != Model::ErrMsg::OK)
+    u8 code = sqliteQueueList->listQueue(out);
+    if (code)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return Model::ErrMsg::toGRPCStatus(code, errMsg);
+        return Model::ErrMsg::toGRPCStatus(code, "Fail to list queue");
     }
 
     stq::ListQueueRes toWrite;
@@ -191,7 +178,7 @@ QueueListImpl::GetQueue(grpc::ServerContext *ctx,
                             "Internal server error");
     }
 
-    auto queue = Global::sqliteQueueList->getQueue(req->name());
+    auto queue = sqliteQueueList->getQueue(req->name());
     if (queue == nullptr)
     {
         return grpc::Status(grpc::StatusCode::NOT_FOUND,

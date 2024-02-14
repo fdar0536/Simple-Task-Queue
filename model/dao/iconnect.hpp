@@ -26,7 +26,7 @@
 
 #include <string>
 
-#include "model/alias.hpp"
+#include "controller/global/defines.hpp"
 
 namespace Model
 {

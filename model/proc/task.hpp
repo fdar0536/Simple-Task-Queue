@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "model/alias.hpp"
+#include "controller/global/defines.hpp"
 
 namespace Model
 {

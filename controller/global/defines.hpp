@@ -28,4 +28,14 @@
 
 #define UNUSED(x) static_cast<void>(x)
 
+#define u8  uint_fast8_t
+#define u16 uint_fast16_t
+#define u32 uint_fast32_t
+#define u64 uint_fast64_t
+
+#define i8  int_fast8_t
+#define i16 int_fast16_t
+#define i32 int_fast32_t
+#define i64 int_fast64_t
+
 #endif // _CONTROLLER_GLOBAL_DEFINES_HPP_
