@@ -26,7 +26,6 @@
 
 #include <unordered_map>
 
-#include "sqliteconnect.hpp"
 #include "iqueuelist.hpp"
 
 namespace Model
