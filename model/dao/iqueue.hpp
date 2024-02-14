@@ -24,11 +24,11 @@
 #ifndef _MODEL_DAO_IQUEUE_HPP_
 #define _MODEL_DAO_IQUEUE_HPP_
 
+#include <memory>
 #include <vector>
 
 #include "model/proc/iproc.hpp"
 #include "model/proc/task.hpp"
-#include "model/errmsg.hpp"
 #include "iconnect.hpp"
 
 namespace Model
@@ -43,38 +43,35 @@ public:
 
     virtual ~IQueue() {}
 
-    virtual void init(std::shared_ptr<IConnect> &connect,
-                      std::shared_ptr<Proc::IProc> &process,
-                      const std::string &name,
-                      ErrMsg &msg) = 0;
+    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect,
+                              std::shared_ptr<Proc::IProc> &process,
+                              const std::string &name) = 0;
 
-    virtual void listPending(std::vector<int> &out, ErrMsg &msg) = 0;
+    virtual uint_fast8_t listPending(std::vector<int> &out) = 0;
 
-    virtual void listFinished(std::vector<int> &out, ErrMsg &msg) = 0;
+    virtual uint_fast8_t listFinished(std::vector<int> &out) = 0;
 
-    virtual void pendingDetails(const int_fast32_t id,
-                                Proc::Task &out,
-                                ErrMsg &msg) = 0;
+    virtual uint_fast8_t pendingDetails(const int_fast32_t id,
+                                        Proc::Task &out) = 0;
 
-    virtual void finishedDetails(const int_fast32_t id,
-                                 Proc::Task &out,
-                                 ErrMsg &msg) = 0;
+    virtual uint_fast8_t finishedDetails(const int_fast32_t id,
+                                         Proc::Task &out) = 0;
 
-    virtual void clearPending(ErrMsg &msg) = 0;
+    virtual uint_fast8_t clearPending() = 0;
 
-    virtual void clearFinished(ErrMsg &msg) = 0;
+    virtual uint_fast8_t clearFinished() = 0;
 
-    virtual void currentTask(Proc::Task &out, ErrMsg &msg) = 0;
+    virtual uint_fast8_t currentTask(Proc::Task &out) = 0;
 
-    virtual void addTask(Proc::Task &in, ErrMsg &msg) = 0;
+    virtual uint_fast8_t addTask(Proc::Task &in) = 0;
 
-    virtual void removeTask(const int_fast32_t in, ErrMsg &msg) = 0;
+    virtual uint_fast8_t removeTask(const int_fast32_t in) = 0;
 
     virtual bool isRunning() const = 0;
 
-    virtual void readCurrentOutput(std::string &out, ErrMsg &msg) = 0;
+    virtual uint_fast8_t readCurrentOutput(std::string &out) = 0;
 
-    virtual void start(ErrMsg &msg) = 0;
+    virtual uint_fast8_t start() = 0;
 
     virtual void stop() = 0;
 

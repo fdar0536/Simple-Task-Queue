@@ -45,6 +45,8 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
 option(ENABLE_GUI "enable GUI" on)
+option(ENABLE_CLI "enable CLI" on)
+option(ENABLE_SERVER "enable server" on)
 
 if (ENABLE_GUI)
     set(STQ_GUI ON)

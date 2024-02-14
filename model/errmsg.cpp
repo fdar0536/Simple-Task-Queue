@@ -26,56 +26,32 @@
 namespace Model
 {
 
+namespace ErrMsg
+{
+
 #ifndef STQ_MOBILE
-static std::unordered_map<ErrMsg::ErrCode, grpc::StatusCode> table;
+static std::unordered_map<uint_fast8_t, grpc::StatusCode> table;
 #endif
 
-ErrMsg::ErrMsg() :
-    m_code(OK),
-    m_msg("")
-{}
-
-void ErrMsg::init()
+void init()
 {
 #ifndef STQ_MOBILE
-    table[OK] = grpc::StatusCode::OK;
-    table[INVALID_ARGUMENT] = grpc::StatusCode::INVALID_ARGUMENT;
-    table[NOT_FOUND] = grpc::StatusCode::NOT_FOUND;
-    table[ALREADY_EXISTS] = grpc::StatusCode::ALREADY_EXISTS;
-    table[OUT_OF_RANGE] = grpc::StatusCode::OUT_OF_RANGE;
-    table[OS_ERROR] = grpc::StatusCode::INTERNAL;
+    table[ErrCode_OK] = grpc::StatusCode::OK;
+    table[ErrCode_INVALID_ARGUMENT] = grpc::StatusCode::INVALID_ARGUMENT;
+    table[ErrCode_NOT_FOUND] = grpc::StatusCode::NOT_FOUND;
+    table[ErrCode_ALREADY_EXISTS] = grpc::StatusCode::ALREADY_EXISTS;
+    table[ErrCode_OUT_OF_RANGE] = grpc::StatusCode::OUT_OF_RANGE;
+    table[ErrCode_OS_ERROR] = grpc::StatusCode::INTERNAL;
 #endif
 }
 
-void ErrMsg::setMsg(ErrCode code, const std::string &msg)
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_code = code;
-    m_msg = msg;
-}
-
-void ErrMsg::msg(ErrCode *code, std::string *msg)
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    if (code)
-    {
-        *code = m_code;
-    }
-
-    if (msg)
-    {
-        *msg = m_msg;
-    }
-
-    m_code = OK;
-    m_msg.clear();
-}
-
 #ifndef STQ_MOBILE
-grpc::Status ErrMsg::toGRPCStatus(ErrCode code, const std::string &msg)
+grpc::Status toGRPCStatus(uint_fast8_t code, const std::string &msg)
 {
     return grpc::Status(table[code], msg);
 }
 #endif
+
+} // end namespace ErrMsg
 
 } // end namespace Model

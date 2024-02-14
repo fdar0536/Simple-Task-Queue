@@ -25,9 +25,6 @@
 #define _MODEL_DAO_ICONNECT_HPP_
 
 #include <string>
-#include <memory>
-
-#include "model/errmsg.hpp"
 
 namespace Model
 {
@@ -42,11 +39,10 @@ public:
 
     virtual ~IConnect() = 0;
 
-    virtual void init(ErrMsg &) = 0;
+    virtual uint_fast8_t init() = 0;
 
-    virtual void startConnect(ErrMsg &,
-                              const std::string &target,
-                              const int_fast32_t port = 0) = 0;
+    virtual uint_fast8_t startConnect(const std::string &target,
+                                      const int_fast32_t port = 0) = 0;
 
     void *connectToken() const;
 

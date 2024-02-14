@@ -34,44 +34,26 @@
 #include "grpcpp/grpcpp.h"
 #endif
 
+#define ErrCode_OK               0
+#define ErrCode_INVALID_ARGUMENT 1
+#define ErrCode_NOT_FOUND        2
+#define ErrCode_ALREADY_EXISTS   3
+#define ErrCode_OUT_OF_RANGE     4
+#define ErrCode_OS_ERROR         5
+
 namespace Model
 {
 
-class ErrMsg
+namespace ErrMsg
 {
-public:
 
-    typedef enum ErrCode
-    {
-        OK = 0,
-        INVALID_ARGUMENT,
-        NOT_FOUND,
-        ALREADY_EXISTS,
-        OUT_OF_RANGE,
-        OS_ERROR
-    } ErrCode;
-
-    ErrMsg();
-
-    static void init();
-
-    void setMsg(ErrCode, const std::string &);
-
-    void msg(ErrCode * = nullptr, std::string * = nullptr);
+void init();
 
 #ifndef STQ_MOBILE
-    static grpc::Status toGRPCStatus(ErrCode, const std::string &);
-#endif
+grpc::Status toGRPCStatus(uint_fast8_t, const std::string &);
+#endif // STQ_MOBILE
 
-private:
-
-    ErrCode m_code;
-
-    std::string m_msg;
-
-    std::mutex m_mutex;
-
-}; // end class ErrMsg
+} // end namespace ErrMsg
 
 } // end namespace Model
 

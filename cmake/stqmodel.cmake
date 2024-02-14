@@ -5,29 +5,49 @@ set(MODEL_SRC
     model/dao/iconnect.hpp
     model/dao/iqueuelist.hpp
     model/dao/iqueue.hpp
-
-    model/dao/dirutils.cpp
-    model/dao/dirutils.hpp
-
-    #sqlite
-    model/dao/sqliteconnect.cpp
-    model/dao/sqliteconnect.hpp
-    model/dao/sqlitequeuelist.cpp
-    model/dao/sqlitequeuelist.hpp
-    model/dao/sqlitequeue.cpp
-    model/dao/sqlitequeue.hpp
-
-    # proc
-    model/proc/iproc.cpp
-    model/proc/iproc.hpp
-    model/proc/task.cpp
-    model/proc/task.hpp
-
-    model/errmsg.cpp
-    model/errmsg.hpp
-    model/utils.cpp
-    model/utils.hpp
 )
+
+if(ENABLE_SERVER)
+    list(APPEND MODEL_SRC
+        model/dao/dirutils.cpp
+        model/dao/dirutils.hpp
+
+        #sqlite
+        model/dao/sqliteconnect.cpp
+        model/dao/sqliteconnect.hpp
+        model/dao/sqlitequeuelist.cpp
+        model/dao/sqlitequeuelist.hpp
+        model/dao/sqlitequeue.cpp
+        model/dao/sqlitequeue.hpp
+
+        # proc
+        model/proc/iproc.cpp
+        model/proc/iproc.hpp
+        model/proc/task.cpp
+        model/proc/task.hpp
+
+        model/errmsg.cpp
+        model/errmsg.hpp
+        model/utils.cpp
+        model/utils.hpp
+    )
+
+    if (WIN32)
+        list(APPEND MODEL_SRC
+            model/proc/winproc.cpp
+            model/proc/winproc.hpp
+
+            model/win32-code/getopt.c
+            model/win32-code/getopt.h
+            model/win32-code/getopt_long.c
+        )
+        elseif ((NOT WIN32))
+            list(APPEND MODEL_SRC
+                model/posixprocess.cpp
+                model/posixprocess.hpp
+            )
+    endif (WIN32)
+endif(ENABLE_SERVER)
 
 if (ENABLE_GUI)
     list(APPEND MODEL_SRC
@@ -43,19 +63,3 @@ if (ENABLE_GUI)
         model/dao/grpcutils.hpp
     )
 endif (ENABLE_GUI)
-
-if (WIN32)
-    list(APPEND MODEL_SRC
-        model/proc/winproc.cpp
-        model/proc/winproc.hpp
-
-        model/win32-code/getopt.c
-        model/win32-code/getopt.h
-        model/win32-code/getopt_long.c
-    )
-elseif ((NOT WIN32))
-    list(APPEND MODEL_SRC
-        model/posixprocess.cpp
-        model/posixprocess.hpp
-    )
-endif (WIN32)

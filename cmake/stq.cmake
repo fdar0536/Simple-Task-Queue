@@ -29,7 +29,6 @@ set(STQ_LIBS
 if(ENABLE_GUI)
 
     list(APPEND CONTROLLER_SRC
-
         "controller/gui/clientconfig.cpp"
         "controller/gui/clientconfig.hpp"
         "controller/gui/clientconfigthread.cpp"
