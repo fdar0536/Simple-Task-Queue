@@ -1,3 +1,11 @@
+set(STQ_MODEL_LIBS
+    protobuf::libprotobuf
+    gRPC::grpc++
+
+    grpc_common
+    spdlog::spdlog
+)
+
 set(MODEL_SRC
 
     # DAO
@@ -5,6 +13,14 @@ set(MODEL_SRC
     model/dao/iconnect.hpp
     model/dao/iqueuelist.hpp
     model/dao/iqueue.hpp
+
+    model/errmsg.cpp
+    model/errmsg.hpp
+    model/utils.cpp
+    model/utils.hpp
+
+    # global
+    controller/global/defines.hpp
 )
 
 if(ENABLE_SERVER)
@@ -25,11 +41,6 @@ if(ENABLE_SERVER)
         model/proc/iproc.hpp
         model/proc/task.cpp
         model/proc/task.hpp
-
-        model/errmsg.cpp
-        model/errmsg.hpp
-        model/utils.cpp
-        model/utils.hpp
     )
 
     if (WIN32)
@@ -48,3 +59,21 @@ if(ENABLE_SERVER)
             )
     endif (WIN32)
 endif(ENABLE_SERVER)
+
+add_library(stqmodel STATIC
+    ${MODEL_SRC}
+)
+
+add_dependencies(stqmodel grpc_common)
+
+if (ENABLE_SERVER)
+    list(APPEND STQ_MODEL_LIBS
+        SQLite::SQLite3
+    )
+endif (ENABLE_SERVER)
+
+target_link_libraries(stqmodel
+    PRIVATE
+
+    ${STQ_MODEL_LIBS}
+)

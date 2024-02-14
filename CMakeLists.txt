@@ -59,8 +59,11 @@ include(GNUInstallDirs)
 find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(spdlog REQUIRED)
-find_package(SQLite3 REQUIRED)
 find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
+
+if (ENABLE_SERVER)
+    find_package(SQLite3 REQUIRED)
+endif (ENABLE_SERVER)
 
 if (ENABLE_GUI)
     find_package(Qt6 6.5 COMPONENTS Widgets REQUIRED)
@@ -93,4 +96,4 @@ target_link_libraries(grpc_common
 )
 
 include(cmake/stqmodel.cmake)
-include(cmake/stq.cmake)
+include(cmake/stqserver.cmake)
