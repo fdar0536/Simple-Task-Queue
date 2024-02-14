@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@
 
 #include "grpcpp/grpcpp.h"
 
+#include "model/alias.hpp"
+
 namespace Model
 {
 
@@ -37,7 +39,7 @@ namespace GRPCUtils
 
 void setupCtx(grpc::ClientContext &ctx);
 
-void buildErrMsg(const char *, int, grpc::Status &);
+void buildErrMsg(const char *, i32, grpc::Status &);
 
 } // end namespace GRPCUtils
 

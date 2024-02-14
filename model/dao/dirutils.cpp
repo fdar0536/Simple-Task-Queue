@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ namespace DAO
 namespace DirUtils
 {
 
-uint_fast8_t verifyDir(const std::string &in)
+u8 verifyDir(const std::string &in)
 {
     if (in.empty())
     {
@@ -67,7 +67,7 @@ uint_fast8_t verifyDir(const std::string &in)
     return 0;
 }
 
-uint_fast8_t verifyFile(const std::string &in)
+u8 verifyFile(const std::string &in)
 {
     if (in.empty())
     {

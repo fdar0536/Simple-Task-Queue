@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 
 #include "spdlog/spdlog.h"
 
+#include "model/errmsg.hpp"
 
 #include "grpcconnect.hpp"
 #include "grpcutils.hpp"
@@ -50,19 +51,19 @@ GRPCConnect::~GRPCConnect()
     freeConnectToken<GRPCToken>();
 }
 
-void GRPCConnect::init(ErrMsg &)
-{}
+u8 GRPCConnect::init()
+{
+    return ErrCode_OK;
+}
 
-void GRPCConnect::startConnect(ErrMsg &msg,
-                               const std::string &target,
-                               const int_fast32_t port)
+u8 GRPCConnect::startConnect(const std::string &target,
+                             const i32 port)
 {
     GRPCToken *token = new (std::nothrow) GRPCToken;
     if (!token)
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Fail to allocate memory");
         spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return;
+        return ErrCode_OS_ERROR;
     }
 
     std::string ip = target;
@@ -77,27 +78,24 @@ void GRPCConnect::startConnect(ErrMsg &msg,
 
         if (token->channel == nullptr)
         {
-            msg.setMsg(ErrMsg::OS_ERROR, "Fail to create channel");
             spdlog::error("{}:{} Fail to create channel", __FILE__, __LINE__);
             delete token;
-            return;
+            return ErrCode_OS_ERROR;
         }
 
         stub = stq::Access::NewStub(token->channel);
         if (stub == nullptr)
         {
-            msg.setMsg(ErrMsg::OS_ERROR, "Fail to create access' stub");
             spdlog::error("{}:{} Fail to create access' stub", __FILE__, __LINE__);
             delete token;
-            return;
+            return ErrCode_OS_ERROR;
         }
     }
     catch (...)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to initialize connection");
         spdlog::error("{}:{} Fail to initialize connection", __FILE__, __LINE__);
         delete token;
-        return;
+        return ErrCode_OS_ERROR;
     }
 
     stq::Empty req;
@@ -109,13 +107,13 @@ void GRPCConnect::startConnect(ErrMsg &msg,
     if (status.ok())
     {
         m_connectToken = reinterpret_cast<void *>(token);
-        return;
+        return ErrCode_OK;
     }
 
     delete token;
     m_connectToken = nullptr;
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
 } // end namespace DAO

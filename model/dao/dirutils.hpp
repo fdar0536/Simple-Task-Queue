@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@
 
 #include <string>
 
+#include "model/alias.hpp"
+
 namespace Model
 {
 
@@ -35,9 +37,9 @@ namespace DAO
 namespace DirUtils
 {
 
-uint_fast8_t verifyDir(const std::string &path);
+u8 verifyDir(const std::string &path);
 
-uint_fast8_t verifyFile(const std::string &path);
+u8 verifyFile(const std::string &path);
 
 void deleteDirectoryContents(const std::string& dir_path);
 

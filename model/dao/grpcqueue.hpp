@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 #include "queue.grpc.pb.h"
 
 #include "model/proc/task.hpp"
-#include "grpcconnect.hpp"
 #include "iqueue.hpp"
 
 namespace Model
@@ -45,38 +44,35 @@ public:
 
     ~GRPCQueue();
 
-    void init(std::shared_ptr<IConnect> &connect,
-                      std::shared_ptr<Proc::IProc> &process,
-                      const std::string &name,
-                      ErrMsg &msg) override;
+    u8 init(std::shared_ptr<IConnect> &connect,
+            std::shared_ptr<Proc::IProc> &process,
+            const std::string &name) override;
 
-    void listPending(std::vector<int> &out, ErrMsg &msg) override;
+    u8 listPending(std::vector<int> &out) override;
 
-    void listFinished(std::vector<int> &out, ErrMsg &msg) override;
+    u8 listFinished(std::vector<int> &out) override;
 
-    void pendingDetails(const int_fast32_t id,
-                        Proc::Task &out,
-                        ErrMsg &msg) override;
+    u8 pendingDetails(const i32 id,
+                      Proc::Task &out) override;
 
-    void finishedDetails(const int_fast32_t id,
-                         Proc::Task &out,
-                         ErrMsg &msg) override;
+    u8 finishedDetails(const i32 id,
+                       Proc::Task &out) override;
 
-    void clearPending(ErrMsg &msg) override;
+    u8 clearPending() override;
 
-    void clearFinished(ErrMsg &msg) override;
+    u8 clearFinished() override;
 
-    void currentTask(Proc::Task &out, ErrMsg &msg) override;
+    u8 currentTask(Proc::Task &out) override;
 
-    void addTask(Proc::Task &in, ErrMsg &msg) override;
+    u8 addTask(Proc::Task &in) override;
 
-    void removeTask(const int_fast32_t in, ErrMsg &msg) override;
+    u8 removeTask(const i32 in) override;
 
     bool isRunning() const override;
 
-    void readCurrentOutput(std::string &out, ErrMsg &msg) override;
+    u8 readCurrentOutput(std::string &out) override;
 
-    void start(ErrMsg &msg) override;
+    u8 start() override;
 
     void stop() override;
 

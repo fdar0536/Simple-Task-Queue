@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,11 +54,10 @@ public:
 
     ~GRPCConnect();
 
-    void init(ErrMsg &) override;
+    u8 init() override;
 
-    void startConnect(ErrMsg &,
-                      const std::string &target,
-                      const int_fast32_t port = 0) override;
+    u8 startConnect(const std::string &target,
+                    const i32 port = 0) override;
 
 }; // end class GRPCConnect
 

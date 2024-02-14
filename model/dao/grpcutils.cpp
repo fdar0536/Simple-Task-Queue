@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,10 +42,10 @@ void setupCtx(grpc::ClientContext &ctx)
                      std::chrono::milliseconds(STQ_CLIENT_TIMEOUT * 1000));
 }
 
-void buildErrMsg(const char *file, int line, grpc::Status &status)
+void buildErrMsg(const char *file, i8 line, grpc::Status &status)
 {
     spdlog::error("{}:{} gRPC error code {}: {}", file, line,
-                  static_cast<int>(status.error_code()), status.error_message());
+                  static_cast<i8>(status.error_code()), status.error_message());
 }
 
 } // end namespace GRPCUtils

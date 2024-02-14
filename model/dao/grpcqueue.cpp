@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+#include "model/errmsg.hpp"
 #include "model/dao/grpcconnect.hpp"
 #include "spdlog/spdlog.h"
 
@@ -42,32 +43,28 @@ GRPCQueue::GRPCQueue() :
 GRPCQueue::~GRPCQueue()
 {}
 
-void
+u8
 GRPCQueue::init(std::shared_ptr<IConnect> &connect,
                 std::shared_ptr<Proc::IProc> &process,
-                const std::string &name,
-                ErrMsg &msg)
+                const std::string &name)
 {
     UNUSED(process);
     if (connect == nullptr)
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "connect is nullptr");
         spdlog::error("{}:{} connect is nullptr", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     if (!connect->connectToken())
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "connect token is nullptr");
         spdlog::error("{}:{} connect token is nullptr", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     if (name.empty())
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "name is empty");
         spdlog::error("{}:{} name is empty", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     GRPCToken *token = reinterpret_cast<GRPCToken *>(connect->connectToken());
@@ -77,22 +74,21 @@ GRPCQueue::init(std::shared_ptr<IConnect> &connect,
         m_stub = stq::Queue::NewStub(token->channel);
         if (m_stub == nullptr)
         {
-            msg.setMsg(ErrMsg::OS_ERROR, "Fail to get stub");
             spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
-            return;
+            return ErrCode_OS_ERROR;
         }
     }
     catch (...)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to get stub");
         spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
-        return;
+        return ErrCode_OS_ERROR;
     }
 
     m_queueName = name;
+    return ErrCode_OK;
 }
 
-void GRPCQueue::listPending(std::vector<int> &out, ErrMsg &msg)
+u8 GRPCQueue::listPending(std::vector<int> &out)
 {
     out.clear();
     out.reserve(128);
@@ -107,9 +103,8 @@ void GRPCQueue::listPending(std::vector<int> &out, ErrMsg &msg)
     auto reader = m_stub->ListPending(&ctx, req);
     if (reader == nullptr)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "reader is nullptr");
         spdlog::error("{}:{} reader is nullptr", __FILE__, __LINE__);
-        return;
+        return ErrCode_OS_ERROR;
     }
 
     while(reader->Read(&res))
@@ -118,9 +113,10 @@ void GRPCQueue::listPending(std::vector<int> &out, ErrMsg &msg)
     }
 
     UNUSED(reader->Finish());
+    return ErrCode_OK;
 }
 
-void GRPCQueue::listFinished(std::vector<int> &out, ErrMsg &msg)
+u8 GRPCQueue::listFinished(std::vector<int> &out)
 {
     out.clear();
     out.reserve(128);
@@ -135,9 +131,8 @@ void GRPCQueue::listFinished(std::vector<int> &out, ErrMsg &msg)
     auto reader = m_stub->ListFinished(&ctx, req);
     if (reader == nullptr)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "reader is nullptr");
         spdlog::error("{}:{} reader is nullptr", __FILE__, __LINE__);
-        return;
+        return ErrCode_OS_ERROR;
     }
 
     while(reader->Read(&res))
@@ -146,11 +141,11 @@ void GRPCQueue::listFinished(std::vector<int> &out, ErrMsg &msg)
     }
 
     UNUSED(reader->Finish());
+    return ErrCode_OK;
 }
 
-void GRPCQueue::pendingDetails(const int_fast32_t id,
-                               Proc::Task &out,
-                               ErrMsg &msg)
+u8 GRPCQueue::pendingDetails(const i32 id,
+                             Proc::Task &out)
 {
     stq::TaskDetailsReq req;
     req.set_name(m_queueName);
@@ -164,16 +159,15 @@ void GRPCQueue::pendingDetails(const int_fast32_t id,
     if (status.ok())
     {
         buildTask(res, out);
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
-void GRPCQueue::finishedDetails(const int_fast32_t id,
-                                Proc::Task &out,
-                                ErrMsg &msg)
+u8 GRPCQueue::finishedDetails(const i32 id,
+                              Proc::Task &out)
 {
     stq::TaskDetailsReq req;
     req.set_name(m_queueName);
@@ -187,14 +181,14 @@ void GRPCQueue::finishedDetails(const int_fast32_t id,
     if (status.ok())
     {
         buildTask(res, out);
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
-void GRPCQueue::clearPending(ErrMsg &msg)
+u8 GRPCQueue::clearPending()
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -206,14 +200,14 @@ void GRPCQueue::clearPending(ErrMsg &msg)
     grpc::Status status = m_stub->ClearPending(&ctx, req, &res);
     if (status.ok())
     {
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
-void GRPCQueue::clearFinished(ErrMsg &msg)
+u8 GRPCQueue::clearFinished()
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -225,14 +219,14 @@ void GRPCQueue::clearFinished(ErrMsg &msg)
     grpc::Status status = m_stub->ClearFinished(&ctx, req, &res);
     if (status.ok())
     {
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
-void GRPCQueue::currentTask(Proc::Task &out, ErrMsg &msg)
+u8 GRPCQueue::currentTask(Proc::Task &out)
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -245,14 +239,14 @@ void GRPCQueue::currentTask(Proc::Task &out, ErrMsg &msg)
     if (status.ok())
     {
         buildTask(res, out);
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
-void GRPCQueue::addTask(Proc::Task &in, ErrMsg &msg)
+u8 GRPCQueue::addTask(Proc::Task &in)
 {
     stq::AddTaskReq req;
     req.set_name(m_queueName);
@@ -273,14 +267,14 @@ void GRPCQueue::addTask(Proc::Task &in, ErrMsg &msg)
     if (status.ok())
     {
         in.ID = res.id();
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
-void GRPCQueue::removeTask(const int_fast32_t in, ErrMsg &msg)
+u8 GRPCQueue::removeTask(const i32 in)
 {
     stq::TaskDetailsReq req;
     req.set_name(m_queueName);
@@ -295,9 +289,11 @@ void GRPCQueue::removeTask(const int_fast32_t in, ErrMsg &msg)
     status = m_stub->RemoveTask(&ctx, req, &res);
     if (!status.ok())
     {
-        msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
         GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+        return ErrCode_OS_ERROR;
     }
+
+    return ErrCode_OK;
 }
 
 bool GRPCQueue::isRunning() const
@@ -319,7 +315,7 @@ bool GRPCQueue::isRunning() const
     return false;
 }
 
-void GRPCQueue::readCurrentOutput(std::string &out, ErrMsg &msg)
+u8 GRPCQueue::readCurrentOutput(std::string &out)
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -332,14 +328,14 @@ void GRPCQueue::readCurrentOutput(std::string &out, ErrMsg &msg)
     if (status.ok())
     {
         out = res.msg();
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
-void GRPCQueue::start(ErrMsg &msg)
+u8 GRPCQueue::start()
 {
     stq::QueueReq req;
     req.set_name(m_queueName);
@@ -351,11 +347,11 @@ void GRPCQueue::start(ErrMsg &msg)
     grpc::Status status = m_stub->Start(&ctx, req, &res);
     if (status.ok())
     {
-        return;
+        return ErrCode_OK;
     }
 
-    msg.setMsg(ErrMsg::OS_ERROR, status.error_message());
     GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
+    return ErrCode_OS_ERROR;
 }
 
 void GRPCQueue::stop()
