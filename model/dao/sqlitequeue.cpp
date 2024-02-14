@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,7 @@
  * SOFTWARE.
  */
 
-#include <filesystem>
-#include <fstream>
-
 #ifdef _WIN32
-#include "windows.h"
 #define sleep(x) Sleep(x * 1000)
 #else
 #include "unistd.h"
@@ -33,9 +29,8 @@
 
 #include "spdlog/spdlog.h"
 
-#include "model/utils.hpp"
+#include "model/errmsg.hpp"
 #include "sqlitequeue.hpp"
-#include "dirutils.hpp"
 
 #define UNUSED(x) static_cast<void>(x)
 
@@ -60,24 +55,22 @@ SQLiteQueue::~SQLiteQueue()
     stopImpl();
 }
 
-void SQLiteQueue::init(std::shared_ptr<IConnect> &connect,
-                       std::shared_ptr<Proc::IProc> &process,
-                       const std::string &name,
-                       ErrMsg &msg)
+u8
+SQLiteQueue::init(std::shared_ptr<IConnect> &connect,
+                  std::shared_ptr<Proc::IProc> &process,
+                  const std::string &name)
 {
     static_cast<void>(connect);
     if (process == nullptr)
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "process is nullptr");
         spdlog::error("{}:{} process is nullptr.", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     if (name.empty())
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "name is empty");
         spdlog::error("{}:{} name is empty.", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     try
@@ -87,9 +80,8 @@ void SQLiteQueue::init(std::shared_ptr<IConnect> &connect,
     catch (...)
     {
         m_token = nullptr;
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to allocate memory");
         spdlog::error("{}:{} Fail to allocate memory.", __FILE__, __LINE__);
-        return;
+        return ErrCode_OS_ERROR;
     }
 
     {
@@ -108,91 +100,89 @@ void SQLiteQueue::init(std::shared_ptr<IConnect> &connect,
 
     if (connectToDB(connect->targetPath() + "/" + name + ".db"))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to connect to SQLite");
         spdlog::error("{}:{} Fail to connect to SQLite.", __FILE__, __LINE__);
         m_token = nullptr;
-        return;
+        return ErrCode_OS_ERROR;
     }
 
     m_process = process;
     m_isRunning.store(false, std::memory_order_relaxed);
     m_start.store(false, std::memory_order_relaxed);
+    return ErrCode_OK;
 }
 
-void SQLiteQueue::listPending(std::vector<int> &out, ErrMsg &msg)
+u8 SQLiteQueue::listPending(std::vector<int> &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    listIDInTable("pending", out, msg);
+    return listIDInTable("pending", out);
 }
 
-void SQLiteQueue::listFinished(std::vector<int> &out, ErrMsg &msg)
+u8 SQLiteQueue::listFinished(std::vector<int> &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    listIDInTable("done", out, msg);
+    return listIDInTable("done", out);
 }
 
-void SQLiteQueue::pendingDetails(const int_fast32_t id,
-                                 Proc::Task &out,
-                                 ErrMsg &msg)
+u8
+SQLiteQueue::pendingDetails(const i32 id,
+                            Proc::Task &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    taskDetails("pending", id, out, msg);
+    return taskDetails("pending", id, out);
 }
 
-void SQLiteQueue::finishedDetails(const int_fast32_t id,
-                                  Proc::Task &out,
-                                  ErrMsg &msg)
+u8
+SQLiteQueue::finishedDetails(const i32 id,
+                             Proc::Task &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    taskDetails("done", id, out, msg);
+    return taskDetails("done", id, out);
 }
 
-void SQLiteQueue::clearPending(ErrMsg &msg)
+u8 SQLiteQueue::clearPending()
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
     std::unique_lock<std::mutex> lock2(m_currentTaskMutex);
-    clearTable("pending", msg);
+    return clearTable("pending");
 }
 
-void SQLiteQueue::clearFinished(ErrMsg &msg)
+u8 SQLiteQueue::clearFinished()
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    clearTable("done", msg);
+    return clearTable("done");
 }
 
-void SQLiteQueue::currentTask(Proc::Task &out, ErrMsg &msg)
+u8 SQLiteQueue::currentTask(Proc::Task &out)
 {
     if (!isRunning())
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Queue is not running");
         spdlog::error("{}:{} Queue is not running.", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     std::unique_lock<std::mutex> lock(m_currentTaskMutex);
     out = m_currentTask;
+    return ErrCode_OK;
 }
 
-void SQLiteQueue::addTask(Proc::Task &in, ErrMsg &msg)
+u8 SQLiteQueue::addTask(Proc::Task &in)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    ErrMsg::ErrCode code;
-    getID(in.ID, msg);
-    msg.msg(&code, nullptr);
-    if (code != ErrMsg::OK)
+    u8 code;
+    code = getID(in.ID);
+    if (code)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to get ID");
         spdlog::error("{}:{} Fail to get ID", __FILE__, __LINE__);
-        return;
+        return ErrCode_OS_ERROR;
     }
 
-    addTaskToTable("pending", in, msg);
+    return addTaskToTable("pending", in);
 }
 
-void SQLiteQueue::removeTask(const int_fast32_t in, ErrMsg &msg)
+u8 SQLiteQueue::removeTask(const i32 in)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    removeTaskFromPending(in, true, msg);
+    return removeTaskFromPending(in, true);
 }
 
 bool SQLiteQueue::isRunning() const
@@ -200,35 +190,36 @@ bool SQLiteQueue::isRunning() const
     return m_isRunning.load(std::memory_order_relaxed);
 }
 
-void SQLiteQueue::readCurrentOutput(std::string &out, ErrMsg &msg)
+u8 SQLiteQueue::readCurrentOutput(std::string &out)
 {
     if (!isRunning())
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Queue is not running");
         spdlog::error("{}:{} Queue is not running.", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     out.clear();
     if (m_process->readCurrentOutput(out))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Failed to read current output");
         spdlog::error("{}:{} Failed to read current output.", __FILE__, __LINE__);
+        return ErrCode_OS_ERROR;
     }
+
+    return ErrCode_OK;
 }
 
-void SQLiteQueue::start(ErrMsg &msg)
+u8 SQLiteQueue::start()
 {
     if (isRunning())
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Queue is running");
         spdlog::error("{}:{} Queue is running.", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     m_isRunning.store(true, std::memory_order_relaxed);
     m_start.store(true, std::memory_order_relaxed);
     m_thread = std::jthread(&SQLiteQueue::mainLoop, this);
+    return ErrCode_OK;
 }
 
 void SQLiteQueue::stop()
@@ -237,10 +228,10 @@ void SQLiteQueue::stop()
 }
 
 // private member functions
-uint_fast8_t SQLiteQueue::connectToDB(const std::string &path)
+u8 SQLiteQueue::connectToDB(const std::string &path)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    uint_fast8_t rcPending(0), rcDone(0), rcID(0);
+    u8 rcPending(0), rcDone(0), rcID(0);
 
     if (sqlite3_open(path.c_str(), &m_token->db))
     {
@@ -292,9 +283,9 @@ uint_fast8_t SQLiteQueue::connectToDB(const std::string &path)
     return 0;
 }
 
-uint_fast8_t SQLiteQueue::createTable(const std::string &name)
+u8 SQLiteQueue::createTable(const std::string &name)
 {
-    uint_fast8_t ret(2);
+    u8 ret(2);
     std::string sql = "create table ";
     sql += name;
     sql += " ("
@@ -330,11 +321,11 @@ exit:
     return ret;
 }
 
-uint_fast8_t SQLiteQueue::verifyTable(const std::string &name)
+u8 SQLiteQueue::verifyTable(const std::string &name)
 {
-    uint_fast8_t ret(0);
-    int_fast32_t rowCount(0);
-    int_fast32_t rc(0);
+    u8 ret(0);
+    i32 rowCount(0);
+    i32 rc(0);
     std::string colName, colType;
     std::string sql;
     if (sqlite3_prepare_v2(m_token->db,
@@ -451,11 +442,11 @@ exit:
     return ret;
 }
 
-uint_fast8_t SQLiteQueue::verifyID()
+u8 SQLiteQueue::verifyID()
 {
-    uint_fast8_t ret(0);
-    int_fast32_t rowCount(0);
-    int_fast32_t rc(0);
+    u8 ret(0);
+    i32 rowCount(0);
+    i32 rc(0);
     std::string colName, colType;
     if (sqlite3_prepare_v2(m_token->db,
         "SELECT name FROM sqlite_master WHERE type='table' AND name='lastID';", 68,
@@ -656,9 +647,10 @@ exit:
     return ret;
 }
 
-void SQLiteQueue::clearTable(const std::string &name, ErrMsg &msg)
+u8 SQLiteQueue::clearTable(const std::string &name)
 {
     std::string sql = "";
+    u8 ret(ErrCode_OK);
 
     sql = "DELETE FROM " + name;
     sql += ";";
@@ -667,7 +659,7 @@ void SQLiteQueue::clearTable(const std::string &name, ErrMsg &msg)
         sql.c_str(), sql.length(),
         &m_token->stmt, NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -675,7 +667,7 @@ void SQLiteQueue::clearTable(const std::string &name, ErrMsg &msg)
 
     if (sqlite3_step(m_token->stmt) != SQLITE_DONE)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to clear table");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to clear table: {}", __FILE__, __LINE__,
             name);
     }
@@ -684,23 +676,24 @@ exit:
 
     UNUSED(sqlite3_finalize(m_token->stmt));
     m_token->stmt = nullptr;
+    return ret;
 }
 
-void SQLiteQueue::listIDInTable(const std::string &name,
-                                std::vector<int> &out,
-                                ErrMsg &msg)
+u8 SQLiteQueue::listIDInTable(const std::string &name,
+                              std::vector<int> &out)
 {
     out.clear();
     out.reserve(128);
 
-    int_fast32_t rc(0);
+    i32 rc(0);
+    u8 ret(ErrCode_OK);
     std::string sql = "SELECT ID FROM " + name + ";";
 
     if (sqlite3_prepare_v2(m_token->db,
         sql.c_str(), sql.length(),
         &m_token->stmt, NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -721,7 +714,7 @@ void SQLiteQueue::listIDInTable(const std::string &name,
         else
         {
             // other error
-            msg.setMsg(ErrMsg::OS_ERROR, "Fail to execute sql");
+            ret = ErrCode_OS_ERROR;
             spdlog::error("{}:{} Fail to execute sql: {}", __FILE__, __LINE__,
                 sqlite3_errmsg(m_token->db));
             goto exit;
@@ -732,23 +725,23 @@ exit:
 
     UNUSED(sqlite3_finalize(m_token->stmt));
     m_token->stmt = nullptr;
+    return ret;
 }
 
-void SQLiteQueue::taskDetails(const std::string &name,
-                              const int_fast32_t id,
-                              Proc::Task &out,
-                              ErrMsg &msg)
+u8 SQLiteQueue::taskDetails(const std::string &name,
+                            const i32 id,
+                            Proc::Task &out)
 {
-    int_fast32_t rc(0);
-    int_fast32_t rowCount(0);
+    i32 rc(0);
+    i32 rowCount(0);
     std::string sql = "SELECT * FROM " + name + " WHERE ID=?;";
-
+    u8 ret(ErrCode_OK);
 
     if (sqlite3_prepare_v2(m_token->db,
         sql.c_str(), sql.length(),
         &m_token->stmt, NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -756,7 +749,7 @@ void SQLiteQueue::taskDetails(const std::string &name,
 
     if (sqlite3_bind_int(m_token->stmt, 1, id))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -785,7 +778,7 @@ void SQLiteQueue::taskDetails(const std::string &name,
         else
         {
             // other error
-            msg.setMsg(ErrMsg::OS_ERROR, "Fail to execute sql");
+            ret = ErrCode_OS_ERROR;
             spdlog::error("{}:{} Fail to execute sql: {}", __FILE__, __LINE__,
                 sqlite3_errmsg(m_token->db));
             goto exit;
@@ -794,7 +787,7 @@ void SQLiteQueue::taskDetails(const std::string &name,
 
     if (rowCount == 0)
     {
-        msg.setMsg(ErrMsg::NOT_FOUND, "No such ID in table");
+        ret = ErrCode_NOT_FOUND;
         spdlog::error("{}:{} No such ID in table {}: {}", __FILE__, __LINE__,
             name, id);
     }
@@ -803,21 +796,22 @@ exit:
 
     UNUSED(sqlite3_finalize(m_token->stmt));
     m_token->stmt = nullptr;
+    return ret;
 }
 
-void SQLiteQueue::addTaskToTable(const std::string &name,
-                                 const Proc::Task &in,
-                                 ErrMsg &msg)
+u8 SQLiteQueue::addTaskToTable(const std::string &name,
+                               const Proc::Task &in)
 {
     std::string args = "";
     std::string sql = "insert into " + name + " ";
     sql += "values(?,?,?,?,?,?);";
+    u8 ret(ErrCode_OK);
 
     if (sqlite3_prepare_v2(m_token->db,
         sql.c_str(), sql.length(),
         &m_token->stmt, NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -825,7 +819,7 @@ void SQLiteQueue::addTaskToTable(const std::string &name,
 
     if (sqlite3_bind_text(m_token->stmt, 1, in.execName.c_str(), in.execName.length(), NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -834,7 +828,7 @@ void SQLiteQueue::addTaskToTable(const std::string &name,
     args = concatString(in.args);
     if (sqlite3_bind_text(m_token->stmt, 2, args.c_str(), args.length(), NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -842,7 +836,7 @@ void SQLiteQueue::addTaskToTable(const std::string &name,
 
     if (sqlite3_bind_text(m_token->stmt, 3, in.workDir.c_str(), in.workDir.length(), NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -850,7 +844,7 @@ void SQLiteQueue::addTaskToTable(const std::string &name,
 
     if (sqlite3_bind_int(m_token->stmt, 4, in.ID))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -858,7 +852,7 @@ void SQLiteQueue::addTaskToTable(const std::string &name,
 
     if (sqlite3_bind_int(m_token->stmt, 5, in.exitCode))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -866,7 +860,7 @@ void SQLiteQueue::addTaskToTable(const std::string &name,
 
     if (sqlite3_bind_int(m_token->stmt, 6, in.isSuccess))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -874,7 +868,7 @@ void SQLiteQueue::addTaskToTable(const std::string &name,
 
     if (sqlite3_step(m_token->stmt) != SQLITE_DONE)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to insert task to table");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to insert task to table {}", __FILE__, __LINE__,
             name);
     }
@@ -883,20 +877,20 @@ exit:
 
     UNUSED(sqlite3_finalize(m_token->stmt));
     m_token->stmt = nullptr;
+    return ret;
 }
 
-void SQLiteQueue::removeTaskFromPending(const int_fast32_t id,
-                                        const bool needCheckCurrentTask,
-                                        ErrMsg &msg)
+u8 SQLiteQueue::removeTaskFromPending(const i32 id,
+                                      const bool needCheckCurrentTask)
 {
+    u8 ret(ErrCode_OK);
     if (needCheckCurrentTask)
     {
         std::unique_lock<std::mutex> lock(m_currentTaskMutex);
         if (id == m_currentTask.ID)
         {
-            msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Cannot remove current task");
             spdlog::error("{}:{} Cannot remove current task", __FILE__, __LINE__);
-            return;
+            return ErrCode_INVALID_ARGUMENT;
         }
     }
 
@@ -904,7 +898,7 @@ void SQLiteQueue::removeTaskFromPending(const int_fast32_t id,
         "delete from pending where ID=?;", 31,
         &m_token->stmt, NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -912,7 +906,7 @@ void SQLiteQueue::removeTaskFromPending(const int_fast32_t id,
 
     if (sqlite3_bind_int(m_token->stmt, 1, id))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -920,7 +914,7 @@ void SQLiteQueue::removeTaskFromPending(const int_fast32_t id,
 
     if (sqlite3_step(m_token->stmt) != SQLITE_DONE)
     {
-        msg.setMsg(ErrMsg::NOT_FOUND, "Fail to remove task");
+        ret = ErrCode_NOT_FOUND;
         spdlog::error("{}:{} Fail to remove task", __FILE__, __LINE__);
     }
 
@@ -928,6 +922,7 @@ exit:
 
     UNUSED(sqlite3_finalize(m_token->stmt));
     m_token->stmt = nullptr;
+    return ret;
 }
 
 void SQLiteQueue::splitString(const std::string &in, std::vector<std::string> &out)
@@ -967,16 +962,17 @@ exit:
     return out;
 }
 
-void SQLiteQueue::getID(int_fast32_t &out, ErrMsg &msg)
+u8 SQLiteQueue::getID(i32 &out)
 {
-    int_fast32_t rc(0);
-    int_fast32_t rowCount(0);
-    int_fast32_t oldValue(0), newValue(0);
+    i32 rc(0);
+    i32 rowCount(0);
+    i32 oldValue(0), newValue(0);
+    u8 ret(ErrCode_OK);
     if (sqlite3_prepare_v2(m_token->db,
         "SELECT * FROM lastID;", 21,
         &m_token->stmt, NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -998,7 +994,7 @@ void SQLiteQueue::getID(int_fast32_t &out, ErrMsg &msg)
         else
         {
             // other error
-            msg.setMsg(ErrMsg::OS_ERROR, "Fail to execute sql");
+            ret = ErrCode_OS_ERROR;
             spdlog::error("{}:{} Fail to execute sql: {}", __FILE__, __LINE__,
                 sqlite3_errmsg(m_token->db));
             goto exit;
@@ -1007,7 +1003,7 @@ void SQLiteQueue::getID(int_fast32_t &out, ErrMsg &msg)
 
     if (rowCount != 1)
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Invalid table");
+        ret = ErrCode_INVALID_ARGUMENT;
         spdlog::error("{}:{} Invalid table", __FILE__, __LINE__);
         goto exit;
     }
@@ -1021,7 +1017,7 @@ void SQLiteQueue::getID(int_fast32_t &out, ErrMsg &msg)
         "update lastID set ID=? where ID=?;", 34,
         &m_token->stmt, NULL))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -1029,7 +1025,7 @@ void SQLiteQueue::getID(int_fast32_t &out, ErrMsg &msg)
 
     if (sqlite3_bind_int(m_token->stmt, 1, newValue))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -1037,7 +1033,7 @@ void SQLiteQueue::getID(int_fast32_t &out, ErrMsg &msg)
 
     if (sqlite3_bind_int(m_token->stmt, 2, oldValue))
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to build prepared statment");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to build prepared statment: {}", __FILE__, __LINE__,
             sqlite3_errmsg(m_token->db));
         goto exit;
@@ -1045,7 +1041,7 @@ void SQLiteQueue::getID(int_fast32_t &out, ErrMsg &msg)
 
     if (sqlite3_step(m_token->stmt) != SQLITE_DONE)
     {
-        msg.setMsg(ErrMsg::OS_ERROR, "Fail to update last id");
+        ret = ErrCode_OS_ERROR;
         spdlog::error("{}:{} Fail to update last id", __FILE__, __LINE__);
     }
 
@@ -1053,6 +1049,7 @@ exit:
 
     UNUSED(sqlite3_finalize(m_token->stmt));
     m_token->stmt = nullptr;
+    return ret;
 }
 
 void SQLiteQueue::mainLoop()
@@ -1083,11 +1080,11 @@ void SQLiteQueue::mainLoop()
     m_isRunning.store(false, std::memory_order_relaxed);
 } // end void DirQueue::mainLoop()
 
-uint_fast8_t SQLiteQueue::mainLoopInit()
+u8 SQLiteQueue::mainLoopInit()
 {
     // find the task in pending list
     std::unique_lock<std::mutex> lock(m_token->mutex);
-    uint_fast8_t ret(0);
+    u8 ret(0);
 
     if (sqlite3_prepare_v2(m_token->db,
         "SELECT * FROM pending limit 1;", 30,
@@ -1153,12 +1150,10 @@ void SQLiteQueue::mainLoopFin()
 
     // write task details to done list
     std::unique_lock<std::mutex> dbLock(m_token->mutex);
-    ErrMsg msg;
-    ErrMsg::ErrCode code;
-    removeTaskFromPending(m_currentTask.ID, false, msg);
-    msg.msg(&code, nullptr);
-    if (code == ErrMsg::INVALID_ARGUMENT ||
-        code == ErrMsg::OS_ERROR)
+    u8 code(ErrCode_OK);
+    code = removeTaskFromPending(m_currentTask.ID, false);
+    if (code == ErrCode_INVALID_ARGUMENT ||
+        code == ErrCode_OS_ERROR)
     {
         spdlog::error("{}:{} Fail to remove task from pending", __FILE__, __LINE__);
         m_start.store(false, std::memory_order_relaxed);
@@ -1166,9 +1161,7 @@ void SQLiteQueue::mainLoopFin()
         return;
     }
 
-    addTaskToTable("done", m_currentTask, msg);
-    msg.msg(&code, nullptr);
-    if (code != ErrMsg::OK)
+    if (addTaskToTable("done", m_currentTask))
     {
         spdlog::error("{}:{} Fail to add task to done list", __FILE__, __LINE__);
         m_start.store(false, std::memory_order_relaxed);

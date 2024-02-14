@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023-2024 fdar0536
+ * Copyright (c) 2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,39 +21,17 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_PROC_IPROC_HPP_
-#define _MODEL_PROC_IPROC_HPP_
+#ifndef _MODEL_ALIAS_HPP_
+#define _MODEL_ALIAS_HPP_
 
-#include "task.hpp"
+#define u8  uint_fast8_t
+#define u16 uint_fast16_t
+#define u32 uint_fast32_t
+#define u64 uint_fast64_t
 
-namespace Model
-{
+#define i8  int_fast8_t
+#define i16 int_fast16_t
+#define i32 int_fast32_t
+#define i64 int_fast64_t
 
-namespace Proc
-{
-
-class IProc
-{
-public:
-
-    virtual ~IProc();
-
-    virtual u8 init() = 0;
-
-    virtual u8 start(const Task &task) = 0;
-
-    virtual void stop() = 0;
-
-    virtual bool isRunning() = 0;
-
-    virtual u8 readCurrentOutput(std::string &out) = 0;
-
-    virtual u8 exitCode(int_fast32_t &out) = 0;
-
-}; // end class IProc
-
-} // end namespace Proc
-
-} // end namespace Model
-
-#endif // _MODEL_PROC_IPROC_HPP_
+#endif // _MODEL_ALIAS_HPP_

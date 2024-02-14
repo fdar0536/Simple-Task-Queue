@@ -26,6 +26,7 @@ if(ENABLE_SERVER)
         model/proc/task.cpp
         model/proc/task.hpp
 
+        model/alias.hpp
         model/errmsg.cpp
         model/errmsg.hpp
         model/utils.cpp

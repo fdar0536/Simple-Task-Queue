@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include "model/alias.hpp"
+
 namespace Model
 {
 
@@ -42,8 +44,8 @@ public:
     std::string execName;
     std::vector<std::string> args;
     std::string workDir;
-    int_fast32_t ID;
-    int_fast32_t exitCode;
+    i32 ID;
+    i32 exitCode;
     bool isSuccess;
 
     void print();

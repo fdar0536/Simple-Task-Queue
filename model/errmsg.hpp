@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,16 @@
 #ifndef _MODEL_IMODEL_HPP_
 #define _MODEL_IMODEL_HPP_
 
-#include <unordered_map>
+
 #include <string>
-#include <mutex>
 
 #include "config.h"
 
 #ifndef STQ_MOBILE
 #include "grpcpp/grpcpp.h"
 #endif
+
+#include "alias.hpp"
 
 #define ErrCode_OK               0
 #define ErrCode_INVALID_ARGUMENT 1
@@ -50,7 +51,7 @@ namespace ErrMsg
 void init();
 
 #ifndef STQ_MOBILE
-grpc::Status toGRPCStatus(uint_fast8_t, const std::string &);
+grpc::Status toGRPCStatus(u8, const std::string &);
 #endif // STQ_MOBILE
 
 } // end namespace ErrMsg

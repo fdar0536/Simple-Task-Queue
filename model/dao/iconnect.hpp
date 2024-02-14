@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@
 
 #include <string>
 
+#include "model/alias.hpp"
+
 namespace Model
 {
 
@@ -39,10 +41,10 @@ public:
 
     virtual ~IConnect() = 0;
 
-    virtual uint_fast8_t init() = 0;
+    virtual u8 init() = 0;
 
-    virtual uint_fast8_t startConnect(const std::string &target,
-                                      const int_fast32_t port = 0) = 0;
+    virtual u8 startConnect(const std::string &target,
+                            const i32 port = 0) = 0;
 
     void *connectToken() const;
 

@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,9 @@
  * SOFTWARE.
  */
 
-#include <filesystem>
-
 #include "spdlog/spdlog.h"
+
+#include "model/errmsg.hpp"
 
 #include "sqliteconnect.hpp"
 #include "dirutils.hpp"
@@ -59,22 +59,21 @@ SQLiteConnect::~SQLiteConnect()
     freeConnectToken<SQLiteToken>();
 }
 
-void SQLiteConnect::init(ErrMsg &)
+u8 SQLiteConnect::init()
 {
     m_connectToken = nullptr;
+    return ErrCode_OK;
 }
 
-void
-SQLiteConnect::startConnect(ErrMsg &msg,
-                            const std::string &target,
-                            const int_fast32_t port)
+u8
+SQLiteConnect::startConnect(const std::string &target,
+                            const i32 port)
 {
     static_cast<void>(port);
     if (target.empty())
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "target is empty");
         spdlog::error("{}:{} target is empty.", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     std::string basePath = target;
@@ -86,12 +85,12 @@ SQLiteConnect::startConnect(ErrMsg &msg,
 
     if (DirUtils::verifyDir(basePath))
     {
-        msg.setMsg(ErrMsg::INVALID_ARGUMENT, "Fail to verify basePath");
         spdlog::error("{}:{} Fail to verify basePath.", __FILE__, __LINE__);
-        return;
+        return ErrCode_INVALID_ARGUMENT;
     }
 
     m_targetPath = basePath;
+    return ErrCode_OK;
 }
 
 } // end namespace DAO

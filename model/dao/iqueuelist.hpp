@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,16 +42,16 @@ public:
 
     virtual ~IQueueList() {}
 
-    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect) = 0;
+    virtual u8 init(std::shared_ptr<IConnect> &connect) = 0;
 
-    virtual uint_fast8_t createQueue(const std::string &name) = 0;
+    virtual u8 createQueue(const std::string &name) = 0;
 
-    virtual uint_fast8_t listQueue(std::vector<std::string> &out) = 0;
+    virtual u8 listQueue(std::vector<std::string> &out) = 0;
 
-    virtual uint_fast8_t deleteQueue(const std::string &name) = 0;
+    virtual u8 deleteQueue(const std::string &name) = 0;
 
-    virtual uint_fast8_t renameQueue(const std::string &oldName,
-                                     const std::string &newName) = 0;
+    virtual u8 renameQueue(const std::string &oldName,
+                           const std::string &newName) = 0;
 
     virtual std::shared_ptr<IQueue> getQueue(const std::string &name) = 0;
 

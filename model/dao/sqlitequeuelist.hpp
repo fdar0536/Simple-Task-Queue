@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,17 +43,16 @@ public:
 
     ~SQLiteQueueList();
 
-    void init(std::shared_ptr<IConnect> &connect, ErrMsg &msg) override;
+    u8 init(std::shared_ptr<IConnect> &connect) override;
 
-    void createQueue(const std::string &name, ErrMsg &msg) override;
+    u8 createQueue(const std::string &name) override;
 
-    void listQueue(std::vector<std::string> &out, ErrMsg &msg) override;
+    u8 listQueue(std::vector<std::string> &out) override;
 
-    void deleteQueue(const std::string &name, ErrMsg &msg) override;
+    u8 deleteQueue(const std::string &name) override;
 
-    void renameQueue(const std::string &oldName,
-                     const std::string &newName,
-                     ErrMsg &msg) override;
+    u8 renameQueue(const std::string &oldName,
+                   const std::string &newName) override;
 
     std::shared_ptr<IQueue>
     getQueue(const std::string &name) override;

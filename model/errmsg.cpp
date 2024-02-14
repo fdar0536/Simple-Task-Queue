@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include <unordered_map>
+
 #include "errmsg.hpp"
 
 namespace Model
@@ -30,7 +32,7 @@ namespace ErrMsg
 {
 
 #ifndef STQ_MOBILE
-static std::unordered_map<uint_fast8_t, grpc::StatusCode> table;
+static std::unordered_map<u8, grpc::StatusCode> table;
 #endif
 
 void init()
@@ -46,7 +48,7 @@ void init()
 }
 
 #ifndef STQ_MOBILE
-grpc::Status toGRPCStatus(uint_fast8_t code, const std::string &msg)
+grpc::Status toGRPCStatus(u8 code, const std::string &msg)
 {
     return grpc::Status(table[code], msg);
 }

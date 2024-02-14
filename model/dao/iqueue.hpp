@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,35 +43,35 @@ public:
 
     virtual ~IQueue() {}
 
-    virtual uint_fast8_t init(std::shared_ptr<IConnect> &connect,
-                              std::shared_ptr<Proc::IProc> &process,
-                              const std::string &name) = 0;
+    virtual u8 init(std::shared_ptr<IConnect> &connect,
+                    std::shared_ptr<Proc::IProc> &process,
+                    const std::string &name) = 0;
 
-    virtual uint_fast8_t listPending(std::vector<int> &out) = 0;
+    virtual u8 listPending(std::vector<int> &out) = 0;
 
-    virtual uint_fast8_t listFinished(std::vector<int> &out) = 0;
+    virtual u8 listFinished(std::vector<int> &out) = 0;
 
-    virtual uint_fast8_t pendingDetails(const int_fast32_t id,
-                                        Proc::Task &out) = 0;
+    virtual u8 pendingDetails(const i32 id,
+                              Proc::Task &out) = 0;
 
-    virtual uint_fast8_t finishedDetails(const int_fast32_t id,
-                                         Proc::Task &out) = 0;
+    virtual u8 finishedDetails(const i32 id,
+                               Proc::Task &out) = 0;
 
-    virtual uint_fast8_t clearPending() = 0;
+    virtual u8 clearPending() = 0;
 
-    virtual uint_fast8_t clearFinished() = 0;
+    virtual u8 clearFinished() = 0;
 
-    virtual uint_fast8_t currentTask(Proc::Task &out) = 0;
+    virtual u8 currentTask(Proc::Task &out) = 0;
 
-    virtual uint_fast8_t addTask(Proc::Task &in) = 0;
+    virtual u8 addTask(Proc::Task &in) = 0;
 
-    virtual uint_fast8_t removeTask(const int_fast32_t in) = 0;
+    virtual u8 removeTask(const i32 in) = 0;
 
     virtual bool isRunning() const = 0;
 
-    virtual uint_fast8_t readCurrentOutput(std::string &out) = 0;
+    virtual u8 readCurrentOutput(std::string &out) = 0;
 
-    virtual uint_fast8_t start() = 0;
+    virtual u8 start() = 0;
 
     virtual void stop() = 0;
 

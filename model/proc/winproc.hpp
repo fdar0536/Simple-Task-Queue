@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@
 #define _MODEL_PROC_WINPROC_HPP_
 
 #include <atomic>
-#include <mutex>
 
 #include "windows.h"
 
@@ -49,17 +48,17 @@ public:
 
     ~WinProc();
 
-    virtual uint_fast8_t init() override;
+    virtual u8 init() override;
 
-    virtual uint_fast8_t start(const Task &task) override;
+    virtual u8 start(const Task &task) override;
 
     virtual void stop() override;
 
     virtual bool isRunning() override;
 
-    virtual uint_fast8_t readCurrentOutput(std::string &out) override;
+    virtual u8 readCurrentOutput(std::string &out) override;
 
-    virtual uint_fast8_t exitCode(int_fast32_t &out) override;
+    virtual u8 exitCode(i32 &out) override;
 
 private:
 
@@ -73,9 +72,9 @@ private:
 
     PROCESS_INFORMATION m_procInfo;
 
-    std::atomic<int_fast32_t> m_exitCode;
+    std::atomic<i32> m_exitCode;
 
-    uint_fast8_t CreateChildProcess(const Task &);
+    u8 CreateChildProcess(const Task &);
 
     void resetHandle();
 

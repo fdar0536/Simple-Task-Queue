@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ WinProc::~WinProc()
     stopImpl();
 }
 
-uint_fast8_t WinProc::init()
+u8 WinProc::init()
 {
     m_procInfo.hProcess = NULL;
     m_procInfo.hThread = NULL;
@@ -56,7 +56,7 @@ uint_fast8_t WinProc::init()
     return 0;
 }
 
-uint_fast8_t WinProc::start(const Task &task)
+u8 WinProc::start(const Task &task)
 {
     if (isRunning())
     {
@@ -120,7 +120,7 @@ void WinProc::stop()
 
 bool WinProc::isRunning()
 {
-    int_fast32_t exitCode = m_exitCode.load(std::memory_order_relaxed);
+    i32 exitCode = m_exitCode.load(std::memory_order_relaxed);
     if (exitCode != STILL_ACTIVE)
     {
         return false;
@@ -136,7 +136,7 @@ bool WinProc::isRunning()
     return ( exitCode == STILL_ACTIVE );
 }
 
-uint_fast8_t WinProc::readCurrentOutput(std::string &out)
+u8 WinProc::readCurrentOutput(std::string &out)
 {
     if (!isRunning())
     {
@@ -166,7 +166,7 @@ uint_fast8_t WinProc::readCurrentOutput(std::string &out)
     return 0;
 }
 
-uint_fast8_t WinProc::exitCode(int_fast32_t &out)
+u8 WinProc::exitCode(i32 &out)
 {
     if (isRunning())
     {
@@ -179,7 +179,7 @@ uint_fast8_t WinProc::exitCode(int_fast32_t &out)
 }
 
 // private member functions
-uint_fast8_t WinProc::CreateChildProcess(const Task &task)
+u8 WinProc::CreateChildProcess(const Task &task)
 {
     if (task.execName.empty())
     {
@@ -234,7 +234,7 @@ uint_fast8_t WinProc::CreateChildProcess(const Task &task)
         &siStartInfo,  // STARTUPINFO pointer
         &m_procInfo);  // receives PROCESS_INFORMATION
 
-    uint_fast8_t ret(0);
+    u8 ret(0);
 
     // If an error occurs, exit the application.
     if (!bSuccess)
