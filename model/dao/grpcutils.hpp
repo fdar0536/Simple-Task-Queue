@@ -26,7 +26,7 @@
 
 #include "grpcpp/grpcpp.h"
 
-#include "model/alias.hpp"
+#include "controller/global/defines.hpp"
 
 namespace Model
 {

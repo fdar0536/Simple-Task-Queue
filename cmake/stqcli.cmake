@@ -1,14 +1,19 @@
-if(ENABLE_SERVER)
-    set(STQ_SERVER_LIBS
+if(ENABLE_CLI)
+    set(STQ_CLI_LIBS
         protobuf::libprotobuf
         gRPC::grpc++
 
         grpc_common
         spdlog::spdlog
-        SQLite::SQLite3
     )
 
-    set(SERVER_CONTROLLER_SRC
+    if (ENABLE_SERVER)
+        list(APPEND STQ_CLI_LIBS
+            SQLite::SQLite3
+        )
+    endif (ENABLE_SERVER)
+
+    set(CLI_CONTROLLER_SRC
 
         #config
         controller/grpcserver/config.cpp
@@ -27,24 +32,24 @@ if(ENABLE_SERVER)
         controller/grpcserver/server.hpp
     )
 
-    add_executable(STQSERVER
-        ${SERVER_CONTROLLER_SRC}
+    add_executable(STQCLI
+        ${CLI_CONTROLLER_SRC}
 
-        servermain.cpp)
+        climain.cpp)
 
-    add_dependencies(STQSERVER grpc_common stqmodel)
+    add_dependencies(STQCLI grpc_common stqmodel)
 
-    target_link_libraries(STQSERVER
+    target_link_libraries(STQCLI
         PRIVATE
 
-        ${STQ_SERVER_LIBS}
+        ${STQ_CLI_LIBS}
         stqmodel
     )
 
-    target_include_directories(STQSERVER PRIVATE ${INIPP_INCLUDE_DIRS})
+    target_include_directories(STQCLI PRIVATE ${INIPP_INCLUDE_DIRS})
 
     if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-        target_link_options(STQSERVER PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-        target_compile_options(STQSERVER PRIVATE $<$<CONFIG:Debug>:/ZI>)
+        target_link_options(STQCLI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+        target_compile_options(STQCLI PRIVATE $<$<CONFIG:Debug>:/ZI>)
     endif()
 endif(ENABLE_SERVER)

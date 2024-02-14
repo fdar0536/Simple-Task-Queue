@@ -97,3 +97,4 @@ target_link_libraries(grpc_common
 
 include(cmake/stqmodel.cmake)
 include(cmake/stqserver.cmake)
+include(cmake/stqcli.cmake)

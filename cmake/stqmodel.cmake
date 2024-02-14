@@ -23,7 +23,17 @@ set(MODEL_SRC
     controller/global/defines.hpp
 )
 
-if(ENABLE_SERVER)
+if (ENABLE_SERVER OR ENABLE_CLI)
+    if (WIN32)
+        list(APPEND MODEL_SRC
+            model/win32-code/getopt.c
+            model/win32-code/getopt.h
+            model/win32-code/getopt_long.c
+        )
+    endif (WIN32)
+endif (ENABLE_SERVER or ENABLE_CLI)
+
+if (ENABLE_SERVER)
     list(APPEND MODEL_SRC
         model/dao/dirutils.cpp
         model/dao/dirutils.hpp
@@ -47,18 +57,28 @@ if(ENABLE_SERVER)
         list(APPEND MODEL_SRC
             model/proc/winproc.cpp
             model/proc/winproc.hpp
-
-            model/win32-code/getopt.c
-            model/win32-code/getopt.h
-            model/win32-code/getopt_long.c
         )
-        elseif ((NOT WIN32))
-            list(APPEND MODEL_SRC
-                model/posixprocess.cpp
-                model/posixprocess.hpp
-            )
+    elseif ((NOT WIN32))
+        list(APPEND MODEL_SRC
+            model/posixprocess.cpp
+            model/posixprocess.hpp
+        )
     endif (WIN32)
 endif(ENABLE_SERVER)
+
+if (ENABLE_CLI OR ENABLE_GUI)
+    list(APPEND MODEL_SRC
+        #grpc
+        model/dao/grpcconnect.cpp
+        model/dao/grpcconnect.hpp
+        model/dao/grpcqueue.cpp
+        model/dao/grpcqueue.hpp
+        model/dao/grpcqueuelist.cpp
+        model/dao/grpcqueuelist.hpp
+        model/dao/grpcutils.cpp
+        model/dao/grpcutils.hpp
+    )
+endif (ENABLE_CLI OR ENABLE_GUI)
 
 add_library(stqmodel STATIC
     ${MODEL_SRC}
