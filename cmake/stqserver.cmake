@@ -2,6 +2,7 @@ if(ENABLE_SERVER)
     set(STQ_SERVER_LIBS
         protobuf::libprotobuf
         gRPC::grpc++
+        cxxopts::cxxopts
 
         grpc_common
         spdlog::spdlog

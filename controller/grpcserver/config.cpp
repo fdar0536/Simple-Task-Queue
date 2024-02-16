@@ -23,13 +23,9 @@
 
 #include <fstream>
 
-#ifdef _WIN32
-#include "model/win32-code/getopt.h"
-#else
-#include "getopt.h"
-#endif
-
+#include "spdlog/spdlog.h"
 #include "inipp.h"
+#include "cxxopts.hpp"
 
 #include "model/dao/dirutils.hpp"
 #include "model/utils.hpp"
@@ -47,11 +43,17 @@ Config::Config()
 Config::~Config()
 {}
 
-uint_fast8_t Config::parse(Config *in, int argc, char **argv)
+u8 Config::parse(Config *in, int argc, char **argv)
 {
     if (!in)
     {
         spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (!argv)
+    {
+        spdlog::error("{}:{} you should never see this line", __FILE__, __LINE__);
         return 1;
     }
 
@@ -61,41 +63,67 @@ uint_fast8_t Config::parse(Config *in, int argc, char **argv)
         return 0;
     }
 
-    if (argc == 2 && (( strcmp(argv[1], "-h")) || (strcmp(argv[1], "--help"))))
-    {
-        printHelp(argv);
-        return 1;
-    }
-
-    struct option opts[] =
-    {
-        {"config-file", required_argument, NULL, 'c'},
-        {0, 0, 0, 0}
-    };
-
-    int c(0);
     std::string configFile("");
 
-    while ((c = getopt_long(argc, argv, "c:", opts, NULL)) != -1)
+    try
     {
-        switch (c)
+        cxxopts::Options options("STQCLI", "STQ CLI Client");
+        options.add_options()
+            ("c,config-file", "path to config file", cxxopts::value<std::string>(in->logPath)->default_value(""))
+            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value(""))
+            ("l,log-path", "path for output log", cxxopts::value<std::string>(in->logPath)->default_value(""))
+            ("L,log-level", "log level for spdlog", cxxopts::value<spdlog::level::level_enum>(in->logLevel)->default_value("2"))
+            ("a,address", "which addess will listen", cxxopts::value<std::string>(in->listenIP)->default_value("127.0.0.1"))
+            ("p,port", "which port will listen", cxxopts::value<u16>(in->listenPort)->default_value("12345"))
+            ("v,version", "print version")
+            ("h,help", "print help")
+            ;
+
+        auto result = options.parse(argc, argv);
+        if (result.count("help"))
         {
-        case 'c':
+            std::cout << options.help() << std::endl;
+            return 2;
+        }
+
+        if (result.count("version"))
         {
-            configFile = optarg;
-            if (Model::DAO::DirUtils::verifyFile(optarg))
+            printVersion();
+            return 2;
+        }
+
+        if (!configFile.empty())
+        {
+            if (Model::DAO::DirUtils::verifyFile(configFile))
             {
                 spdlog::error("{}:{} Fail to verify config file", __FILE__, __LINE__);
                 return 1;
             }
-            break;
         }
-        default:
+
+        Model::DAO::DirUtils::convertPath(in->logPath);
+        if (Model::DAO::DirUtils::verifyDir(in->logPath))
         {
-            printHelp(argv);
+            spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
             return 1;
         }
-        } // end switch(c)
+
+        if (in->listenPort > 65535)
+        {
+            spdlog::error("{}:{} Invalid port", __FILE__, __LINE__);
+            return 1;
+        }
+
+        if (Model::Utils::verifyIP(in->listenIP))
+        {
+            spdlog::error("{}:{} Invalid ip", __FILE__, __LINE__);
+            return 1;
+        }
+    }
+    catch(cxxopts::exceptions::exception e)
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, e.what());
+        return 1;
     }
 
     if (configFile.empty())
@@ -139,7 +167,6 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
         return 1;
     }
 
-    std::unique_lock<std::mutex> lock(obj->m_mutex);
     std::ifstream i(path.c_str());
     try
     {
@@ -155,14 +182,14 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
 
         UNUSED(get_value(ini.sections["Settings"],
                          "db path",
-                         obj->m_dbPath));
+                         obj->dbPath));
 
         UNUSED(get_value(ini.sections["Settings"],
                          "log path",
-                         obj->m_logPath));
+                         obj->logPath));
 
-        Model::DAO::DirUtils::convertPath(obj->m_logPath);
-        if (Model::DAO::DirUtils::verifyDir(obj->m_logPath))
+        Model::DAO::DirUtils::convertPath(obj->logPath);
+        if (Model::DAO::DirUtils::verifyDir(obj->logPath))
         {
             spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
             return 1;
@@ -170,9 +197,9 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
 
         UNUSED(get_value(ini.sections["Settings"],
                          "port",
-                         obj->m_listenPort));
+                         obj->listenPort));
 
-        if (obj->m_listenPort > 65535)
+        if (obj->listenPort > 65535)
         {
             spdlog::error("{}:{} Invalid port", __FILE__, __LINE__);
             return 1;
@@ -180,9 +207,9 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
 
         UNUSED(get_value(ini.sections["Settings"],
                          "ip",
-                         obj->m_listenIP));
+                         obj->listenIP));
 
-        if (Model::Utils::verifyIP(obj->m_listenIP))
+        if (Model::Utils::verifyIP(obj->listenIP))
         {
             spdlog::error("{}:{} Invalid ip", __FILE__, __LINE__);
             return 1;
@@ -193,7 +220,7 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
                          "log level",
                          level));
 
-        obj->m_logLevel = static_cast<spdlog::level::level_enum>(level);
+        obj->logLevel = static_cast<spdlog::level::level_enum>(level);
     }
     catch (...)
     {
@@ -205,97 +232,22 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
     return 0;
 }
 
-std::string Config::dbPath()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    return m_dbPath;
-}
-
-void Config::setDbPath(const std::string &in)
-{
-    if (in.empty())
-    {
-        spdlog::error("{}:{} input is empty", __FILE__, __LINE__);
-        return;
-    }
-
-    {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_dbPath = in;
-    }
-}
-
-std::string Config::logPath()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    return m_logPath;
-}
-
-void Config::setLogPath(const std::string &in)
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_logPath = in;
-}
-
-uint_fast16_t Config::listenPort()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    return m_listenPort;
-}
-
-void Config::setListenPort(uint_fast16_t in)
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_listenPort = in;
-}
-
-std::string Config::listenIP()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    return m_listenIP;
-}
-
-uint_fast8_t Config::setListenIP(const std::string &in)
-{
-    if (Model::Utils::verifyIP(in))
-    {
-        spdlog::error("{}:{} input is valid ipv4", __FILE__, __LINE__);
-        return 1;
-    }
-
-    std::unique_lock<std::mutex> lock(m_mutex);
-    m_listenIP = in;
-    return 0;
-}
-
-spdlog::level::level_enum Config::logLevel()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    return m_logLevel;
-}
-
-void Config::setLogLevel(spdlog::level::level_enum in)
-{
-    {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_logLevel = in;
-    }
-
-    spdlog::set_level(in);
-}
-
 // private member functions
-void Config::printHelp(char **argv)
+void Config::printVersion()
 {
-    if (!argv)
-    {
-        spdlog::error("{}:{} argv is null", __FILE__, __LINE__);
-        return;
-    }
+    Model::Utils::writeConsole("STQSERVER version info:\n");
 
-    Model::Utils::writeConsole(argv[0]);
-    Model::Utils::writeConsole(" usage:\n");
-    Model::Utils::writeConsole("--config-file <file>, -c <file>: set config file\n");
+    Model::Utils::writeConsole("branch:  ");
+    Model::Utils::writeConsole(STQ_BRANCH);
+    Model::Utils::writeConsole("\n");
+
+    Model::Utils::writeConsole("commit:  ");
+    Model::Utils::writeConsole(STQ_COMMIT);
+    Model::Utils::writeConsole("\n");
+
+    Model::Utils::writeConsole("version: ");
+    Model::Utils::writeConsole(STQ_VERSION);
+    Model::Utils::writeConsole("\n");
 }
 
 } // end namespace GRPCServer

@@ -47,8 +47,8 @@ uint_fast8_t Server::start()
     try
     {
         grpc::ServerBuilder builder;
-        std::string listenAddr = GRPCServer::config.listenIP() + ":" +
-                                 std::to_string(GRPCServer::config.listenPort());
+        std::string listenAddr = GRPCServer::config.listenIP + ":" +
+                                 std::to_string(GRPCServer::config.listenPort);
         int actualPort(0);
         builder.AddListeningPort(listenAddr,
                                  grpc::InsecureServerCredentials(),

@@ -46,8 +46,14 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (Controller::GRPCServer::init(argc, argv))
+    u8 code(Controller::GRPCServer::init(argc, argv));
+    if (code)
     {
+        if (code == 2)
+        {
+            return 0;
+        }
+
         spdlog::error("{}:{} Fail to initialize", __FILE__, __LINE__);
         return 1;
     }

@@ -25,14 +25,10 @@
 #include <sstream>
 
 #include "spdlog/spdlog.h"
-
-#ifdef _WIN32
-#include "model/win32-code/getopt.h"
-#else
-#include "getopt.h"
-#endif // _WIN32
+#include "cxxopts.hpp"
 
 #include "controller/global/global.hpp"
+#include "model/utils.hpp"
 #include "global.hpp"
 
 #include "main.hpp"
@@ -88,7 +84,12 @@ i32 Main::init(int argc, char **argv)
     return 0;
 }
 
+i32 Main::run()
+{
 
+
+    return 0;
+}
 
 // private menber functions
 i32 Main::parseArgs(int argc, char **argv)
@@ -99,137 +100,55 @@ i32 Main::parseArgs(int argc, char **argv)
         return 1;
     }
 
-    struct option opts[] =
-        {
-            {"log-file",  required_argument, NULL, 'l'},
-            {"log-level", required_argument, NULL, 'L'},
-            {"address",   required_argument, NULL, 'a'},
-            {"port",      required_argument, NULL, 'p'},
-            {"help",      no_argument,       NULL, 'h'},
-            {"version",   no_argument,       NULL, 'v'},
-            {0, 0, 0, 0}
-        };
-
-    int c(0);
-    while ((c = getopt_long(argc, argv, "l:L:a:p:hv", opts, NULL)) != -1)
+    try
     {
-        switch (c)
-        {
-        case 'l':
-        {
-            Global::config.logFile = optarg;
-            break;
-        }
-        case 'L':
-        {
-            std::stringstream strValue;
-            u8 level;
-            try
-            {
-                strValue << optarg;
-                strValue >> level;
-            }
-            catch (...)
-            {
-                spdlog::error("{}:{} Invaild argument: {}", __FILE__, __LINE__,
-                              optarg);
-                return 1;
-            }
+        cxxopts::Options options("STQCLI", "STQ CLI Client");
+        options.add_options()
+            ("l,log-file", "file for output log", cxxopts::value<std::string>(Global::config.logFile)->default_value(""))
+            ("L,log-level", "log level for spdlog", cxxopts::value<spdlog::level::level_enum>(Global::config.logLevel)->default_value("2"))
+            ("a,address", "address to STQ server", cxxopts::value<std::string>(Global::config.address)->default_value("127.0.0.1"))
+            ("p,port", "which port is STQ Server listening", cxxopts::value<u16>(Global::config.port)->default_value("12345"))
+            ("v,version", "print version")
+            ("h,help", "print help")
+            ;
 
-            if (level > 6)
-            {
-                spdlog::error("{}:{} Invaild level: {}", __FILE__, __LINE__,
-                              level);
-                return 1;
-            }
-
-            Global::config.logLevel =
-                static_cast<spdlog::level::level_enum>(level);
-
-            break;
-        }
-        case 'a':
+        auto result = options.parse(argc, argv);
+        if (result.count("help"))
         {
-            Global::config.address = optarg;
-            break;
-        }
-        case 'p':
-        {
-            try
-            {
-                std::stringstream strValue;
-                strValue << optarg;
-                strValue >> Global::config.port;
-            }
-            catch (...)
-            {
-                spdlog::error("{}:{} Invaild argument: {}", __FILE__, __LINE__,
-                              optarg);
-                return 1;
-            }
-            break;
-        }
-        case 'v':
-        {
-            printVersion(argv);
-            return 0;
-        }
-        case 'h':
-        {
-            printHelp(argv);
+            std::cout << options.help() << std::endl;
             return 2;
         }
-        default:
+
+        if (result.count("version"))
         {
-            printHelp(argv);
-            return 1;
+            printVersion();
+            return 2;
         }
-        } // end switch(c)
+    }
+    catch(cxxopts::exceptions::exception e)
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, e.what());
+        return 1;
     }
 
     return 0;
 }
 
-void Main::printHelp(char **argv)
+void Main::printVersion()
 {
-    if (!argv)
-    {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, "you should never see this line");
-        return;
-    }
+    Model::Utils::writeConsole("STQCLI version info:\n");
 
-    std::cout << argv[0] << " " << STQ_VERSION << " usage:" << std::endl;
+    Model::Utils::writeConsole("branch:  ");
+    Model::Utils::writeConsole(STQ_BRANCH);
+    Model::Utils::writeConsole("\n");
 
-    std::cout << "-l, --log-file <path to log file>: ";
-    std::cout << "file for output log, default is stdout." << std::endl;
+    Model::Utils::writeConsole("commit:  ");
+    Model::Utils::writeConsole(STQ_COMMIT);
+    Model::Utils::writeConsole("\n");
 
-    std::cout << "-L, --log-level <level>: ";
-    std::cout << "log level for spdlog, default value is 2(info)." << std::endl;
-
-    std::cout << "-a, --address <ip or host name>: address to STQ server, ";
-    std::cout << "default is 127.0.0.1" << std::endl;
-
-    std::cout << "-p, --port: which port is STQ Server listening, ";
-    std::cout << "default is 12345" << std::endl;
-
-    std::cout << "-v, --version: print version and exit" << std::endl;
-
-    std::cout << "-h, --help: print this help and exit" << std::endl;
-}
-
-void Main::printVersion(char **argv)
-{
-    if (!argv)
-    {
-        spdlog::error("{}:{} you should never see this line", __FILE__, __LINE__);
-        return;
-    }
-
-    std::cout << argv[0] << " version info:" << std::endl;
-
-    std::cout << "branch:  " << STQ_BRANCH << std::endl;
-    std::cout << "commit:  " << STQ_COMMIT << std::endl;
-    std::cout << "version: " << STQ_VERSION << std::endl;
+    Model::Utils::writeConsole("version: ");
+    Model::Utils::writeConsole(STQ_VERSION);
+    Model::Utils::writeConsole("\n");
 }
 
 u8 Main::spdlogInit()

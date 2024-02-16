@@ -48,9 +48,7 @@ private:
 
     i32 parseArgs(int, char **);
 
-    void printHelp(char **);
-
-    void printVersion(char **);
+    void printVersion();
 
     u8 spdlogInit();
 

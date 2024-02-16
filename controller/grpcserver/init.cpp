@@ -52,8 +52,14 @@ u8 init(int argc, char **argv)
         return 1;
     }
 
-    if (Config::parse(&config, argc, argv))
+    u8 ret(Config::parse(&config, argc, argv));
+    if (ret)
     {
+        if (ret == 2)
+        {
+            return 2;
+        }
+
         spdlog::error("{}:{} parse config failed", __FILE__, __LINE__);
         return 1;
     }

@@ -24,11 +24,7 @@
 #ifndef _CONTROLLER_GRPCSERVER_CONFIG_HPP_
 #define _CONTROLLER_GRPCSERVER_CONFIG_HPP_
 
-#include <mutex>
 #include <string>
-#include <regex>
-
-#include <inttypes.h>
 
 #include "spdlog/spdlog.h"
 
@@ -48,45 +44,23 @@ public:
 
     ~Config();
 
-    static uint_fast8_t parse(Config *in, int argc, char **argv);
+    static u8 parse(Config *in, int argc, char **argv);
 
-    static uint_fast8_t parse(Config *, const std::string &);
+    static u8 parse(Config *, const std::string &);
 
-    std::string dbPath();
+    std::string dbPath;
 
-    void setDbPath(const std::string &);
+    std::string logPath = "";
 
-    std::string logPath();
+    uint_fast16_t listenPort = 12345;
 
-    void setLogPath(const std::string &);
+    std::string listenIP = "127.0.0.1";
 
-    uint_fast16_t listenPort();
-
-    void setListenPort(uint_fast16_t);
-
-    std::string listenIP();
-
-    uint_fast8_t setListenIP(const std::string &);
-
-    spdlog::level::level_enum logLevel();
-
-    void setLogLevel(spdlog::level::level_enum);
+    spdlog::level::level_enum logLevel = spdlog::level::level_enum::info;
 
 private:
 
-    static void printHelp(char **argv);
-
-    std::string m_dbPath;
-
-    std::string m_logPath = "";
-
-    uint_fast16_t m_listenPort = 12345;
-
-    std::string m_listenIP = "127.0.0.1";
-
-    spdlog::level::level_enum m_logLevel = spdlog::level::level_enum::info;
-
-    std::mutex m_mutex = std::mutex();
+    static void printVersion();
 };
 
 } // end namespace GRPCServer

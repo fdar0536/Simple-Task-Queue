@@ -2,6 +2,7 @@ if(ENABLE_CLI)
     set(STQ_CLI_LIBS
         protobuf::libprotobuf
         gRPC::grpc++
+        cxxopts::cxxopts
 
         grpc_common
         spdlog::spdlog

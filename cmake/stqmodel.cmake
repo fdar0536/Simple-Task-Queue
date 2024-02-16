@@ -25,16 +25,6 @@ set(MODEL_SRC
     controller/global/global.hpp
 )
 
-if (ENABLE_SERVER OR ENABLE_CLI)
-    if (WIN32)
-        list(APPEND MODEL_SRC
-            model/win32-code/getopt.c
-            model/win32-code/getopt.h
-            model/win32-code/getopt_long.c
-        )
-    endif (WIN32)
-endif (ENABLE_SERVER or ENABLE_CLI)
-
 if (ENABLE_SERVER)
     list(APPEND MODEL_SRC
         model/dao/dirutils.cpp
