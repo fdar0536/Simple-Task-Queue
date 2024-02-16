@@ -91,7 +91,6 @@ static void sighandler(int signum)
 #ifdef _WIN32
 static BOOL eventHandler(DWORD dwCtrlType)
 {
-    UNUSED(dwCtrlType);
     sighandler(dwCtrlType);
     return TRUE;
 }

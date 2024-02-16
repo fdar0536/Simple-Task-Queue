@@ -22,10 +22,16 @@
  */
 
 #include <iostream>
-#include <sstream>
+
+#include <csignal>
 
 #include "spdlog/spdlog.h"
 #include "cxxopts.hpp"
+
+
+#ifdef _WIN32
+#include "windows.h"
+#endif
 
 #include "controller/global/global.hpp"
 #include "model/utils.hpp"
@@ -38,6 +44,12 @@ namespace Controller
 
 namespace CLI
 {
+
+static void sighandler(int signum);
+
+#ifdef _WIN32
+static BOOL eventHandler(DWORD dwCtrlType);
+#endif
 
 Main::Main()
 {}
@@ -81,13 +93,23 @@ i32 Main::init(int argc, char **argv)
 
     spdlog::set_level(Global::config.logLevel);
     Global::keepRunning.store(true, std::memory_order_relaxed);
+
+    signal(SIGABRT, sighandler);
+    signal(SIGFPE,  sighandler);
+    signal(SIGILL,  sighandler);
+    signal(SIGINT,  sighandler);
+    signal(SIGSEGV, sighandler);
+    signal(SIGTERM, sighandler);
+
+#ifdef _WIN32
+    SetConsoleCtrlHandler(eventHandler, TRUE);
+#endif
+
     return 0;
 }
 
 i32 Main::run()
 {
-
-
     return 0;
 }
 
@@ -166,6 +188,21 @@ u8 Main::spdlogInit()
 
     return 0;
 }
+
+static void sighandler(int signum)
+{
+    spdlog::info("{}:{} Signaled: {}", __FILE__, __LINE__, signum);
+    spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
+    Global::keepRunning.store(false, std::memory_order_relaxed);
+}
+
+#ifdef _WIN32
+static BOOL eventHandler(DWORD dwCtrlType)
+{
+    sighandler(dwCtrlType);
+    return TRUE;
+}
+#endif
 
 } // end namesapce CLI
 
