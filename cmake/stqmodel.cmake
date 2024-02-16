@@ -21,6 +21,8 @@ set(MODEL_SRC
 
     # global
     controller/global/defines.hpp
+    controller/global/global.cpp
+    controller/global/global.hpp
 )
 
 if (ENABLE_SERVER OR ENABLE_CLI)

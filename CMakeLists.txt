@@ -52,6 +52,17 @@ if (ENABLE_GUI)
     set(STQ_GUI ON)
 endif (ENABLE_GUI)
 
+include(cmake/getGitInfo.cmake)
+
+set(STQ_COMMIT "")
+get_git_hash(STQ_COMMIT)
+message(STATUS "Git hash is ${STQ_COMMIT}")
+
+# git_BRANCh
+set(STQ_BRANCH "")
+get_git_branch(STQ_BRANCH)
+message(STATUS "Git branch is ${STQ_BRANCH}")
+
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)

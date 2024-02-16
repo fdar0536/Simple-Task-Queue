@@ -23,15 +23,10 @@
 
 #include <csignal>
 
-#ifdef _WIN32
-#include "windows.h"
-#endif
-
 #include "spdlog/spdlog.h"
 
 #include "controller/grpcserver/init.hpp"
-
-static bool isAdmin();
+#include "controller/global/global.hpp"
 
 static void sighandler(int signum);
 
@@ -41,7 +36,7 @@ static BOOL eventHandler(DWORD dwCtrlType);
 
 int main(int argc, char **argv)
 {
-    if (isAdmin())
+    if (Controller::Global::isAdmin())
     {
 #ifdef _WIN32
         spdlog::error("{}:{} Refuse to run as administrator", __FILE__, __LINE__);
@@ -80,37 +75,8 @@ int main(int argc, char **argv)
     return ret;
 }
 
-static bool isAdmin()
-{
-#ifdef _WIN32
-    PSID sid;
-    SID_IDENTIFIER_AUTHORITY auth = SECURITY_NT_AUTHORITY;
-    if (!AllocateAndInitializeSid(&auth,
-                                  2,
-                                  SECURITY_BUILTIN_DOMAIN_RID,
-                                  DOMAIN_ALIAS_RID_ADMINS,
-                                  0, 0, 0, 0, 0, 0,
-                                  &sid))
-    {
-        return true;
-    }
-
-    BOOL res;
-    if (!CheckTokenMembership(nullptr, sid, &res))
-    {
-        return true;
-    }
-
-    FreeSid(sid);
-    return res;
-#else
-    return (geteuid() == 0);
-#endif
-}
-
 static void sighandler(int signum)
 {
-    UNUSED(signum);
     spdlog::info("{}:{} Signaled: {}", __FILE__, __LINE__, signum);
     spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
     Controller::GRPCServer::server.stop();
@@ -120,8 +86,7 @@ static void sighandler(int signum)
 static BOOL eventHandler(DWORD dwCtrlType)
 {
     UNUSED(dwCtrlType);
-    spdlog::info("{}:{} Signaled: {}", __FILE__, __LINE__, dwCtrlType);
-    sighandler(0);
+    sighandler(dwCtrlType);
     return TRUE;
 }
 #endif

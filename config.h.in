@@ -24,10 +24,9 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define STQ_VERSION "@STQ_VERSION@"
-#define STQ_NAME "@STQ_NAME@"
+#define STQ_VERSION        "@STQ_VERSION@"
+#define STQ_BRANCH         "@STQ_BRANCH@"
+#define STQ_COMMIT         "@STQ_COMMIT@"
 #define STQ_CLIENT_TIMEOUT @CLIENT_TIMEOUT@
-
-#cmakedefine STQ_GUI
 
 #endif // _CONFIG_H_

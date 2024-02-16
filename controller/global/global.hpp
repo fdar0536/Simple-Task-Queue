@@ -21,24 +21,29 @@
  * SOFTWARE.
  */
 
-#include "spdlog/spdlog.h"
+#ifndef _CONTROLLER_GLOBAL_GLOBAL_HPP_
+#define _CONTROLLER_GLOBAL_GLOBAL_HPP_
 
-#include "controller/cli/main.hpp"
+#include <string>
 
-int main(int argc, char **argv)
+#include "defines.hpp"
+
+namespace Controller
 {
-    Controller::CLI::Main mainObj;
-    i32 ret = mainObj.init(argc, argv);
-    if (ret)
-    {
-        if (ret == 2)
-        {
-            return 0;
-        }
 
-        spdlog::error("{}:{} Failed to initialize", __FILE__, __LINE__);
-        return ret;
-    }
+namespace Global
+{
 
-    return mainObj.run();
-}
+u8 consoleInit();
+
+void consoleFin();
+
+bool isAdmin();
+
+u8 spdlogInit(const std::string &);
+
+} // end namesapce Global
+
+} // end namespace Controller
+
+#endif // _CONTROLLER_GLOBAL_GLOBAL_HPP_

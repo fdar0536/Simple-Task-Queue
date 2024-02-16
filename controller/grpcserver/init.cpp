@@ -21,23 +21,14 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
-#include <stdio.h>
-
-#ifdef _WIN32
-#include "windows.h"
-#include "io.h"
-#include "fcntl.h"
-#endif
-
 #include "spdlog/spdlog.h"
 
 #include "spdlog/sinks/daily_file_sink.h"
 
 #include "model/errmsg.hpp"
-#include "model/utils.hpp"
 #include "model/dao/sqliteconnect.hpp"
+
+#include "controller/global/global.hpp"
 
 #include "init.hpp"
 
@@ -53,17 +44,9 @@ GRPCServer::Server server;
 
 std::shared_ptr<Model::DAO::IQueueList> sqliteQueueList = nullptr;
 
-#ifdef _WIN32
-static UINT consoleCP(0);
-
-static UINT consoleOutputCP(0);
-#endif
-static uint_fast8_t initConsole();
-static void initSpdlog();
-
-uint_fast8_t init(int argc, char **argv)
+u8 init(int argc, char **argv)
 {
-    if (initConsole())
+    if (Global::consoleInit())
     {
         spdlog::error("{}:{} initConsole failed", __FILE__, __LINE__);
         return 1;
@@ -83,19 +66,23 @@ uint_fast8_t init(int argc, char **argv)
 
     Model::ErrMsg::init();
 
-    initSpdlog();
+    if (Global::spdlogInit(config.logPath() + "/STQLog.log"))
+    {
+        spdlog::error("{}:{} Fail to initialize spdlog", __FILE__, __LINE__);
+        return 1;
+    }
+
+    spdlog::set_level(config.logLevel());
+
     return 0;
 }
 
 void fin()
 {
-#ifdef _WIN32
-    SetConsoleCP(consoleCP);
-    SetConsoleOutputCP(consoleOutputCP);
-#endif
+    Global::consoleFin();
 }
 
-uint_fast8_t initSQLiteQueueList()
+u8 initSQLiteQueueList()
 {
     Model::DAO::SQLiteConnect *conn(nullptr);
     try
@@ -141,72 +128,6 @@ uint_fast8_t initSQLiteQueueList()
 
     sqliteQueueList = std::shared_ptr<Model::DAO::IQueueList>(sqlPtr);
     return 0;
-}
-
-static uint_fast8_t initConsole()
-{
-    fflush(stdout);
-
-#ifdef _MSC_VER
-#   pragma region WIN_UNICODE_SUPPORT_MAIN
-#endif
-
-#if defined _WIN32
-    // change code page to UTF-8 UNICODE
-    if (!IsValidCodePage(CP_UTF8))
-    {
-        Model::Utils::writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    consoleCP = GetConsoleCP();
-    consoleOutputCP = GetConsoleOutputCP();
-
-    if (!SetConsoleCP(CP_UTF8))
-    {
-        Model::Utils::writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-    if (!SetConsoleOutputCP(CP_UTF8))
-    {
-        Model::Utils::writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    // change file stream translation mode
-    if (_setmode(_fileno(stdout), _O_U8TEXT) == -1)
-    {
-        Model::Utils::writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    if (_setmode(_fileno(stderr), _O_U8TEXT) == -1)
-    {
-        Model::Utils::writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    if (_setmode(_fileno(stdin), _O_U16TEXT) == -1)
-    {
-        Model::Utils::writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-#endif
-
-#ifdef _MSC_VER
-#   pragma endregion
-#endif
-
-    std::ios::sync_with_stdio(false);
-    return 0;
-}
-
-static void initSpdlog()
-{
-    auto daily_logger = spdlog::daily_logger_mt(
-        "STQLog",
-        config.logPath() + "/STQLog.log");
-    spdlog::set_default_logger(daily_logger);
 }
 
 } // end namespace GRPCServer

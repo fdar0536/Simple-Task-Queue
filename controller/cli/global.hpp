@@ -21,24 +21,30 @@
  * SOFTWARE.
  */
 
-#include "spdlog/spdlog.h"
+#ifndef _CONTROLLER_CLI_GLOBAL_HPP_
+#define _CONTROLLER_CLI_GLOBAL_HPP_
 
-#include "controller/cli/main.hpp"
+#include <atomic>
 
-int main(int argc, char **argv)
+#include "controller/cli/config.hpp"
+
+namespace Controller
 {
-    Controller::CLI::Main mainObj;
-    i32 ret = mainObj.init(argc, argv);
-    if (ret)
-    {
-        if (ret == 2)
-        {
-            return 0;
-        }
 
-        spdlog::error("{}:{} Failed to initialize", __FILE__, __LINE__);
-        return ret;
-    }
+namespace CLI
+{
 
-    return mainObj.run();
-}
+namespace Global
+{
+
+extern std::atomic<bool> keepRunning;
+
+extern Controller::CLI::Config config;
+
+} // end namespace Global
+
+} // end namesapce CLI
+
+} // end namespace Controller
+
+#endif // _CONTROLLER_CLI_MAIN_HPP_
