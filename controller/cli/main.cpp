@@ -110,7 +110,12 @@ i32 Main::init(int argc, char **argv)
 
 i32 Main::run()
 {
-    return 0;
+    i32 ret(0);
+    while (Global::keepRunning.load(std::memory_order_relaxed))
+    {
+    }
+
+    return ret;
 }
 
 // private menber functions
