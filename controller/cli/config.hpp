@@ -46,6 +46,8 @@ public:
 
     u16 port = 12345;
 
+    bool autoConnect = true;
+
     spdlog::level::level_enum logLevel = spdlog::level::level_enum::info;
 
 }; // end class Config

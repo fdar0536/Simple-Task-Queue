@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -183,7 +183,7 @@ void writeLastError(const char *file, int line)
 void writeConsole(const std::string &in)
 {
 #ifdef _WIN32
-    wchar_t buf[4096] = {};
+    wchar_t buf[16384] = {};
     if (utf8ToUtf16(in, buf, 4096))
     {
         spdlog::error("{}:{} Fail to output", __FILE__, __LINE__);

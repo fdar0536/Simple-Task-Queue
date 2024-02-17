@@ -25,6 +25,8 @@
 #define _CONTROLLER_CLI_GLOBAL_HPP_
 
 #include <atomic>
+#include <string>
+#include <vector>
 
 #include "controller/cli/config.hpp"
 
@@ -41,10 +43,16 @@ extern std::atomic<bool> keepRunning;
 
 extern Controller::CLI::Config config;
 
+extern std::vector<std::string> args;
+
+void getArgs(const std::string &);
+
+void printCMDHelp(const std::string &);
+
 } // end namespace Global
 
 } // end namesapce CLI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_CLI_MAIN_HPP_
+#endif // _CONTROLLER_CLI_GLOBAL_HPP_

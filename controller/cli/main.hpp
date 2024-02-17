@@ -52,6 +52,12 @@ private:
 
     u8 spdlogInit();
 
+    i32 print();
+
+    i32 modify();
+
+    i32 connect();
+
 }; // end class Main
 
 } // end namesapce CLI

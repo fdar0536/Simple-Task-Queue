@@ -93,6 +93,7 @@ i32 Main::init(int argc, char **argv)
 
     spdlog::set_level(Global::config.logLevel);
     Global::keepRunning.store(true, std::memory_order_relaxed);
+    Global::args.reserve(16);
 
     signal(SIGABRT, sighandler);
     signal(SIGFPE,  sighandler);
@@ -111,8 +112,61 @@ i32 Main::init(int argc, char **argv)
 i32 Main::run()
 {
     i32 ret(0);
+    std::string prefix = "> ";
+
+    if (Global::config.autoConnect)
+    {
+        ret = connect();
+    }
+
     while (Global::keepRunning.load(std::memory_order_relaxed))
     {
+        Global::getArgs(prefix);
+
+        if (Global::args.empty())
+        {
+            continue;
+        }
+
+        // only accept "print" "modify" "connect" "exit"
+        if (Global::args.at(0) == "print")
+        {
+            ret = print();
+            continue;
+        }
+
+        if (Global::args.at(0) == "modify")
+        {
+            ret = modify();
+            continue;
+        }
+
+        if (Global::args.at(0) == "connect")
+        {
+            ret = connect();
+            continue;
+        }
+
+        if (Global::args.at(0) == "exit")
+        {
+            Global::keepRunning.store(false, std::memory_order_relaxed);
+            Model::Utils::writeConsole("Good bye!\n");
+            continue;
+        }
+
+        if (Global::args.at(0) == "help")
+        {
+            Model::Utils::writeConsole("Valid command: print, modify, connect, help, exit\n");
+            Model::Utils::writeConsole("Please type \"[print|modify|connect] help\" for more details.\n");
+            Model::Utils::writeConsole("Please type \"help\" to show this message.\n");
+            Model::Utils::writeConsole("Please type \"exit\" to exit.\n");
+            ret = 0;
+            continue;
+        }
+
+        Model::Utils::writeConsole("Invalid command: " + Global::args[0] + "\n");
+        Model::Utils::writeConsole("Please type \"help\" for more info\n");
+        ret = 1;
     }
 
     return ret;
@@ -134,6 +188,7 @@ i32 Main::parseArgs(int argc, char **argv)
             ("l,log-file", "file for output log", cxxopts::value<std::string>(Global::config.logFile)->default_value(""))
             ("L,log-level", "log level for spdlog", cxxopts::value<spdlog::level::level_enum>(Global::config.logLevel)->default_value("2"))
             ("a,address", "address to STQ server", cxxopts::value<std::string>(Global::config.address)->default_value("127.0.0.1"))
+            ("A,auto-connect", "auto connect to server", cxxopts::value<bool>(Global::config.autoConnect)->default_value("true"))
             ("p,port", "which port is STQ Server listening", cxxopts::value<u16>(Global::config.port)->default_value("12345"))
             ("v,version", "print version")
             ("h,help", "print help")
@@ -142,7 +197,7 @@ i32 Main::parseArgs(int argc, char **argv)
         auto result = options.parse(argc, argv);
         if (result.count("help"))
         {
-            std::cout << options.help() << std::endl;
+            Model::Utils::writeConsole(options.help() + "\n");
             return 2;
         }
 
@@ -165,11 +220,11 @@ void Main::printVersion()
 {
     Model::Utils::writeConsole("STQCLI version info:\n");
 
-    Model::Utils::writeConsole("branch:  ");
+    Model::Utils::writeConsole("branch: ");
     Model::Utils::writeConsole(STQ_BRANCH);
     Model::Utils::writeConsole("\n");
 
-    Model::Utils::writeConsole("commit:  ");
+    Model::Utils::writeConsole("commit: ");
     Model::Utils::writeConsole(STQ_COMMIT);
     Model::Utils::writeConsole("\n");
 
@@ -193,6 +248,140 @@ u8 Main::spdlogInit()
 
     return 0;
 }
+
+i32 Main::print()
+{
+    if (Global::args.size() != 2)
+    {
+        Global::printCMDHelp("print");
+        return 1;
+    }
+
+    if (Global::args.at(1) == "info")
+    {
+        printVersion();
+
+        Model::Utils::writeConsole("\n");
+
+        Model::Utils::writeConsole("target host: ");
+        Model::Utils::writeConsole(Global::config.address);
+        Model::Utils::writeConsole("\n");
+
+        Model::Utils::writeConsole("target port: ");
+        Model::Utils::writeConsole(std::to_string(Global::config.port));
+        Model::Utils::writeConsole("\n");
+
+        return 0;
+    }
+
+    if (Global::args.at(1) == "help")
+    {
+        Model::Utils::writeConsole("Valid command: \"print [info|help]\"\n");
+        Model::Utils::writeConsole("info: print version and host info\n");
+        Model::Utils::writeConsole("help: to show this message.\n");
+        return 0;
+    }
+
+    Model::Utils::writeConsole("invalid argument\n");
+    Model::Utils::writeConsole("Please type \"print help\" for more info\n");
+    return 1;
+}
+
+i32 Main::modify()
+{
+    if (Global::args.size() > 5)
+    {
+        Global::printCMDHelp("modify");
+        return 1;
+    }
+
+    if (Global::args.size() == 2)
+    {
+        if (Global::args.at(1) != "help")
+        {
+            Global::printCMDHelp("modify");
+            return 1;
+        }
+
+        Model::Utils::writeConsole("Valid command: \"modify [address|port|help] <args>\"\n");
+        Model::Utils::writeConsole("address <addreess>: server address\n");
+        Model::Utils::writeConsole("port <port>: server port\n");
+        Model::Utils::writeConsole("help: to show this message.\n");
+        Model::Utils::writeConsole("You can modify address and port at same time.\n");
+
+        return 0;
+    }
+
+    if (Global::args.size() != 3 && Global::args.size() != 5)
+    {
+        Global::printCMDHelp("modify");
+        return 1;
+    }
+
+    // parse argument
+    bool isIPSet(false);
+    bool isPortSet(false);
+
+    // here Global::args.size() == 3 or Global::args.size() == 5
+    size_t baseIndex(1);
+    size_t remainingCount(Global::args.size() - 1);
+    std::string address("");
+    u16 port(0);
+    while (remainingCount > 0)
+    {
+        if (Global::args.at(baseIndex) == "address")
+        {
+            if (isIPSet)
+            {
+                Global::printCMDHelp("modify");
+                return 1;
+            }
+
+            address = Global::args.at(baseIndex + 1);
+            isIPSet = true;
+        }
+
+        if (Global::args.at(baseIndex) == "port")
+        {
+            if (isPortSet)
+            {
+                Global::printCMDHelp("modify");
+                return 1;
+            }
+
+            try
+            {
+                port = static_cast<u16>(std::stoi(Global::args.at(baseIndex + 1)));
+            }
+            catch (...)
+            {
+                Global::printCMDHelp("modify");
+                return 1;
+            }
+
+            isPortSet = true;
+        }
+
+        remainingCount -= 2;
+        baseIndex += 2;
+    }
+
+    if (isIPSet)
+    {
+        Global::config.address = address;
+    }
+
+    if (isPortSet)
+    {
+        Global::config.port = port;
+    }
+
+    return 0;
+}
+
+i32 Main::connect()
+{}
+
 
 static void sighandler(int signum)
 {
