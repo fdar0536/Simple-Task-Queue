@@ -106,7 +106,7 @@ u8 initSQLiteQueueList()
         return 1;
     }
 
-    if (conn->startConnect(config.dbPath()))
+    if (conn->startConnect(config.dbPath))
     {
         delete conn;
         spdlog::error("{}:{} Fail to initialize sqlite", __FILE__, __LINE__);

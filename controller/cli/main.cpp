@@ -36,6 +36,7 @@
 #include "controller/global/global.hpp"
 #include "model/utils.hpp"
 #include "global.hpp"
+#include "queuelist.hpp"
 
 #include "main.hpp"
 
@@ -122,11 +123,6 @@ i32 Main::run()
     while (Global::keepRunning.load(std::memory_order_relaxed))
     {
         Global::getArgs(prefix);
-
-        if (Global::args.empty())
-        {
-            continue;
-        }
 
         // only accept "print" "modify" "connect" "exit"
         if (Global::args.at(0) == "print")
@@ -337,6 +333,12 @@ i32 Main::modify()
                 return 1;
             }
 
+            if (Global::args.at(baseIndex + 1).empty())
+            {
+                Global::printCMDHelp("modify");
+                return 1;
+            }
+
             address = Global::args.at(baseIndex + 1);
             isIPSet = true;
         }
@@ -344,6 +346,12 @@ i32 Main::modify()
         if (Global::args.at(baseIndex) == "port")
         {
             if (isPortSet)
+            {
+                Global::printCMDHelp("modify");
+                return 1;
+            }
+
+            if (Global::args.at(baseIndex + 1).empty())
             {
                 Global::printCMDHelp("modify");
                 return 1;
@@ -380,8 +388,16 @@ i32 Main::modify()
 }
 
 i32 Main::connect()
-{}
+{
+    QueueList queueList;
+    if (queueList.init())
+    {
+        Model::Utils::writeConsole("Fail to connect to server");
+        return 1;
+    }
 
+    return queueList.run();
+}
 
 static void sighandler(int signum)
 {
