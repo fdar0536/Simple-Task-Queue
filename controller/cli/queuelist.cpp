@@ -29,6 +29,7 @@
 
 #include "controller/cli/global.hpp"
 
+#include "queue.hpp"
 #include "queuelist.hpp"
 
 namespace Controller
@@ -82,7 +83,14 @@ i32 QueueList::init()
         return 1;
     }
 
-    m_queueList = std::shared_ptr<Model::DAO::IQueueList>(queueList);
+    m_queueList = std::shared_ptr<Model::DAO::IQueueList>
+        (reinterpret_cast<Model::DAO::IQueueList *>(queueList));
+
+    m_funcs["list"] = std::bind(&QueueList::list, this);
+    m_funcs["delete"] = std::bind(&QueueList::Delete, this);
+    m_funcs["create"] = std::bind(&QueueList::create, this);
+    m_funcs["rename"] = std::bind(&QueueList::rename, this);
+
     return 0;
 }
 
@@ -122,28 +130,15 @@ i32 QueueList::run()
             continue;
         }
 
-        // list delete create rename
-        if (Global::args.at(0) == "list")
+        try
         {
-            ret = list();
-            continue;
+            ret = m_funcs[Global::args.at(0)]();
         }
-
-        if (Global::args.at(0) == "delete")
+        catch(...)
         {
-            ret = Delete();
-            continue;
-        }
-
-        if (Global::args.at(0) == "create")
-        {
-            ret = create();
-            continue;
-        }
-
-        if (Global::args.at(0) == "rename")
-        {
-            ret = rename();
+            Model::Utils::writeConsole("Invalid command: " + Global::args[0] + "\n");
+            Model::Utils::writeConsole("Please type \"help\" for more info\n");
+            ret = 1;
             continue;
         }
     }
@@ -269,9 +264,18 @@ i32 QueueList::rename()
     return 0;
 }
 
-i32 enter()
+i32 QueueList::enter()
 {
+    auto ptr = m_queueList->getQueue(Global::args.at(0));
+    if (ptr == nullptr)
+    {
+        Model::Utils::writeConsole("Fail to enter the queue");
+        return 1;
+    }
 
+    Queue queue;
+    queue.init();
+    return queue.run(m_prefix + "/" + Global::args.at(0) + "> ", ptr);
 }
 
 } // end namesapce CLI

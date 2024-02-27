@@ -56,7 +56,7 @@ public:
 
     std::string listenIP = "127.0.0.1";
 
-    spdlog::level::level_enum logLevel = spdlog::level::level_enum::info;
+    int logLevel = static_cast<int>(spdlog::level::level_enum::info);
 
 private:
 

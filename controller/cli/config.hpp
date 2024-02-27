@@ -48,7 +48,7 @@ public:
 
     bool autoConnect = true;
 
-    spdlog::level::level_enum logLevel = spdlog::level::level_enum::info;
+    int logLevel = static_cast<int>(spdlog::level::level_enum::info);
 
 }; // end class Config
 

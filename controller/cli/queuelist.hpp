@@ -24,7 +24,9 @@
 #ifndef _CONTROLLER_CLI_QUEUELIST_HPP_
 #define _CONTROLLER_CLI_QUEUELIST_HPP_
 
+#include <functional>
 #include <memory>
+#include <unordered_map>
 
 #include "controller/global/defines.hpp"
 #include "model/dao/iqueuelist.hpp"
@@ -50,6 +52,8 @@ private:
     std::string m_prefix;
 
     std::shared_ptr<Model::DAO::IQueueList> m_queueList;
+
+    std::unordered_map<std::string, std::function<i32(void)>> m_funcs;
 
     i32 create();
 

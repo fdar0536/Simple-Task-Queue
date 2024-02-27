@@ -23,8 +23,6 @@
 
 #include "spdlog/spdlog.h"
 
-#include "spdlog/sinks/daily_file_sink.h"
-
 #include "model/errmsg.hpp"
 #include "model/dao/sqliteconnect.hpp"
 
@@ -72,13 +70,13 @@ u8 init(int argc, char **argv)
 
     Model::ErrMsg::init();
 
-    if (Global::spdlogInit(config.logPath() + "/STQLog.log"))
+    if (Global::spdlogInit(config.logPath + "/STQLog.log"))
     {
         spdlog::error("{}:{} Fail to initialize spdlog", __FILE__, __LINE__);
         return 1;
     }
 
-    spdlog::set_level(config.logLevel());
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(config.logLevel));
 
     return 0;
 }

@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>icons/computer.svg</file>
-        <file>stq.ico</file>
-    </qresource>
-</RCC>

@@ -20,6 +20,8 @@ if(ENABLE_CLI)
         controller/cli/global.hpp
         controller/cli/main.cpp
         controller/cli/main.hpp
+        controller/cli/queue.cpp
+        controller/cli/queue.hpp
         controller/cli/queuelist.cpp
         controller/cli/queuelist.hpp
     )

@@ -92,7 +92,7 @@ i32 Main::init(int argc, char **argv)
         return 1;
     }
 
-    spdlog::set_level(Global::config.logLevel);
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(Global::config.logLevel));
     Global::keepRunning.store(true, std::memory_order_relaxed);
     Global::args.reserve(16);
 
@@ -182,7 +182,7 @@ i32 Main::parseArgs(int argc, char **argv)
         cxxopts::Options options("STQCLI", "STQ CLI Client");
         options.add_options()
             ("l,log-file", "file for output log", cxxopts::value<std::string>(Global::config.logFile)->default_value(""))
-            ("L,log-level", "log level for spdlog", cxxopts::value<spdlog::level::level_enum>(Global::config.logLevel)->default_value("2"))
+            ("L,log-level", "log level for spdlog", cxxopts::value<int>(Global::config.logLevel)->default_value("2"))
             ("a,address", "address to STQ server", cxxopts::value<std::string>(Global::config.address)->default_value("127.0.0.1"))
             ("A,auto-connect", "auto connect to server", cxxopts::value<bool>(Global::config.autoConnect)->default_value("true"))
             ("p,port", "which port is STQ Server listening", cxxopts::value<u16>(Global::config.port)->default_value("12345"))

@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2024 fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,58 +21,60 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_SERVERCONFIG_HPP_
-#define _CONTROLLER_GUI_SERVERCONFIG_HPP_
+#ifndef _CONTROLLER_CLI_QUEUE_HPP_
+#define _CONTROLLER_CLI_QUEUE_HPP_
 
-#include "QWidget"
+#include <functional>
+#include <memory>
+#include <unordered_map>
 
-namespace Ui
-{
-
-class ServerConfig;
-
-}
+#include "controller/global/defines.hpp"
+#include "model/dao/iqueue.hpp"
 
 namespace Controller
 {
 
-namespace GUI
+namespace CLI
 {
 
-class ServerConfig : public QWidget
+class Queue
 {
-    Q_OBJECT
-
 public:
 
-    ServerConfig(QWidget * = nullptr);
+    void init();
 
-    ~ServerConfig();
-
-    uint_fast8_t init();
-
-private slots:
-
-    void onAutoStartClicked(bool);
-
-    void onServerEditFinished();
-
-    void onClearClicked(bool);
-
-    void onStartClicked(bool);
-
-    void onStopClicked(bool);
+    i32 run(const std::string &, std::shared_ptr<Model::DAO::IQueue> &);
 
 private:
 
-    Ui::ServerConfig *m_ui;
+    std::shared_ptr<Model::DAO::IQueue> m_queue;
 
-    void connectHook();
+    std::unordered_map<std::string, std::function<i32(void)>> m_funcs;
 
-}; // end class ServerConfig
+    i32 list();
 
-} // namespace GUI
+    i32 details();
+
+    i32 clear();
+
+    i32 current();
+
+    i32 add();
+
+    i32 remove();
+
+    i32 isRunning();
+
+    i32 start();
+
+    i32 stop();
+
+    i32 output();
+
+}; // end class Queue
+
+} // end namesapce CLI
 
 } // end namespace Controller
 
-#endif // _CONTROLLER_GUI_SERVERCONFIG_HPP_
+#endif // _CONTROLLER_CLI_QUEUE_HPP_
