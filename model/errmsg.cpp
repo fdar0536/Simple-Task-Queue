@@ -31,28 +31,22 @@ namespace Model
 namespace ErrMsg
 {
 
-#ifndef STQ_MOBILE
 static std::unordered_map<u8, grpc::StatusCode> table;
-#endif
 
 void init()
 {
-#ifndef STQ_MOBILE
     table[ErrCode_OK] = grpc::StatusCode::OK;
     table[ErrCode_INVALID_ARGUMENT] = grpc::StatusCode::INVALID_ARGUMENT;
     table[ErrCode_NOT_FOUND] = grpc::StatusCode::NOT_FOUND;
     table[ErrCode_ALREADY_EXISTS] = grpc::StatusCode::ALREADY_EXISTS;
     table[ErrCode_OUT_OF_RANGE] = grpc::StatusCode::OUT_OF_RANGE;
     table[ErrCode_OS_ERROR] = grpc::StatusCode::INTERNAL;
-#endif
 }
 
-#ifndef STQ_MOBILE
 grpc::Status toGRPCStatus(u8 code, const std::string &msg)
 {
     return grpc::Status(table[code], msg);
 }
-#endif
 
 } // end namespace ErrMsg
 

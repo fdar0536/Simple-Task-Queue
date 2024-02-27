@@ -29,9 +29,7 @@
 
 #include "config.h"
 
-#ifndef STQ_MOBILE
 #include "grpcpp/grpcpp.h"
-#endif
 
 #include "controller/global/defines.hpp"
 
@@ -50,9 +48,7 @@ namespace ErrMsg
 
 void init();
 
-#ifndef STQ_MOBILE
 grpc::Status toGRPCStatus(u8, const std::string &);
-#endif // STQ_MOBILE
 
 } // end namespace ErrMsg
 

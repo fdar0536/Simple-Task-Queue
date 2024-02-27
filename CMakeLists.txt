@@ -44,13 +44,8 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
     set(CLIENT_TIMEOUT 31)
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
-option(ENABLE_GUI "enable GUI" on)
 option(ENABLE_CLI "enable CLI" on)
 option(ENABLE_SERVER "enable server" on)
-
-if (ENABLE_GUI)
-    set(STQ_GUI ON)
-endif (ENABLE_GUI)
 
 include(cmake/getGitInfo.cmake)
 
@@ -71,9 +66,9 @@ find_package(Protobuf REQUIRED)
 find_package(gRPC REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(cxxopts REQUIRED)
-find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
 
 if (ENABLE_SERVER)
+    find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
     find_package(SQLite3 REQUIRED)
 endif (ENABLE_SERVER)
 
