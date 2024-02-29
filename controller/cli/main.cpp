@@ -193,7 +193,7 @@ i32 Main::parseArgs(int argc, char **argv)
         auto result = options.parse(argc, argv);
         if (result.count("help"))
         {
-            Model::Utils::writeConsole(options.help() + "\n");
+            Model::Utils::writeConsole(options.help());
             return 2;
         }
 
@@ -384,6 +384,7 @@ i32 Main::modify()
         Global::config.port = port;
     }
 
+    Model::Utils::writeConsole("done\n");
     return 0;
 }
 
@@ -392,7 +393,7 @@ i32 Main::connect()
     QueueList queueList;
     if (queueList.init())
     {
-        Model::Utils::writeConsole("Fail to connect to server");
+        Model::Utils::writeConsole("Fail to connect to server\n");
         return 1;
     }
 

@@ -67,10 +67,10 @@ u8 Config::parse(Config *in, int argc, char **argv)
 
     try
     {
-        cxxopts::Options options("STQCLI", "STQ CLI Client");
+        cxxopts::Options options("STQSERVER", "STQ Server");
         options.add_options()
             ("c,config-file", "path to config file", cxxopts::value<std::string>(in->logPath)->default_value(""))
-            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value(""))
+            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value("."))
             ("l,log-path", "path for output log", cxxopts::value<std::string>(in->logPath)->default_value(""))
             ("L,log-level", "log level for spdlog", cxxopts::value<int>(in->logLevel)->default_value("2"))
             ("a,address", "which addess will listen", cxxopts::value<std::string>(in->listenIP)->default_value("127.0.0.1"))
@@ -82,7 +82,7 @@ u8 Config::parse(Config *in, int argc, char **argv)
         auto result = options.parse(argc, argv);
         if (result.count("help"))
         {
-            std::cout << options.help() << std::endl;
+            Model::Utils::writeConsole(options.help());
             return 2;
         }
 
@@ -101,11 +101,14 @@ u8 Config::parse(Config *in, int argc, char **argv)
             }
         }
 
-        Model::DAO::DirUtils::convertPath(in->logPath);
-        if (Model::DAO::DirUtils::verifyDir(in->logPath))
+        if (!in->logPath.empty())
         {
-            spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
-            return 1;
+            Model::DAO::DirUtils::convertPath(in->logPath);
+            if (Model::DAO::DirUtils::verifyDir(in->logPath))
+            {
+                spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
+                return 1;
+            }
         }
 
         if (in->listenPort > 65535)

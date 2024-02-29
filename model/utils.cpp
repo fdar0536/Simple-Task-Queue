@@ -184,7 +184,7 @@ void writeConsole(const std::string &in)
 {
 #ifdef _WIN32
     wchar_t buf[16384] = {};
-    if (utf8ToUtf16(in, buf, 4096))
+    if (utf8ToUtf16(in, buf, 16384))
     {
         spdlog::error("{}:{} Fail to output", __FILE__, __LINE__);
         return;

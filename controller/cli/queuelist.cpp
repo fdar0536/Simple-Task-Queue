@@ -86,7 +86,6 @@ i32 QueueList::init()
     m_queueList = std::shared_ptr<Model::DAO::IQueueList>
         (reinterpret_cast<Model::DAO::IQueueList *>(queueList));
 
-    m_funcs["list"] = std::bind(&QueueList::list, this);
     m_funcs["delete"] = std::bind(&QueueList::Delete, this);
     m_funcs["create"] = std::bind(&QueueList::create, this);
     m_funcs["rename"] = std::bind(&QueueList::rename, this);
@@ -122,6 +121,12 @@ i32 QueueList::run()
                 Model::Utils::writeConsole("Please type \"exit\" to exit.\n");
                 Model::Utils::writeConsole("Or just type queue name which you want to enter\n");
                 ret = 0;
+                continue;
+            }
+
+            if (Global::args.at(0) == "list")
+            {
+                ret = list();
                 continue;
             }
 
@@ -168,6 +173,7 @@ i32 QueueList::create()
         return 1;
     }
 
+    Model::Utils::writeConsole("done\n");
     return 0;
 }
 
@@ -220,7 +226,7 @@ i32 QueueList::list()
     std::vector<std::string> out;
     if (m_queueList->listQueue(out))
     {
-        Model::Utils::writeConsole("Fail to delete queue");
+        Model::Utils::writeConsole("Fail to list queue\n");
         return 1;
     }
 
@@ -230,7 +236,6 @@ i32 QueueList::list()
         Model::Utils::writeConsole(out.at(i) + "\n");
     }
 
-    Model::Utils::writeConsole("\n");
     return 0;
 }
 
@@ -257,10 +262,11 @@ i32 QueueList::rename()
 
     if (m_queueList->renameQueue(Global::args.at(1), Global::args.at(2)))
     {
-        Model::Utils::writeConsole("Fail to rename queue");
+        Model::Utils::writeConsole("Fail to rename queue\n");
         return 1;
     }
 
+    Model::Utils::writeConsole("done\n");
     return 0;
 }
 
@@ -269,7 +275,7 @@ i32 QueueList::enter()
     auto ptr = m_queueList->getQueue(Global::args.at(0));
     if (ptr == nullptr)
     {
-        Model::Utils::writeConsole("Fail to enter the queue");
+        Model::Utils::writeConsole("Fail to enter the queue\n");
         return 1;
     }
 

@@ -70,11 +70,7 @@ void getArgs(const std::string &prefix)
             line.erase(0, pos + delimiter.length());
         }
 
-        if (args.empty())
-        {
-            continue;
-        }
-
+        args.push_back(line);
         break;
     }
 }
