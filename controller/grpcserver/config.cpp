@@ -70,7 +70,7 @@ u8 Config::parse(Config *in, int argc, char **argv)
         cxxopts::Options options("STQSERVER", "STQ Server");
         options.add_options()
             ("c,config-file", "path to config file", cxxopts::value<std::string>(in->logPath)->default_value(""))
-            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value("."))
+            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value(""))
             ("l,log-path", "path for output log", cxxopts::value<std::string>(in->logPath)->default_value(""))
             ("L,log-level", "log level for spdlog", cxxopts::value<int>(in->logLevel)->default_value("2"))
             ("a,address", "which addess will listen", cxxopts::value<std::string>(in->listenIP)->default_value("127.0.0.1"))

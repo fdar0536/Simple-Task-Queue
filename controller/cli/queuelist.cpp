@@ -199,6 +199,7 @@ i32 QueueList::Delete()
         return 1;
     }
 
+    Model::Utils::writeConsole("done\n");
     return 0;
 }
 

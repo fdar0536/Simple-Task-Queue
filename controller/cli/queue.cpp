@@ -395,11 +395,11 @@ i32 Queue::isRunning()
 
     if (m_queue->isRunning())
     {
-        Model::Utils::writeConsole("ture");
+        Model::Utils::writeConsole("ture\n");
     }
     else
     {
-        Model::Utils::writeConsole("false");
+        Model::Utils::writeConsole("false\n");
     }
 
     return 0;

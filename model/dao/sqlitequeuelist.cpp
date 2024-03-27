@@ -207,7 +207,10 @@ SQLiteQueueList::renameQueue(const std::string &oldName,
 std::shared_ptr<IQueue>
 SQLiteQueueList::getQueue(const std::string &name)
 {
-    return m_queueList[name];
+    auto it = m_queueList.find(name);
+    if (it == m_queueList.end()) return nullptr;
+    return it->second;
+
 }
 
 } // end namespace DAO

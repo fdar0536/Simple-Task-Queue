@@ -1065,6 +1065,7 @@ void SQLiteQueue::mainLoop()
         if (m_process->start(m_currentTask))
         {
             spdlog::error("{}:{} Fail to start process.", __FILE__, __LINE__);
+            mainLoopFin();
             m_start.store(false, std::memory_order_relaxed);
             continue;
         }
