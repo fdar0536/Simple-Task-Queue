@@ -144,7 +144,7 @@ u8 GRPCQueue::listFinished(std::vector<int> &out)
     return ErrCode_OK;
 }
 
-u8 GRPCQueue::pendingDetails(const i32 id,
+u8 GRPCQueue::pendingDetails(const int id,
                              Proc::Task &out)
 {
     stq::TaskDetailsReq req;
@@ -166,7 +166,7 @@ u8 GRPCQueue::pendingDetails(const i32 id,
     return ErrCode_OS_ERROR;
 }
 
-u8 GRPCQueue::finishedDetails(const i32 id,
+u8 GRPCQueue::finishedDetails(const int id,
                               Proc::Task &out)
 {
     stq::TaskDetailsReq req;

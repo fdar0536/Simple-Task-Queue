@@ -15,6 +15,8 @@ if(ENABLE_CLI)
     endif (ENABLE_SERVER)
 
     set(CLI_CONTROLLER_SRC
+        controller/cli/args.cpp
+        controller/cli/args.hpp
         controller/cli/config.hpp
         controller/cli/global.cpp
         controller/cli/global.hpp

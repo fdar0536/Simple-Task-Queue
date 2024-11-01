@@ -26,7 +26,6 @@
 #include <csignal>
 
 #include "spdlog/spdlog.h"
-#include "cxxopts.hpp"
 
 
 #ifdef _WIN32
@@ -86,15 +85,25 @@ i32 Main::init(int argc, char **argv)
         return ret;
     }
 
-    if (spdlogInit())
+    if (Controller::Global::spdlogInit(Global::config.logFile))
     {
         spdlog::error("{}:{} spdlog init failed", __FILE__, __LINE__);
         return 1;
     }
 
+    if (optsInit())
+    {
+        spdlog::error("{}:{} Opts init failed", __FILE__, __LINE__);
+        return 1;
+    }
+
     spdlog::set_level(static_cast<spdlog::level::level_enum>(Global::config.logLevel));
     Global::keepRunning.store(true, std::memory_order_relaxed);
-    Global::args.reserve(16);
+    if (Global::args.init())
+    {
+        spdlog::error("{}:{} Args init failed", __FILE__, __LINE__);
+        return 1;
+    }
 
     signal(SIGABRT, sighandler);
     signal(SIGFPE,  sighandler);
@@ -122,46 +131,52 @@ i32 Main::run()
 
     while (Global::keepRunning.load(std::memory_order_relaxed))
     {
-        Global::getArgs(prefix);
+        if (Global::args.getArgs(prefix))
+        {
+            fmt::println("Fail to get command");
+            continue;
+        }
+
+        char **argv = Global::args.argv();
 
         // only accept "print" "modify" "connect" "exit"
-        if (Global::args.at(0) == "print")
+        if (!memcmp(argv[0], "print", 5))
         {
             ret = print();
             continue;
         }
 
-        if (Global::args.at(0) == "modify")
+        if (!memcmp(argv[0], "modify", 7))
         {
             ret = modify();
             continue;
         }
 
-        if (Global::args.at(0) == "connect")
+        if (!memcmp(argv[0], "connect", 8))
         {
             ret = connect();
             continue;
         }
 
-        if (Global::args.at(0) == "exit")
+        if (!memcmp(argv[0], "exit", 4))
         {
             Global::keepRunning.store(false, std::memory_order_relaxed);
-            Model::Utils::writeConsole("Good bye!\n");
+            fmt::println("Good bye!");
             continue;
         }
 
-        if (Global::args.at(0) == "help")
+        if (!memcmp(argv[0], "help", 4))
         {
-            Model::Utils::writeConsole("Valid command: print, modify, connect, help, exit\n");
-            Model::Utils::writeConsole("Please type \"[print|modify|connect] help\" for more details.\n");
-            Model::Utils::writeConsole("Please type \"help\" to show this message.\n");
-            Model::Utils::writeConsole("Please type \"exit\" to exit.\n");
+            fmt::println("Valid command: print, modify, connect, help, exit");
+            fmt::println("Please type \"<command> -h\" for more details.");
+            fmt::println("Please type \"help\" to show this message.");
+            fmt::println("Please type \"exit\" to exit.");
             ret = 0;
             continue;
         }
 
-        Model::Utils::writeConsole("Invalid command: " + Global::args[0] + "\n");
-        Model::Utils::writeConsole("Please type \"help\" for more info\n");
+        fmt::println("Invalid command: {}", Global::args.args().at(0));
+        fmt::println("Please type \"help\" for more info");
         ret = 1;
     }
 
@@ -193,7 +208,7 @@ i32 Main::parseArgs(int argc, char **argv)
         auto result = options.parse(argc, argv);
         if (result.count("help"))
         {
-            Model::Utils::writeConsole(options.help());
+            fmt::print("{}", options.help());
             return 2;
         }
 
@@ -205,7 +220,7 @@ i32 Main::parseArgs(int argc, char **argv)
     }
     catch(cxxopts::exceptions::exception e)
     {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, e.what());
+        fmt::print("{}", e.what());
         return 1;
     }
 
@@ -214,31 +229,30 @@ i32 Main::parseArgs(int argc, char **argv)
 
 void Main::printVersion()
 {
-    Model::Utils::writeConsole("STQCLI version info:\n");
-
-    Model::Utils::writeConsole("branch: ");
-    Model::Utils::writeConsole(STQ_BRANCH);
-    Model::Utils::writeConsole("\n");
-
-    Model::Utils::writeConsole("commit: ");
-    Model::Utils::writeConsole(STQ_COMMIT);
-    Model::Utils::writeConsole("\n");
-
-    Model::Utils::writeConsole("version: ");
-    Model::Utils::writeConsole(STQ_VERSION);
-    Model::Utils::writeConsole("\n");
+    fmt::println("STQCLI version info:");
+    fmt::println("branch: " STQ_BRANCH);
+    fmt::println("commit: " STQ_COMMIT);
+    fmt::println("version: " STQ_VERSION);
 }
 
-u8 Main::spdlogInit()
+u8 Main::optsInit()
 {
-    if (Global::config.logFile.empty())
+    try
     {
-        return 0;
-    }
+        // print
+        printOpts.add_options()
+            ("i,info", "print info")
+            ("h,help", "print help");
 
-    if (Controller::Global::spdlogInit(Global::config.logFile))
+        // modify
+        modifyOpts.add_options()
+            ("a,address", "modify server address", cxxopts::value<std::string>(Global::config.address))
+            ("p,port", "modify server port", cxxopts::value<u16>(Global::config.port))
+            ("h,help", "print help");
+    }
+    catch (cxxopts::exceptions::exception e)
     {
-        spdlog::error("{}:{} spdlog init failed", __FILE__, __LINE__);
+        fmt::println("{}", e.what());
         return 1;
     }
 
@@ -247,153 +261,79 @@ u8 Main::spdlogInit()
 
 i32 Main::print()
 {
-    if (Global::args.size() != 2)
+    if (Global::args.argc() == 1)
     {
-        Global::printCMDHelp("print");
+        fmt::print("{}", printOpts.help());
+        return 0;
+    }
+
+    try
+    {
+        auto result = printOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", printOpts.help());
+            return 0;
+        }
+
+        if (result.count("info"))
+        {
+            printVersion();
+
+            fmt::println("");
+            fmt::println("target host: {}", Global::config.address);
+            fmt::println("target port: {}", Global::config.port);
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
-    if (Global::args.at(1) == "info")
-    {
-        printVersion();
-
-        Model::Utils::writeConsole("\n");
-
-        Model::Utils::writeConsole("target host: ");
-        Model::Utils::writeConsole(Global::config.address);
-        Model::Utils::writeConsole("\n");
-
-        Model::Utils::writeConsole("target port: ");
-        Model::Utils::writeConsole(std::to_string(Global::config.port));
-        Model::Utils::writeConsole("\n");
-
-        return 0;
-    }
-
-    if (Global::args.at(1) == "help")
-    {
-        Model::Utils::writeConsole("Valid command: \"print [info|help]\"\n");
-        Model::Utils::writeConsole("info: print version and host info\n");
-        Model::Utils::writeConsole("help: to show this message.\n");
-        return 0;
-    }
-
-    Model::Utils::writeConsole("invalid argument\n");
-    Model::Utils::writeConsole("Please type \"print help\" for more info\n");
-    return 1;
+    return 0;
 }
 
 i32 Main::modify()
 {
-    if (Global::args.size() > 5)
+    if (Global::args.argc() == 1)
     {
-        Global::printCMDHelp("modify");
-        return 1;
-    }
-
-    if (Global::args.size() == 2)
-    {
-        if (Global::args.at(1) != "help")
-        {
-            Global::printCMDHelp("modify");
-            return 1;
-        }
-
-        Model::Utils::writeConsole("Valid command: \"modify [address|port|help] <args>\"\n");
-        Model::Utils::writeConsole("address <addreess>: server address\n");
-        Model::Utils::writeConsole("port <port>: server port\n");
-        Model::Utils::writeConsole("help: to show this message.\n");
-        Model::Utils::writeConsole("You can modify address and port at same time.\n");
-
+        fmt::println("{}", modifyOpts.help());
         return 0;
     }
 
-    if (Global::args.size() != 3 && Global::args.size() != 5)
+    try
     {
-        Global::printCMDHelp("modify");
+        auto result = modifyOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::println("{}", modifyOpts.help());
+            return 0;
+        }
+
+        fmt::println("done");
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
-    // parse argument
-    bool isIPSet(false);
-    bool isPortSet(false);
-
-    // here Global::args.size() == 3 or Global::args.size() == 5
-    size_t baseIndex(1);
-    size_t remainingCount(Global::args.size() - 1);
-    std::string address("");
-    u16 port(0);
-    while (remainingCount > 0)
-    {
-        if (Global::args.at(baseIndex) == "address")
-        {
-            if (isIPSet)
-            {
-                Global::printCMDHelp("modify");
-                return 1;
-            }
-
-            if (Global::args.at(baseIndex + 1).empty())
-            {
-                Global::printCMDHelp("modify");
-                return 1;
-            }
-
-            address = Global::args.at(baseIndex + 1);
-            isIPSet = true;
-        }
-
-        if (Global::args.at(baseIndex) == "port")
-        {
-            if (isPortSet)
-            {
-                Global::printCMDHelp("modify");
-                return 1;
-            }
-
-            if (Global::args.at(baseIndex + 1).empty())
-            {
-                Global::printCMDHelp("modify");
-                return 1;
-            }
-
-            try
-            {
-                port = static_cast<u16>(std::stoi(Global::args.at(baseIndex + 1)));
-            }
-            catch (...)
-            {
-                Global::printCMDHelp("modify");
-                return 1;
-            }
-
-            isPortSet = true;
-        }
-
-        remainingCount -= 2;
-        baseIndex += 2;
-    }
-
-    if (isIPSet)
-    {
-        Global::config.address = address;
-    }
-
-    if (isPortSet)
-    {
-        Global::config.port = port;
-    }
-
-    Model::Utils::writeConsole("done\n");
     return 0;
 }
 
 i32 Main::connect()
 {
+    if (Global::args.argc() > 1)
+    {
+        fmt::println("Invalid command");
+        return 1;
+    }
+
     QueueList queueList;
     if (queueList.init())
     {
-        Model::Utils::writeConsole("Fail to connect to server\n");
+        fmt::println("Fail to connect to server");
         return 1;
     }
 

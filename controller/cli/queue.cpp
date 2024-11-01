@@ -23,8 +23,14 @@
 
 #ifdef _WIN32
 #include "winsock.h"
+#include "direct.h"
+#include "conio.h"
 #define sleep(x) Sleep(x * 1000)
 #else
+#include <stdio.h>
+#include "sys/select.h"
+#include "termios.h"
+#include "stropts.h"
 #include "unistd.h"
 #include "time.h"
 #endif
@@ -43,7 +49,7 @@ namespace Controller
 namespace CLI
 {
 
-void Queue::init()
+u8 Queue::init()
 {
     m_funcs["list"] = std::bind(&Queue::list, this);
     m_funcs["details"] = std::bind(&Queue::details, this);
@@ -55,6 +61,58 @@ void Queue::init()
     m_funcs["start"] = std::bind(&Queue::start, this);
     m_funcs["stop"] = std::bind(&Queue::stop, this);
     m_funcs["output"] = std::bind(&Queue::output, this);
+
+    m_listOpts.add_options()
+        ("m,mode", "list task, 1 for pending, 2 for finished", cxxopts::value<u8>()->default_value("1"))
+        ("h,help", "print help");
+
+    m_detailsOpts.add_options()
+        ("m,mode", "for which list, 1 for pending, 2 for finished", cxxopts::value<u8>()->default_value("1"))
+        ("i,id", "the task id", cxxopts::value<i32>()->default_value("0"))
+        ("h,help", "print help");
+
+    m_clearOpts.add_options()
+        ("m,mode", "list task, 1 for pending, 2 for finished", cxxopts::value<u8>()->default_value("1"))
+        ("h,help", "print help");
+
+    m_currentOpts.add_options()
+        ("h,help", "print help");
+
+    char buf[1024];
+    size_t len(1024);
+#ifdef _WIN32
+    if (!_getcwd(buf, len))
+#else
+    if (!getcwd(buf, len))
+#endif
+    {
+        spdlog::error("{}:{} Fail to get current path", __FILE__, __LINE__);
+        return 1;
+    }
+
+    m_addOpts.add_options()
+        ("w,workDir", "set working dir", cxxopts::value<std::string>()->default_value(std::string(buf)))
+        ("e,exec", "program to execute", cxxopts::value<std::string>())
+        ("a,args", "command line arguments for the program to execute", cxxopts::value<std::vector<std::string>>())
+        ("h,help", "print help");
+
+    m_removeOpts.add_options()
+        ("i,id", "id for task to remove", cxxopts::value<std::vector<i32>>())
+        ("h,help", "print help");
+
+    m_isRunningOpts.add_options()
+        ("h,help", "print help");
+
+    m_startOpts.add_options()
+        ("h,help", "print help");
+
+    m_stopOpts.add_options()
+        ("h,help", "print help");
+
+    m_outputOpts.add_options()
+        ("h,help", "print help");
+
+    return 0;
 }
 
 i32 Queue::run(const std::string &prefix,
@@ -63,7 +121,7 @@ i32 Queue::run(const std::string &prefix,
     if (queuePtr == nullptr)
     {
         spdlog::error("{}:{} you should never see this line");
-        Model::Utils::writeConsole("queuePtr is nullptr\n");
+        fmt::println("queuePtr is nullptr");
         return 1;
     }
 
@@ -72,25 +130,29 @@ i32 Queue::run(const std::string &prefix,
     i32 ret(0);
     while (Global::keepRunning.load(std::memory_order_relaxed))
     {
-        Global::getArgs(prefix);
+        if (Global::args.getArgs(prefix))
+        {
+            fmt::println("Fail to get command");
+            continue;
+        }
 
-        if (Global::args.size() == 1)
+        if (Global::args.argc() == 1)
         {
             // vaild commands: help exit
-            if (Global::args.at(0) == "help")
+            if (Global::args.args().at(0) == "help")
             {
-                Model::Utils::writeConsole("Vaild commands: list details clear ");
-                Model::Utils::writeConsole("remove current add isRunning ");
-                Model::Utils::writeConsole("start stop output help exit\n");
-                Model::Utils::writeConsole("Please type \"<command> help\" for more details.\n");
-                Model::Utils::writeConsole("Please type \"help\" to show this message.\n");
-                Model::Utils::writeConsole("Please type \"exit\" to exit.\n");
+                fmt::print("Vaild commands: list details clear ");
+                fmt::print("remove current add isRunning ");
+                fmt::println("start stop output help exit");
+                fmt::println("Please type \"<command> -h\" for more details.");
+                fmt::println("Please type \"help\" to show this message.");
+                fmt::println("Please type \"exit\" to exit.");
 
                 ret = 0;
                 continue;
             }
 
-            if (Global::args.at(0) == "exit")
+            if (Global::args.args().at(0) == "exit")
             {
                 break;
             }
@@ -98,12 +160,12 @@ i32 Queue::run(const std::string &prefix,
 
         try
         {
-            ret = m_funcs[Global::args.at(0)]();
+            ret = m_funcs[Global::args.args().at(0)]();
         }
         catch(...)
         {
-            Model::Utils::writeConsole("Invalid command: " + Global::args[0] + "\n");
-            Model::Utils::writeConsole("Please type \"help\" for more info\n");
+            fmt::println("Invalid command: {}", Global::args.args().at(0));
+            fmt::println("Please type \"help\" for more info");
             ret = 1;
             continue;
         }
@@ -112,105 +174,133 @@ i32 Queue::run(const std::string &prefix,
     return ret;
 }
 
-i32 Queue::list()
+i32 Queue::printList(u8 exitCode, const std::string &name, const std::vector<int> &out)
 {
-    if (Global::args.size() != 2)
+    if (exitCode)
     {
-        Global::printCMDHelp("list");
+        fmt::println("Fail to list tasks");
         return 1;
     }
 
-    if (Global::args.at(1) == "help")
-    {
-        Model::Utils::writeConsole("Valid command: \"list [finished|pending|help]\"\n");
-        Model::Utils::writeConsole("finished: list finished task\n");
-        Model::Utils::writeConsole("pending: list pending task\n");
-        Model::Utils::writeConsole("help: to show this message.\n");
-        return 0;
-    }
-
-    u8 ret(0);
-    std::vector<int> out;
-    if (Global::args.at(1) == "pending")
-    {
-        ret = m_queue->listPending(out);
-    }
-
-    if (Global::args.at(1) == "finished")
-    {
-        ret = m_queue->listFinished(out);
-    }
-
-    if (ret)
-    {
-        Model::Utils::writeConsole("Fail to list tasks\n");
-        return 1;
-    }
-
+    fmt::println("");
     if (out.empty())
     {
-        Model::Utils::writeConsole("list is empty\n");
+        fmt::println("{} list is empty", name);
         return 0;
     }
 
     for (auto i = out.begin(); i != out.end(); ++i)
     {
-        Model::Utils::writeConsole(std::to_string(*i) + "\n");
+        fmt::println("{}", *i);
     }
 
     return 0;
 }
 
-i32 Queue::details()
+#define PENDING  1
+#define FINISHED 2
+
+i32 Queue::list()
 {
-    if (Global::args.size() == 2)
+    if (Global::args.argc() == 1)
     {
-        if (Global::args.at(1) == "help")
-        {
-            Model::Utils::writeConsole("Valid command: \"details [finished|pending] <id>\"\n");
-            Model::Utils::writeConsole("finished: finished task details\n");
-            Model::Utils::writeConsole("pending: pending task details\n");
-            Model::Utils::writeConsole("id is task id\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
-            return 0;
-        }
-
-        Global::printCMDHelp("details");
-        return 1;
-    }
-
-    if (Global::args.size() > 3 || Global::args.size() < 2)
-    {
-        Global::printCMDHelp("details");
-        return 1;
+        fmt::print("{}", m_listOpts.help());
+        return 0;
     }
 
     u8 ret(0);
-    i32 id(0);
+    std::vector<int> out;
+
     try
     {
-        id = std::stoi(Global::args.at(2));
+        auto result = m_listOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_listOpts.help());
+            return 0;
+        }
+
+        u8 mode = result["mode"].as<u8>();
+        switch(mode)
+        {
+        case PENDING:
+        {
+            fmt::println("listing pending list...");
+            ret = m_queue->listPending(out);
+            return printList(ret, "pending", out);
+        }
+        case FINISHED:
+        {
+            fmt::println("listing finished list...");
+            ret = m_queue->listFinished(out);
+            return printList(ret, "finished", out);
+        }
+        default:
+        {
+            fmt::print("{}", m_listOpts.help());
+            return 1;
+        }
+        };
     }
-    catch(...)
+    catch (cxxopts::exceptions::exception e)
     {
-        Global::printCMDHelp("details");
-        return 1;
+        fmt::println("{}", e.what());
     }
 
+    return 1;
+}
+
+i32 Queue::details()
+{
+    if (Global::args.argc() == 1)
+    {
+        fmt::print("{}", m_detailsOpts.help());
+        return 0;
+    }
+
+    u8 ret(0);
     Model::Proc::Task out;
-    if (Global::args.at(1) == "pending")
+    try
     {
-        ret = m_queue->pendingDetails(id, out);
-    }
+        auto result = m_detailsOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_detailsOpts.help());
+            return 0;
+        }
 
-    if (Global::args.at(1) == "finished")
+        u8 mode = result["mode"].as<u8>();
+        i32 id = result["id"].as<i32>();
+        switch (mode)
+        {
+        case PENDING:
+        {
+            fmt::println("pending task details...");
+            ret = m_queue->pendingDetails(id, out);
+            break;
+        }
+        case FINISHED:
+        {
+            fmt::println("finished task details...");
+            ret = m_queue->finishedDetails(id, out);
+            break;
+        }
+        default:
+        {
+            fmt::print("{}", m_detailsOpts.help());
+            return 1;
+        }
+        };
+    }
+    catch (cxxopts::exceptions::exception e)
     {
-        ret = m_queue->finishedDetails(id, out);
+        fmt::println("{}", e.what());
+        return 1;
     }
 
     if (ret)
     {
-        Model::Utils::writeConsole("Fail to get task details\n");
+        fmt::println("Fail to get task details");
         return 1;
     }
 
@@ -220,67 +310,88 @@ i32 Queue::details()
 
 i32 Queue::clear()
 {
-    if (Global::args.size() != 2)
+    if (Global::args.argc() == 1)
     {
-        Global::printCMDHelp("clear");
-        return 1;
-    }
-
-    if (Global::args.at(1) == "help")
-    {
-        Model::Utils::writeConsole("Valid command: \"clear [finished|pending|help]\"\n");
-        Model::Utils::writeConsole("finished: clear finished task\n");
-        Model::Utils::writeConsole("pending: clear pending task\n");
-        Model::Utils::writeConsole("help: to show this message.\n");
+        fmt::print("{}", m_clearOpts.help());
         return 0;
     }
 
     u8 ret(0);
-    if (Global::args.at(1) == "pending")
+    try
     {
-        ret = m_queue->clearPending();
-    }
+        auto result = m_clearOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_clearOpts.help());
+            return 0;
+        }
 
-    if (Global::args.at(1) == "finished")
+        u8 mode = result["mode"].as<u8>();
+        switch (mode)
+        {
+        case PENDING:
+        {
+            ret = m_queue->clearPending();
+            break;
+        }
+        case FINISHED:
+        {
+            ret = m_queue->clearFinished();
+            break;
+        }
+        default:
+        {
+            fmt::print("{}", m_clearOpts.help());
+            return 1;
+        }
+        };
+    }
+    catch (cxxopts::exceptions::exception e)
     {
-        ret = m_queue->clearFinished();
+        fmt::println("{}", e.what());
+        return 1;
     }
 
     if (ret)
     {
-        Model::Utils::writeConsole("Fail to clear tasks\n");
+        fmt::println("Fail to clear tasks");
         return 1;
     }
 
-    Model::Utils::writeConsole("done\n");
+    fmt::println("done");
     return 0;
 }
 
+#undef PENDING
+#undef FINISHED
+
 i32 Queue::current()
 {
-    if (Global::args.size() == 2)
+    if (Global::args.argc() > 2)
     {
-        if (Global::args.at(1) == "help")
-        {
-            Model::Utils::writeConsole("Valid command: \"current\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
-            return 0;
-        }
-
-        Global::printCMDHelp("current");
+        fmt::print("{}", m_currentOpts.help());
         return 1;
     }
 
-    if (Global::args.size() > 3)
+    try
     {
-        Global::printCMDHelp("current");
+        auto result = m_currentOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_currentOpts.help());
+            return 0;
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
     Model::Proc::Task out;
     if (m_queue->currentTask(out))
     {
-        Model::Utils::writeConsole("Fail to get current task\n");
+        fmt::println("Fail to get current task");
         return 1;
     }
 
@@ -290,116 +401,125 @@ i32 Queue::current()
 
 i32 Queue::add()
 {
-    if (Global::args.size() == 2)
+    if (Global::args.argc() == 1)
     {
-        if (Global::args.at(1) == "help")
-        {
-            Model::Utils::writeConsole("Valid command: \"add <work dir> <exec name> <args...>\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
-            return 0;
-        }
-
-        Global::printCMDHelp("add");
-        return 1;
-    }
-
-    if (Global::args.size() < 2)
-    {
-        Global::printCMDHelp("add");
-        return 1;
+        fmt::print("{}", m_addOpts.help());
+        return 0;
     }
 
     Model::Proc::Task in;
-    in.workDir = Global::args.at(1);
-    in.execName = Global::args.at(2);
-    if (Global::args.size() > 3)
+    try
     {
-        in.args.reserve(Global::args.size() - 3);
-        for (size_t i = 3; i < Global::args.size(); ++i)
+        auto result = m_addOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
         {
-            in.args.push_back(Global::args.at(i));
+            fmt::print("{}", m_addOpts.help());
+            return 0;
         }
+
+        if (result.count("exec") < 1)
+        {
+            fmt::println("No file to execute");
+            return 1;
+        }
+
+        in.workDir = result["workDir"].as<std::string>();
+        in.execName = result["exec"].as<std::string>();
+        if (result.count("args"))
+        {
+            in.args = result["args"].as<std::vector<std::string>>();
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
+        return 1;
     }
 
     if (m_queue->addTask(in))
     {
-        Model::Utils::writeConsole("Fail to add task\n");
+        fmt::println("Fail to add task");
         return 1;
     }
 
-    Model::Utils::writeConsole("done\n");
+    fmt::println("done");
     return 0;
 }
 
 i32 Queue::remove()
 {
-    if (Global::args.size() < 2)
+    if (Global::args.argc() == 1)
     {
-        Global::printCMDHelp("remove");
-        return 1;
-    }
-
-    if (Global::args.at(1) == "help")
-    {
-        Model::Utils::writeConsole("Valid command: \"remove <task id ...>\"\n");
-        Model::Utils::writeConsole("remove the task from pending list.\n");
-        Model::Utils::writeConsole("help: to show this message.\n");
+        fmt::print("{}", m_removeOpts.help());
         return 0;
     }
 
-    i32 id(0);
-    for (size_t i = 1; i < Global::args.size(); ++i)
+    std::vector<i32> id;
+    try
     {
-        try
+        auto result = m_removeOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
         {
-            id = std::stoi(Global::args.at(i));
-        }
-        catch(...)
-        {
-            Model::Utils::writeConsole("invaild id: " + Global::args.at(i));
-            Model::Utils::writeConsole(", ignore");
-            continue;
+            fmt::print("{}", m_removeOpts.help());
+            return 0;
         }
 
-        if (m_queue->removeTask(id))
+        if (!result.count("id"))
         {
-            Model::Utils::writeConsole("Fail to remove task: " + Global::args.at(i));
-            Model::Utils::writeConsole("\n");
+            fmt::print("{}", m_removeOpts.help());
+            return 1;
+        }
+
+        id = result["id"].as<std::vector<i32>>();
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
+        return 1;
+    }
+
+    for (auto it = id.begin(); it != id.end(); ++it)
+    {
+        if (m_queue->removeTask(*it))
+        {
+            fmt::println("Fail to remove task: {}", *it);
         }
     }
 
-    Model::Utils::writeConsole("done\n");
+    fmt::println("done");
     return 0;
 }
 
 i32 Queue::isRunning()
 {
-    if (Global::args.size() == 2)
+    if (Global::args.argc() > 2)
     {
-        if (Global::args.at(1) == "help")
-        {
-            Model::Utils::writeConsole("Valid command: \"isRunning\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
-            return 0;
-        }
-
-        Global::printCMDHelp("isRunning");
+        fmt::print("{}", m_isRunningOpts.help());
         return 1;
     }
 
-    if (Global::args.size() > 2)
+    try
     {
-        Global::printCMDHelp("isRunning");
+        auto result = m_isRunningOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_isRunningOpts.help());
+            return 0;
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
     if (m_queue->isRunning())
     {
-        Model::Utils::writeConsole("ture\n");
+        fmt::println("ture");
     }
     else
     {
-        Model::Utils::writeConsole("false\n");
+        fmt::println("false");
     }
 
     return 0;
@@ -407,115 +527,127 @@ i32 Queue::isRunning()
 
 i32 Queue::start()
 {
-    if (Global::args.size() == 2)
+    if (Global::args.argc() > 2)
     {
-        if (Global::args.at(1) == "help")
-        {
-            Model::Utils::writeConsole("Valid command: \"start\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
-            return 0;
-        }
-
-        Global::printCMDHelp("start");
+        fmt::print("{}", m_startOpts.help());
         return 1;
     }
 
-    if (Global::args.size() > 2)
+    try
     {
-        Global::printCMDHelp("start");
+        auto result = m_startOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_startOpts.help());
+            return 0;
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
     if (m_queue->start())
     {
-        Model::Utils::writeConsole("Fail to start the queue");
+        fmt::println("Fail to start the queue");
         return 1;
     }
 
-    Model::Utils::writeConsole("done\n");
+    fmt::println("done");
     return 0;
 }
 
 i32 Queue::stop()
 {
-    if (Global::args.size() == 2)
+    if (Global::args.argc() > 2)
     {
-        if (Global::args.at(1) == "help")
-        {
-            Model::Utils::writeConsole("Valid command: \"stop\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
-            return 0;
-        }
-
-        Global::printCMDHelp("stop");
+        fmt::print("{}", m_stopOpts.help());
         return 1;
     }
 
-    if (Global::args.size() > 2)
+    try
     {
-        Global::printCMDHelp("stop");
+        auto result = m_stopOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_stopOpts.help());
+            return 0;
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
     m_queue->stop();
-    Model::Utils::writeConsole("done\n");
+    fmt::println("done");
     return 0;
 }
 
-static int kbhit()
-{
-    struct timeval tv;
-    fd_set fds;
-    tv.tv_sec = 3;
-    tv.tv_usec = 0;
+#ifndef _WIN32
+/**
+ Linux (POSIX) implementation of _kbhit().
+ Morgan McGuire, morgan@cs.brown.edu
+ */
+static int _kbhit() {
+    static const int STDIN = 0;
+    static bool initialized = false;
 
-    FD_ZERO(&fds);
-#ifdef _WIN32
-    FD_SET(_fileno(stdin), &fds);
-    select(_fileno(stdin) + 1, &fds, NULL, NULL, &tv);
-    return FD_ISSET(_fileno(stdin), &fds);
-#else
-    FD_SET(STDIN_FILENO, &fds);
-    select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv);
-    return FD_ISSET(STDIN_FILENO, &fds);
-#endif
+    if (!initialized) {
+        // Use termios to turn off line buffering
+        termios term;
+        tcgetattr(STDIN, &term);
+        term.c_lflag &= ~ICANON;
+        tcsetattr(STDIN, TCSANOW, &term);
+        setbuf(stdin, NULL);
+        initialized = true;
+    }
+
+    int bytesWaiting;
+    ioctl(STDIN, FIONREAD, &bytesWaiting);
+    return bytesWaiting;
 }
+#endif
 
 i32 Queue::output()
 {
-    if (Global::args.size() == 2)
+    if (Global::args.argc() > 2)
     {
-        if (Global::args.at(1) == "help")
+        fmt::print("{}", m_outputOpts.help());
+        return 1;
+    }
+
+    try
+    {
+        auto result = m_outputOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
         {
-            Model::Utils::writeConsole("Valid command: \"output\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
+            fmt::print("{}", m_outputOpts.help());
             return 0;
         }
-
-        Global::printCMDHelp("output");
-        return 1;
     }
-
-    if (Global::args.size() > 2)
+    catch (cxxopts::exceptions::exception e)
     {
-        Global::printCMDHelp("output");
+        fmt::println("{}", e.what());
         return 1;
     }
 
-    Model::Utils::writeConsole("press any key to stop\n");
+    fmt::println("press any key to stop");
     std::string out;
     while (Global::keepRunning.load(std::memory_order_relaxed))
     {
         if (m_queue->readCurrentOutput(out))
         {
-            Model::Utils::writeConsole("Fail to read output\n");
+            fmt::println("Fail to read output");
         }
         else
         {
-            Model::Utils::writeConsole(out);
+            fmt::print("{}", out);
         }
 
-        if (kbhit())
+        if (_kbhit())
         {
             break;
         }

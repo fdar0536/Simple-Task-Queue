@@ -51,10 +51,10 @@ public:
 
     virtual u8 listFinished(std::vector<int> &out) = 0;
 
-    virtual u8 pendingDetails(const i32 id,
+    virtual u8 pendingDetails(const int id,
                               Proc::Task &out) = 0;
 
-    virtual u8 finishedDetails(const i32 id,
+    virtual u8 finishedDetails(const int id,
                                Proc::Task &out) = 0;
 
     virtual u8 clearPending() = 0;

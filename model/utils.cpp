@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023-2024 fdar0536
+ * Copyright (c) 2023-present fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,14 @@
 
 #include <iostream>
 #include <regex>
+#include <mutex>
 
 #ifdef _WIN32
 #include "windows.h"
 #endif
 
 #include "spdlog/spdlog.h"
+#include "controller/cli/global.hpp"
 
 #include "utils.hpp"
 
@@ -41,112 +43,7 @@ namespace Utils
 static std::regex ipRegex = std::regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.)"
                                        "{3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
 
-uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t *out, size_t outLen)
-{
-#ifdef _WIN32
-    return utf8ToUtf16(in.c_str(), in.length(), out, outLen);
-#else
-    static_cast<void>(in);
-    static_cast<void>(out);
-    return 0;
-#endif
-}
-
-uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t *out, size_t outLen)
-{
-#ifdef _WIN32
-
-    if (!in || !inSize || !out)
-    {
-        spdlog::error("{}:{} Invalid input", __FILE__, __LINE__);
-        return 1;
-    }
-
-    int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, in, inSize, NULL, 0);
-    if (sizeNeeded <= 0)
-    {
-        writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    if (static_cast<size_t>(sizeNeeded) > (outLen - 1))
-    {
-        spdlog::error("{}:{} no enough buffer", __FILE__, __LINE__);
-        return 1;
-    }
-
-    sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, in, inSize, out, sizeNeeded);
-    if (sizeNeeded <= 0)
-    {
-        writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    out[sizeNeeded] = L'\0';
-    return 0;
-
-#else
-    static_cast<void>(in);
-    static_cast<void>(inSize);
-    static_cast<void>(out);
-    return 0;
-#endif
-}
-
-uint_fast8_t utf16ToUtf8(const std::wstring &in, char *out, size_t outLen)
-{
-#ifdef _WIN32
-    return utf16ToUtf8(in.c_str(), in.length(), out, outLen);
-#else
-    static_cast<void>(in);
-    static_cast<void>(out);
-    return 0;
-#endif
-}
-
-uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char *out, size_t outLen)
-{
-#ifdef _WIN32
-
-    if (!in || !inSize || !out)
-    {
-        spdlog::error("{}:{} Invalid input", __FILE__, __LINE__);
-        return 1;
-    }
-
-    int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0,
-        in, inSize, NULL, 0, NULL, NULL);
-    if (sizeNeeded <= 0)
-    {
-        writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    if (static_cast<size_t>(sizeNeeded) > (outLen - 1))
-    {
-        spdlog::error("{}:{} no enough buffer", __FILE__, __LINE__);
-        return 1;
-    }
-
-    sizeNeeded = WideCharToMultiByte(CP_UTF8, 0,
-        in, inSize, out, sizeNeeded, NULL, NULL);
-
-    if (sizeNeeded <= 0)
-    {
-        writeLastError(__FILE__, __LINE__);
-        return 1;
-    }
-
-    out[sizeNeeded] = '\0';
-    return 0;
-
-#else
-    static_cast<void>(in);
-    static_cast<void>(inSize);
-    static_cast<void>(out);
-    return 0;
-#endif
-}
+static std::mutex consoleMutex;
 
 void writeLastError(const char *file, int line)
 {
@@ -172,7 +69,7 @@ void writeLastError(const char *file, int line)
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         (LPSTR)&msgBuf, 0, NULL);
 
-    spdlog::error("{}:{} {}", file, line, std::string(msgBuf, errSize));
+    spdlog::error("{}:{} {}\n", file, line, std::string(msgBuf, errSize));
     LocalFree(msgBuf);
 #else
     static_cast<void>(file);
@@ -182,18 +79,8 @@ void writeLastError(const char *file, int line)
 
 void writeConsole(const std::string &in)
 {
-#ifdef _WIN32
-    wchar_t buf[16384] = {};
-    if (utf8ToUtf16(in, buf, 16384))
-    {
-        spdlog::error("{}:{} Fail to output", __FILE__, __LINE__);
-        return;
-    }
-
-    std::wcout << buf;
-#else
-    std::cout << in;
-#endif
+    std::unique_lock<std::mutex> lock(consoleMutex);
+    fmt::print("{}", in.c_str());
 }
 
 uint8_t verifyIP(const std::string &in)

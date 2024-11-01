@@ -146,6 +146,11 @@ bool isAdmin()
 
 u8 spdlogInit(const std::string &path)
 {
+    if (path.empty())
+    {
+        return 0;
+    }
+
     try
     {
         auto daily_logger = spdlog::daily_logger_mt(

@@ -28,6 +28,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "cxxopts.hpp"
+
 #include "controller/global/defines.hpp"
 #include "model/dao/iqueue.hpp"
 
@@ -41,7 +43,7 @@ class Queue
 {
 public:
 
-    void init();
+    u8 init();
 
     i32 run(const std::string &, std::shared_ptr<Model::DAO::IQueue> &);
 
@@ -51,23 +53,45 @@ private:
 
     std::unordered_map<std::string, std::function<i32(void)>> m_funcs;
 
+    i32 printList(u8, const std::string &, const std::vector<int> &);
+
+    cxxopts::Options m_listOpts = cxxopts::Options("list", "list items in this queue");
+
     i32 list();
+
+    cxxopts::Options m_detailsOpts = cxxopts::Options("details", "print task details for given id");
 
     i32 details();
 
+    cxxopts::Options m_clearOpts = cxxopts::Options("clear", "clear task list");
+
     i32 clear();
+
+    cxxopts::Options m_currentOpts = cxxopts::Options("current", "print current task");
 
     i32 current();
 
+    cxxopts::Options m_addOpts = cxxopts::Options("add", "add task to this queue");
+
     i32 add();
+
+    cxxopts::Options m_removeOpts = cxxopts::Options("remove", "remove task to this queue");
 
     i32 remove();
 
+    cxxopts::Options m_isRunningOpts = cxxopts::Options("isRunning", "check this queue is running or not");
+
     i32 isRunning();
+
+    cxxopts::Options m_startOpts = cxxopts::Options("start", "start this queue");
 
     i32 start();
 
+    cxxopts::Options m_stopOpts = cxxopts::Options("stop", "stop this queue");
+
     i32 stop();
+
+    cxxopts::Options m_outputOpts = cxxopts::Options("output", "stdout of current task");
 
     i32 output();
 

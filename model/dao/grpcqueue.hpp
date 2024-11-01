@@ -52,10 +52,10 @@ public:
 
     u8 listFinished(std::vector<int> &out) override;
 
-    u8 pendingDetails(const i32 id,
+    u8 pendingDetails(const int id,
                       Proc::Task &out) override;
 
-    u8 finishedDetails(const i32 id,
+    u8 finishedDetails(const int id,
                        Proc::Task &out) override;
 
     u8 clearPending() override;

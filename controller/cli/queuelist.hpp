@@ -28,6 +28,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "cxxopts.hpp"
+
 #include "controller/global/defines.hpp"
 #include "model/dao/iqueuelist.hpp"
 
@@ -55,11 +57,19 @@ private:
 
     std::unordered_map<std::string, std::function<i32(void)>> m_funcs;
 
+    cxxopts::Options m_createOpts = cxxopts::Options("create", "create new queue");
+
     i32 create();
+
+    cxxopts::Options m_deleteOpts = cxxopts::Options("delete", "delete the queue");
 
     i32 Delete();
 
+    cxxopts::Options m_listOpts = cxxopts::Options("list", "list queue(s)");
+
     i32 list();
+
+    cxxopts::Options m_renameOpts = cxxopts::Options("rename", "rename the queue");
 
     i32 rename();
 

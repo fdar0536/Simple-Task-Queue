@@ -21,8 +21,9 @@
  * SOFTWARE.
  */
 
+#include "fmt/core.h"
+
 #include "task.hpp"
-#include "model/utils.hpp"
 
 namespace Model
 {
@@ -41,18 +42,18 @@ Task::Task() :
 
 void Task::print()
 {
-    Utils::writeConsole("execName: " + execName + "\n");
-    Utils::writeConsole("args: ");
+    fmt::println("execName: {}", execName);
+    fmt::println("args: ");
     for (auto it = args.begin(); it != args.end(); ++it)
     {
-        Utils::writeConsole(*it + "\n");
+        fmt::println("{}", *it);
     }
-    Utils::writeConsole("\n");
+    fmt::println("");
 
-    Utils::writeConsole("workDir: " + workDir + "\n");
-    Utils::writeConsole("ID: " + std::to_string(ID) + "\n");
-    Utils::writeConsole("exitCode: " + std::to_string(exitCode) + "\n");
-    Utils::writeConsole("isSuccess: " + std::to_string(isSuccess) + "\n");
+    fmt::println("workDir: {}", workDir);
+    fmt::println("ID: {}", ID);
+    fmt::println("exitCode: {}", exitCode);
+    fmt::println("isSuccess: {}", std::to_string(isSuccess));
 }
 
 } // end namespace Proc

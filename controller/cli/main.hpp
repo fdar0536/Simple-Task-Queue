@@ -24,6 +24,8 @@
 #ifndef _CONTROLLER_CLI_MAIN_HPP_
 #define _CONTROLLER_CLI_MAIN_HPP_
 
+#include "cxxopts.hpp"
+
 #include "controller/global/defines.hpp"
 
 namespace Controller
@@ -50,13 +52,17 @@ private:
 
     void printVersion();
 
-    u8 spdlogInit();
+    u8 optsInit();
 
     i32 print();
 
     i32 modify();
 
     i32 connect();
+
+    cxxopts::Options printOpts = cxxopts::Options("print", "print info");
+
+    cxxopts::Options modifyOpts = cxxopts::Options("modify", "modify connection info");
 
 }; // end class Main
 

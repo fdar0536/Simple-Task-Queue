@@ -86,9 +86,26 @@ i32 QueueList::init()
     m_queueList = std::shared_ptr<Model::DAO::IQueueList>
         (reinterpret_cast<Model::DAO::IQueueList *>(queueList));
 
-    m_funcs["delete"] = std::bind(&QueueList::Delete, this);
     m_funcs["create"] = std::bind(&QueueList::create, this);
+    m_funcs["delete"] = std::bind(&QueueList::Delete, this);
+    m_funcs["list"] = std::bind(&QueueList::list, this);
     m_funcs["rename"] = std::bind(&QueueList::rename, this);
+
+    m_createOpts.add_options()
+        ("n,name", "the new queue name, the name cannot be empty", cxxopts::value<std::string>())
+        ("h,help", "print help");
+
+    m_deleteOpts.add_options()
+        ("n,name", "the new queue name, the name cannot be empty", cxxopts::value<std::string>())
+        ("h,help", "print help");
+
+    m_listOpts.add_options()
+        ("h,help", "print help");
+
+    m_renameOpts.add_options()
+        ("s,source", "the queue to rename, cannot be empty", cxxopts::value<std::string>())
+        ("t,target", "the new name for source, cannot be empty", cxxopts::value<std::string>())
+        ("h,help", "print help");
 
     return 0;
 }
@@ -102,48 +119,42 @@ i32 QueueList::run()
 
     while (Global::keepRunning.load(std::memory_order_relaxed))
     {
-        Global::getArgs(prefix);
-
         // vaild command: create delete list rename help exit
-        if (Global::args.size() == 1)
+        if (Global::args.getArgs(prefix))
         {
-            // help exit "queue name"
-            if (Global::args.at(0) == "exit")
-            {
-                return ret;
-            }
+            fmt::println("Fail to get command");
+            continue;
+        }
 
-            if (Global::args.at(0) == "help")
+        if (Global::args.argc() == 1)
+        {
+            // vaild command: help exit "queue name"
+            if (Global::args.args().at(0) == "help")
             {
-                Model::Utils::writeConsole("Valid command: create delete list rename help exit\n");
-                Model::Utils::writeConsole("Please type \"<command> help\" for more details.\n");
-                Model::Utils::writeConsole("Please type \"help\" to show this message.\n");
-                Model::Utils::writeConsole("Please type \"exit\" to exit.\n");
-                Model::Utils::writeConsole("Or just type queue name which you want to enter\n");
+                fmt::println("Valid command: create delete list rename help exit");
+                fmt::println("Please type \"<command> -h\" for more details.");
+                fmt::println("Please type \"help\" to show this message.");
+                fmt::println("Please type \"exit\" to exit.");
+                fmt::println("Or just type queue name which you want to enter");
+
                 ret = 0;
                 continue;
             }
 
-            if (Global::args.at(0) == "list")
+            if (Global::args.args().at(0) == "exit")
             {
-                ret = list();
-                continue;
+                return ret;
             }
-
-            // cannot interpret
-            ret = enter();
-            continue;
         }
 
         try
         {
-            ret = m_funcs[Global::args.at(0)]();
+            ret = m_funcs[Global::args.args().at(0)]();
         }
         catch(...)
         {
-            Model::Utils::writeConsole("Invalid command: " + Global::args[0] + "\n");
-            Model::Utils::writeConsole("Please type \"help\" for more info\n");
-            ret = 1;
+            // cannot interpret
+            ret = enter();
             continue;
         }
     }
@@ -153,88 +164,132 @@ i32 QueueList::run()
 
 i32 QueueList::create()
 {
-    if (Global::args.size() != 2)
+    if (Global::args.argc() == 1)
     {
-        Global::printCMDHelp("create");
-        return 1;
-    }
-
-    if (Global::args.at(1) == "help")
-    {
-        Model::Utils::writeConsole("Valid command: \"create [<name>|help]\"\n");
-        Model::Utils::writeConsole("<name>: name for queue\n");
-        Model::Utils::writeConsole("help: to show this message.\n");
+        fmt::print("{}", m_createOpts.help());
         return 0;
     }
 
-    if (m_queueList->createQueue(Global::args.at(1)))
+    std::string name;
+    try
     {
-        Model::Utils::writeConsole("Fail to create queue");
+        auto result = m_createOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_createOpts.help());
+            return 0;
+        }
+
+        if (!result.count("name"))
+        {
+            fmt::print("{}", m_createOpts.help());
+            return 1;
+        }
+
+        name = result["name"].as<std::string>();
+        if (name.empty())
+        {
+            fmt::print("{}", m_createOpts.help());
+            return 1;
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
-    Model::Utils::writeConsole("done\n");
+    if (m_queueList->createQueue(name))
+    {
+        fmt::println("Fail to create queue");
+        return 1;
+    }
+
+    fmt::println("done");
     return 0;
 }
 
 i32 QueueList::Delete()
 {
-    if (Global::args.size() != 2)
+    if (Global::args.argc() == 1)
     {
-        Global::printCMDHelp("delete");
-        return 1;
-    }
-
-    if (Global::args.at(1) == "help")
-    {
-        Model::Utils::writeConsole("Valid command: \"delete [<name>|help]\"\n");
-        Model::Utils::writeConsole("<name>: name for queue\n");
-        Model::Utils::writeConsole("help: to show this message.\n");
+        fmt::print("{}", m_deleteOpts.help());
         return 0;
     }
 
-    if (m_queueList->deleteQueue(Global::args.at(1)))
+    std::string name;
+    try
     {
-        Model::Utils::writeConsole("Fail to delete queue");
+        auto result = m_deleteOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
+        {
+            fmt::print("{}", m_deleteOpts.help());
+            return 0;
+        }
+
+        if (!result.count("name"))
+        {
+            fmt::print("{}", m_deleteOpts.help());
+            return 1;
+        }
+
+        name = result["name"].as<std::string>();
+        if (name.empty())
+        {
+            fmt::print("{}", m_deleteOpts.help());
+            return 1;
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
-    Model::Utils::writeConsole("done\n");
+    if (m_queueList->deleteQueue(name))
+    {
+        fmt::println("Fail to delete queue");
+        return 1;
+    }
+
+    fmt::println("done");
     return 0;
 }
 
 i32 QueueList::list()
 {
-    if (Global::args.size() > 2)
+    if (Global::args.argc() > 1)
     {
-        Global::printCMDHelp("list");
+        fmt::print("{}", m_listOpts.help());
         return 1;
     }
 
-    if (Global::args.size() == 2)
+    try
     {
-        if (Global::args.at(1) == "help")
+        auto result = m_listOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
         {
-            Model::Utils::writeConsole("Valid command: \"list [help] or list\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
+            fmt::print("{}", m_listOpts.help());
             return 0;
         }
-
-        Global::printCMDHelp("list");
+    }
+    catch (cxxopts::exceptions::exception e)
+    {
+        fmt::println("{}", e.what());
         return 1;
     }
 
     std::vector<std::string> out;
     if (m_queueList->listQueue(out))
     {
-        Model::Utils::writeConsole("Fail to list queue\n");
+        fmt::println("Fail to list queue");
         return 1;
     }
 
-    Model::Utils::writeConsole("\n");
+    fmt::println("");
     for (size_t i = 0; i < out.size(); ++i)
     {
-        Model::Utils::writeConsole(out.at(i) + "\n");
+        fmt::println("{}", out.at(i));
     }
 
     return 0;
@@ -242,47 +297,81 @@ i32 QueueList::list()
 
 i32 QueueList::rename()
 {
-    if (Global::args.size() > 3)
+    if (Global::args.argc() == 1)
     {
-        Global::printCMDHelp("rename");
-        return 1;
+        fmt::print("{}", m_renameOpts.help());
+        return 0;
     }
 
-    if (Global::args.size() == 2)
+    std::string source, target;
+    try
     {
-        if (Global::args.at(1) == "help")
+        auto result = m_renameOpts.parse(Global::args.argc(), Global::args.argv());
+        if (result.count("help"))
         {
-            Model::Utils::writeConsole("Valid command: \"rename <old name> <new name>\"\n");
-            Model::Utils::writeConsole("help: to show this message.\n");
+            fmt::print("{}", m_renameOpts.help());
             return 0;
         }
 
-        Global::printCMDHelp("rename");
-        return 1;
-    }
+        if (!result.count("source"))
+        {
+            fmt::print("{}", m_renameOpts.help());
+            return 1;
+        }
 
-    if (m_queueList->renameQueue(Global::args.at(1), Global::args.at(2)))
+        source = result["source"].as<std::string>();
+        if (source.empty())
+        {
+            fmt::print("{}", m_renameOpts.help());
+            return 1;
+        }
+
+        if (!result.count("target"))
+        {
+            fmt::print("{}", m_renameOpts.help());
+            return 1;
+        }
+
+        target = result["target"].as<std::string>();
+        if (target.empty())
+        {
+            fmt::print("{}", m_renameOpts.help());
+            return 1;
+        }
+    }
+    catch (cxxopts::exceptions::exception e)
     {
-        Model::Utils::writeConsole("Fail to rename queue\n");
+        fmt::println("{}", e.what());
         return 1;
     }
 
-    Model::Utils::writeConsole("done\n");
+    if (m_queueList->renameQueue(source, target))
+    {
+        fmt::println("Fail to rename queue");
+        return 1;
+    }
+
+    fmt::println("done");
     return 0;
 }
 
 i32 QueueList::enter()
 {
-    auto ptr = m_queueList->getQueue(Global::args.at(0));
+    auto ptr = m_queueList->getQueue(Global::args.args().at(0));
     if (ptr == nullptr)
     {
-        Model::Utils::writeConsole("Fail to enter the queue\n");
+        fmt::println("Fail to enter the queue");
         return 1;
     }
 
     Queue queue;
-    queue.init();
-    return queue.run(m_prefix + "/" + Global::args.at(0) + "> ", ptr);
+    if (queue.init())
+    {
+        fmt::println("Fail to enter the queue");
+        return 1;
+    }
+
+    return queue.run(m_prefix + "/" + Global::args.args().at(0) + "> ", ptr);
 }
 
 } // end namesapce CLI

@@ -69,14 +69,19 @@ u8 init(int argc, char **argv)
     }
 
     Model::ErrMsg::init();
-
-    if (!config.logPath.empty())
+    if (config.logPath.empty())
     {
-        if (Global::spdlogInit(config.logPath + "/STQLog.log"))
-        {
-            spdlog::error("{}:{} Fail to initialize spdlog", __FILE__, __LINE__);
-            return 1;
-        }
+        ret = Global::spdlogInit(config.logPath);
+    }
+    else
+    {
+        ret = Global::spdlogInit(config.logPath + "/STQLog.log");
+    }
+
+    if (ret)
+    {
+        spdlog::error("{}:{} Fail to initialize spdlog", __FILE__, __LINE__);
+        return 1;
     }
 
     spdlog::set_level(static_cast<spdlog::level::level_enum>(config.logLevel));

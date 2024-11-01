@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-present fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,17 +32,7 @@ namespace Model
 namespace Utils
 {
 
-uint_fast8_t utf8ToUtf16(const std::string &in, wchar_t *out, size_t outLen);
-
-uint_fast8_t utf8ToUtf16(const char *in, size_t inSize, wchar_t *out, size_t outLen);
-
-uint_fast8_t utf16ToUtf8(const std::wstring &in, char *out, size_t outLen);
-
-uint_fast8_t utf16ToUtf8(const wchar_t *in, size_t inSize, char *out, size_t outLen);
-
 void writeLastError(const char *file, int line);
-
-void writeConsole(const std::string &);
 
 uint8_t verifyIP(const std::string &);
 

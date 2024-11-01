@@ -23,6 +23,12 @@
 
 #include <fstream>
 
+#ifdef _WIN32
+#include "direct.h"
+#else
+#include "unistd.h"
+#endif
+
 #include "spdlog/spdlog.h"
 #include "inipp.h"
 #include "cxxopts.hpp"
@@ -57,9 +63,23 @@ u8 Config::parse(Config *in, int argc, char **argv)
         return 1;
     }
 
+    char buf[1024];
+    size_t len(1024);
+#ifdef _WIN32
+    if (!_getcwd(buf, len))
+#else
+    if (!getcwd(buf, len))
+#endif
+    {
+        spdlog::error("{}:{} Fail to get current path", __FILE__, __LINE__);
+        return 1;
+    }
+
     if (argc == 1 || !argv)
     {
         spdlog::warn("{}:{} use default config", __FILE__, __LINE__);
+        in->dbPath = std::string(buf);
+        in->logPath = std::string(buf);
         return 0;
     }
 
@@ -69,8 +89,8 @@ u8 Config::parse(Config *in, int argc, char **argv)
     {
         cxxopts::Options options("STQSERVER", "STQ Server");
         options.add_options()
-            ("c,config-file", "path to config file", cxxopts::value<std::string>(in->logPath)->default_value(""))
-            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value(""))
+            ("c,config-file", "path to config file", cxxopts::value<std::string>(configFile)->default_value(""))
+            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value(std::string(buf)))
             ("l,log-path", "path for output log", cxxopts::value<std::string>(in->logPath)->default_value(""))
             ("L,log-level", "log level for spdlog", cxxopts::value<int>(in->logLevel)->default_value("2"))
             ("a,address", "which addess will listen", cxxopts::value<std::string>(in->listenIP)->default_value("127.0.0.1"))
@@ -82,7 +102,7 @@ u8 Config::parse(Config *in, int argc, char **argv)
         auto result = options.parse(argc, argv);
         if (result.count("help"))
         {
-            Model::Utils::writeConsole(options.help());
+            fmt::print("{}", options.help());
             return 2;
         }
 
@@ -238,19 +258,10 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
 // private member functions
 void Config::printVersion()
 {
-    Model::Utils::writeConsole("STQSERVER version info:\n");
-
-    Model::Utils::writeConsole("branch:  ");
-    Model::Utils::writeConsole(STQ_BRANCH);
-    Model::Utils::writeConsole("\n");
-
-    Model::Utils::writeConsole("commit:  ");
-    Model::Utils::writeConsole(STQ_COMMIT);
-    Model::Utils::writeConsole("\n");
-
-    Model::Utils::writeConsole("version: ");
-    Model::Utils::writeConsole(STQ_VERSION);
-    Model::Utils::writeConsole("\n");
+    fmt::println("STQSERVER version info:");
+    fmt::println("branch:  " STQ_BRANCH);
+    fmt::println("commit:  " STQ_COMMIT);
+    fmt::println("version: " STQ_VERSION);
 }
 
 } // end namespace GRPCServer

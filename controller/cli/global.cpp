@@ -40,46 +40,7 @@ std::atomic<bool> keepRunning;
 
 Controller::CLI::Config config;
 
-std::vector<std::string> args;
-
-void getArgs(const std::string &prefix)
-{
-    while (keepRunning.load(std::memory_order_relaxed))
-    {
-        args.clear();
-        Model::Utils::writeConsole(prefix);
-        std::string line;
-        std::getline(std::cin, line);
-        if (line.empty())
-        {
-            continue;
-        }
-
-        std::string delimiter = " ";
-
-        size_t pos = 0;
-        std::string token;
-        while ((pos = line.find(delimiter)) != std::string::npos)
-        {
-            token = line.substr(0, pos);
-            if (!token.empty())
-            {
-                args.push_back(token);
-            }
-
-            line.erase(0, pos + delimiter.length());
-        }
-
-        args.push_back(line);
-        break;
-    }
-}
-
-void printCMDHelp(const std::string &cmd)
-{
-    Model::Utils::writeConsole("Invalid argument\n");
-    Model::Utils::writeConsole("Please type \"" + cmd + " help\" for more info\n");
-}
+Controller::CLI::Args args;
 
 } // end namespace Global
 

@@ -28,6 +28,9 @@
 #include <string>
 #include <vector>
 
+#include "cxxopts.hpp"
+
+#include "controller/cli/args.hpp"
 #include "controller/cli/config.hpp"
 
 namespace Controller
@@ -43,11 +46,7 @@ extern std::atomic<bool> keepRunning;
 
 extern Controller::CLI::Config config;
 
-extern std::vector<std::string> args;
-
-void getArgs(const std::string &);
-
-void printCMDHelp(const std::string &);
+extern Controller::CLI::Args args;
 
 } // end namespace Global
 
