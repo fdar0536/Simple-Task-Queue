@@ -52,8 +52,8 @@ if (ENABLE_SERVER)
         )
     elseif ((NOT WIN32))
         list(APPEND MODEL_SRC
-            model/posixprocess.cpp
-            model/posixprocess.hpp
+            model/proc/posixproc.cpp
+            model/proc/posixproc.hpp
         )
     endif (WIN32)
 endif(ENABLE_SERVER)
