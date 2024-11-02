@@ -345,6 +345,7 @@ static void sighandler(int signum)
     spdlog::info("{}:{} Signaled: {}", __FILE__, __LINE__, signum);
     spdlog::info("{}:{} Good Bye!", __FILE__, __LINE__);
     Global::keepRunning.store(false, std::memory_order_relaxed);
+    exit(0);
 }
 
 #ifdef _WIN32
