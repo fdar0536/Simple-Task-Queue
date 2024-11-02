@@ -118,7 +118,7 @@ u8 SQLiteQueueList::createQueue(const std::string &name)
 #ifdef _WIN32
     Proc::WinProc *proc = new (std::nothrow) Proc::WinProc();
 #else
-    PosixProc *proc = new (std::nothrow) Proc::PosixProc();
+    Proc::PosixProc *proc = new (std::nothrow) Proc::PosixProc();
 #endif
     if (!proc)
     {

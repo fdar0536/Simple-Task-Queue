@@ -124,7 +124,7 @@ u8 SQLiteQueue::listFinished(std::vector<int> &out)
 }
 
 u8
-SQLiteQueue::pendingDetails(const i32 id,
+SQLiteQueue::pendingDetails(const int id,
                             Proc::Task &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);
@@ -132,7 +132,7 @@ SQLiteQueue::pendingDetails(const i32 id,
 }
 
 u8
-SQLiteQueue::finishedDetails(const i32 id,
+SQLiteQueue::finishedDetails(const int id,
                              Proc::Task &out)
 {
     std::unique_lock<std::mutex> lock(m_token->mutex);

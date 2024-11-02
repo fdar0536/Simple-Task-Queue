@@ -26,6 +26,8 @@
 
 #include <string>
 
+#include "controller/global/defines.hpp"
+
 namespace Model
 {
 
@@ -34,7 +36,7 @@ namespace Utils
 
 void writeLastError(const char *file, int line);
 
-uint8_t verifyIP(const std::string &);
+u8 verifyIP(const std::string &);
 
 } // end namespace Utils
 

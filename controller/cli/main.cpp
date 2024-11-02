@@ -218,7 +218,7 @@ i32 Main::parseArgs(int argc, char **argv)
             return 2;
         }
     }
-    catch(cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::print("{}", e.what());
         return 1;
@@ -250,7 +250,7 @@ u8 Main::optsInit()
             ("p,port", "modify server port", cxxopts::value<u16>(Global::config.port))
             ("h,help", "print help");
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -285,7 +285,7 @@ i32 Main::print()
             fmt::println("target port: {}", Global::config.port);
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -313,7 +313,7 @@ i32 Main::modify()
 
         fmt::println("done");
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;

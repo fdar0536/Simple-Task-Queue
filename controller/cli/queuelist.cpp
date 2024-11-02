@@ -193,7 +193,7 @@ i32 QueueList::create()
             return 1;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -240,7 +240,7 @@ i32 QueueList::Delete()
             return 1;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -273,7 +273,7 @@ i32 QueueList::list()
             return 0;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -339,7 +339,7 @@ i32 QueueList::rename()
             return 1;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;

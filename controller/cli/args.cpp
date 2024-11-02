@@ -39,8 +39,8 @@ namespace CLI
 
 // public member functions
 Args::Args() :
-    m_argv(nullptr),
     m_args(std::vector<std::string>(16)),
+    m_argv(nullptr),
     m_argvLen(17)
 {}
 

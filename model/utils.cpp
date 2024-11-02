@@ -83,7 +83,7 @@ void writeConsole(const std::string &in)
     fmt::print("{}", in.c_str());
 }
 
-uint8_t verifyIP(const std::string &in)
+u8 verifyIP(const std::string &in)
 {
     if (!std::regex_match(in, ipRegex))
     {

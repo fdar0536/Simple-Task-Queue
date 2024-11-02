@@ -143,7 +143,7 @@ u8 Config::parse(Config *in, int argc, char **argv)
             return 1;
         }
     }
-    catch(cxxopts::exceptions::exception e)
+    catch(const cxxopts::exceptions::exception &e)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, e.what());
         return 1;

@@ -28,9 +28,8 @@
 #define sleep(x) Sleep(x * 1000)
 #else
 #include <stdio.h>
-#include "sys/select.h"
+#include "sys/ioctl.h"
 #include "termios.h"
-#include "stropts.h"
 #include "unistd.h"
 #include "time.h"
 #endif
@@ -242,7 +241,7 @@ i32 Queue::list()
         }
         };
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
     }
@@ -292,7 +291,7 @@ i32 Queue::details()
         }
         };
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -346,7 +345,7 @@ i32 Queue::clear()
         }
         };
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -382,7 +381,7 @@ i32 Queue::current()
             return 0;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -430,7 +429,7 @@ i32 Queue::add()
             in.args = result["args"].as<std::vector<std::string>>();
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -472,7 +471,7 @@ i32 Queue::remove()
 
         id = result["id"].as<std::vector<i32>>();
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -507,7 +506,7 @@ i32 Queue::isRunning()
             return 0;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -542,7 +541,7 @@ i32 Queue::start()
             return 0;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -575,7 +574,7 @@ i32 Queue::stop()
             return 0;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;
@@ -628,7 +627,7 @@ i32 Queue::output()
             return 0;
         }
     }
-    catch (cxxopts::exceptions::exception e)
+    catch (const cxxopts::exceptions::exception &e)
     {
         fmt::println("{}", e.what());
         return 1;

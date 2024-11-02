@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023-2024 fdar0536
+ * Copyright (c) 2023-present fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,10 +53,10 @@ public:
 
     virtual u8 listFinished(std::vector<int> &out) override;
 
-    virtual u8 pendingDetails(const i32 id,
+    virtual u8 pendingDetails(const int id,
                               Proc::Task &out) override;
 
-    virtual u8 finishedDetails(const i32 id,
+    virtual u8 finishedDetails(const int id,
                                Proc::Task &out) override;
 
     virtual u8 clearPending() override;
