@@ -26,7 +26,7 @@
 
 #include <atomic>
 
-#include "unistd.h"
+#include "sys/epoll.h"
 
 #include "iproc.hpp"
 
@@ -44,23 +44,23 @@ public:
 
     ~PosixProc();
 
-    virtual uint_fast8_t init() override;
+    virtual u8 init() override;
 
-    virtual uint_fast8_t start(const Task &task) override;
+    virtual u8 start(const Task &task) override;
 
     virtual void stop() override;
 
     virtual bool isRunning() override;
 
-    virtual uint_fast8_t readCurrentOutput(std::string &out) override;
+    virtual u8 readCurrentOutput(std::string &out) override;
 
-    virtual uint_fast8_t exitCode(int_fast32_t &out) override;
+    virtual u8 exitCode(int_fast32_t &out) override;
 
 private:
 
     pid_t m_pid;
 
-    int m_fd[2];
+    int m_fd[2] = {-1, -1};
 
     std::atomic<int_fast32_t> m_exitCode;
 
@@ -69,6 +69,17 @@ private:
     char **buildChildArgv(const Task &);
 
     void stopImpl();
+
+    // epoll
+    struct epoll_event m_event, m_events[10];
+
+    int m_epoll_fd = -1;
+
+    u8 epollInit();
+
+    void closeFile(int *);
+
+    void epollFin();
 
 };
 

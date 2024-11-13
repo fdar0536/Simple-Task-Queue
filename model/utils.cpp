@@ -21,16 +21,14 @@
  * SOFTWARE.
  */
 
-#include <iostream>
 #include <regex>
 #include <mutex>
+
+#include "fmt/base.h"
 
 #ifdef _WIN32
 #include "windows.h"
 #endif
-
-#include "spdlog/spdlog.h"
-#include "controller/cli/global.hpp"
 
 #include "utils.hpp"
 

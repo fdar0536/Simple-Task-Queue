@@ -3,7 +3,11 @@
 /*.autosave
 /SimpleTaskQueue
 /out
-/*.json
 /.vs
 /*.exe
 /build
+/CMakeUserPresets.json
+/compile_commands.json
+/.cache
+/.cache/*
+/.vscode

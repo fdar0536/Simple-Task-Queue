@@ -44,14 +44,14 @@ PosixProc::PosixProc() :
 PosixProc::~PosixProc()
 {}
 
-uint_fast8_t PosixProc::init()
+u8 PosixProc::init()
 {
-    memset(m_fd, 0, 2 * sizeof(int));
+    memset(m_fd, -1, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
     return 0;
 }
 
-uint_fast8_t PosixProc::start(const Task &task)
+u8 PosixProc::start(const Task &task)
 {
     if (isRunning())
     {
@@ -97,14 +97,24 @@ uint_fast8_t PosixProc::start(const Task &task)
         return 1;
     }
 
+    if (epollInit())
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        kill(m_pid, SIGKILL);
+        epollFin();
+        return 1;
+    }
+
     if (setpgid(m_pid, 0) == -1)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         kill(m_pid, SIGKILL);
+        epollFin();
         return 1;
     }
 
     close(m_fd[1]);
+    m_fd[1] = -1;
     return 0;
 }
 
@@ -119,7 +129,8 @@ bool PosixProc::isRunning()
     pid_t ret = waitpid(m_pid, &status, WNOHANG);
     if (ret == -1)
     {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        spdlog::warn("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        epollFin();
         return false;
     }
     else if (ret == 0)
@@ -133,42 +144,49 @@ bool PosixProc::isRunning()
             m_exitCode.store(status, std::memory_order_relaxed);
         }
 
+        epollFin();
         return false;
     }
 }
 
-uint_fast8_t PosixProc::readCurrentOutput(std::string &out)
+u8 PosixProc::readCurrentOutput(std::string &out)
 {
     ssize_t count(0);
     char buf[4096] = {};
-    while (1)
+    out = "";
+ 
+    int event_count = epoll_wait(m_epoll_fd, m_events, 10, 1000);
+    for (int i = 0; i < event_count; ++i)
     {
-        count = read(m_fd[0], buf, 4095);
-        if (count == -1)
+        while (1)
         {
-            if (errno == EINTR) continue;
+            count = read(m_events[i].data.fd, buf, 4095);
+            if (count == -1)
+            {
+                if (errno == EINTR) continue;
+                else
+                {
+                    spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+                    return 1;
+                }
+            }
+            else if (count == 0)
+            {
+                break;
+            }
             else
             {
-                spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
-                return 1;
+                buf[count] = '\0';
+                out += std::string(buf);
+                break;
             }
         }
-        else if (count == 0)
-        {
-            out = "";
-            return 0;
-        }
-        else
-        {
-            buf[count] = '\0';
-            out = buf;
-        }
-
-        return 0;
     }
+
+    return 0;
 }
 
-uint_fast8_t PosixProc::exitCode(int_fast32_t &out)
+u8 PosixProc::exitCode(int_fast32_t &out)
 {
     if (isRunning())
     {
@@ -276,6 +294,42 @@ void PosixProc::stopImpl()
     }
 
     sleep(2);
+}
+
+u8 PosixProc::epollInit()
+{
+    m_epoll_fd = epoll_create1(0);
+    if (m_epoll_fd == -1)
+    {
+        spdlog::warn("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        return 1;
+    }
+
+    m_event.events = EPOLLIN;
+    m_event.data.fd = m_fd[0];
+    if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_fd[0], &m_event))
+    {
+        spdlog::warn("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        return 1;
+    }
+
+    return 0;
+}
+
+void PosixProc::closeFile(int *fd)
+{
+    if (*fd != -1)
+    {
+        close(*fd);
+        *fd = -1;
+    }
+}
+
+void PosixProc::epollFin()
+{
+    closeFile(&m_epoll_fd);
+    closeFile(&m_fd[0]);
+    closeFile(&m_fd[1]);
 }
 
 } // end namespace Proc
