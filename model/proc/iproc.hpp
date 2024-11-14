@@ -48,7 +48,7 @@ public:
 
     virtual u8 readCurrentOutput(std::string &out) = 0;
 
-    virtual u8 exitCode(int_fast32_t &out) = 0;
+    virtual u8 exitCode(i32 &out) = 0;
 
 }; // end class IProc
 

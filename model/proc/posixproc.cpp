@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2023 fdar0536
+ * Copyright (c) 2023-present fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ PosixProc::~PosixProc()
 
 u8 PosixProc::init()
 {
-    memset(m_fd, -1, 2 * sizeof(int));
+    memset(m_readPipe, -1, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
     return 0;
 }
@@ -59,10 +59,10 @@ u8 PosixProc::start(const Task &task)
         return 1;
     }
 
-    memset(m_fd, 0, 2 * sizeof(int));
+    memset(m_readPipe, -1, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
 
-    if (pipe(m_fd) == -1)
+    if (pipe(m_readPipe) == -1)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         return 1;
@@ -82,7 +82,7 @@ u8 PosixProc::start(const Task &task)
         startChild(task);
     }
 
-    int fileFlag(fcntl(m_fd[0], F_GETFL));
+    int fileFlag(fcntl(m_readPipe[0], F_GETFL));
     if (fileFlag == -1)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
@@ -90,7 +90,7 @@ u8 PosixProc::start(const Task &task)
         return 1;
     }
 
-    if (fcntl(m_fd[0], F_SETFL, fileFlag | O_NONBLOCK) == -1)
+    if (fcntl(m_readPipe[0], F_SETFL, fileFlag | O_NONBLOCK) == -1)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         kill(m_pid, SIGKILL);
@@ -113,8 +113,8 @@ u8 PosixProc::start(const Task &task)
         return 1;
     }
 
-    close(m_fd[1]);
-    m_fd[1] = -1;
+    close(m_readPipe[1]);
+    m_readPipe[1] = -1;
     return 0;
 }
 
@@ -186,7 +186,7 @@ u8 PosixProc::readCurrentOutput(std::string &out)
     return 0;
 }
 
-u8 PosixProc::exitCode(int_fast32_t &out)
+u8 PosixProc::exitCode(i32 &out)
 {
     if (isRunning())
     {
@@ -201,9 +201,9 @@ u8 PosixProc::exitCode(int_fast32_t &out)
 // private member functions
 void PosixProc::startChild(const Task &task)
 {
-    while (( dup2(m_fd[1], STDOUT_FILENO) == -1 ) && ( errno == EINTR )) {}
-    while (( dup2(STDOUT_FILENO, STDERR_FILENO) == -1 ) && ( errno == EINTR )) {}
-    close(m_fd[0]);
+    while (( dup2(m_readPipe[1], STDERR_FILENO) == -1 ) && ( errno == EINTR )) {}
+    while (( dup2(m_readPipe[1], STDOUT_FILENO) == -1 ) && ( errno == EINTR )) {}
+    close(m_readPipe[0]);
 
     if (chdir(task.workDir.c_str()) == -1)
     {
@@ -306,8 +306,8 @@ u8 PosixProc::epollInit()
     }
 
     m_event.events = EPOLLIN;
-    m_event.data.fd = m_fd[0];
-    if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_fd[0], &m_event))
+    m_event.data.fd = m_readPipe[0];
+    if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_readPipe[0], &m_event))
     {
         spdlog::warn("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         return 1;
@@ -328,8 +328,8 @@ void PosixProc::closeFile(int *fd)
 void PosixProc::epollFin()
 {
     closeFile(&m_epoll_fd);
-    closeFile(&m_fd[0]);
-    closeFile(&m_fd[1]);
+    closeFile(&m_readPipe[0]);
+    closeFile(&m_readPipe[1]);
 }
 
 } // end namespace Proc

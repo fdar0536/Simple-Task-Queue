@@ -54,15 +54,15 @@ public:
 
     virtual u8 readCurrentOutput(std::string &out) override;
 
-    virtual u8 exitCode(int_fast32_t &out) override;
+    virtual u8 exitCode(i32 &out) override;
 
 private:
 
     pid_t m_pid;
 
-    int m_fd[2] = {-1, -1};
+    int m_readPipe[2] = {-1, -1};
 
-    std::atomic<int_fast32_t> m_exitCode;
+    std::atomic<i32> m_exitCode;
 
     void startChild(const Task &);
 
