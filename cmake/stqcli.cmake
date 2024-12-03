@@ -3,16 +3,11 @@ if(ENABLE_CLI)
         protobuf::libprotobuf
         gRPC::grpc++
         cxxopts::cxxopts
+        SQLite::SQLite3
 
         grpc_common
         spdlog::spdlog
     )
-
-    if (ENABLE_SERVER)
-        list(APPEND STQ_CLI_LIBS
-            SQLite::SQLite3
-        )
-    endif (ENABLE_SERVER)
 
     set(CLI_CONTROLLER_SRC
         controller/cli/args.cpp

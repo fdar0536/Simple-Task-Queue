@@ -45,7 +45,7 @@ public:
 
     QueueList();
 
-    i32 init();
+    u8 init();
 
     i32 run();
 

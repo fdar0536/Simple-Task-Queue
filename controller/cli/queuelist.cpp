@@ -23,10 +23,8 @@
 
 #include "spdlog/spdlog.h"
 
-#include "model/dao/grpcconnect.hpp"
-#include "model/dao/grpcqueuelist.hpp"
-#include "model/utils.hpp"
-
+#include "controller/global/global.hpp"
+#include "controller/cli/config.hpp"
 #include "controller/cli/global.hpp"
 
 #include "queue.hpp"
@@ -43,48 +41,33 @@ QueueList::QueueList() :
 {}
 
 // public member functions
-i32 QueueList::init()
+u8 QueueList::init()
 {
-    Model::DAO::GRPCConnect *conn = new (std::nothrow) Model::DAO::GRPCConnect;
-    if (!conn)
+    u8 ret(0);
+    switch (Global::config.backend)
     {
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return 1;
+        case BACKEND_GRPC:
+        {
+            ret = Controller::Global::grpcInit(m_queueList, Global::config.address, Global::config.port);
+            break;
+        }
+        case BACKEND_SQLITE:
+        {
+            ret = Controller::Global::sqliteInit(m_queueList, Global::config.address);
+            break;
+        }
+        default:
+        {
+            spdlog::error("{}:{} Invaild backend.", __FILE__, __LINE__);
+            return 1;
+        }
     }
 
-    if (conn->init())
+    if (ret)
     {
-        delete conn;
-        spdlog::error("{}:{} Fail to initialize conn", __FILE__, __LINE__);
+        spdlog::error("{}:{} Init failed.", __FILE__, __LINE__);
         return 1;
     }
-
-    if (conn->startConnect(Global::config.address, Global::config.port))
-    {
-        delete conn;
-        spdlog::error("{}:{} Fail to connect to server", __FILE__, __LINE__);
-        return 1;
-    }
-
-    Model::DAO::GRPCQueueList *queueList = new (std::nothrow) Model::DAO::GRPCQueueList;
-    if (!queueList)
-    {
-        delete conn;
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return 1;
-    }
-
-    std::shared_ptr<Model::DAO::IConnect> connPtr =
-        std::shared_ptr<Model::DAO::IConnect>(conn);
-    if (queueList->init(connPtr))
-    {
-        delete queueList;
-        spdlog::error("{}:{} Fail to initialize queue list", __FILE__, __LINE__);
-        return 1;
-    }
-
-    m_queueList = std::shared_ptr<Model::DAO::IQueueList>
-        (reinterpret_cast<Model::DAO::IQueueList *>(queueList));
 
     m_funcs["create"] = std::bind(&QueueList::create, this);
     m_funcs["delete"] = std::bind(&QueueList::Delete, this);
@@ -162,6 +145,7 @@ i32 QueueList::run()
     return ret;
 }
 
+// private member functions
 i32 QueueList::create()
 {
     if (Global::args.argc() == 1)

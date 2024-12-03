@@ -48,8 +48,6 @@ u8 init(int argc, char **argv);
 
 void fin();
 
-u8 initSQLiteQueueList();
-
 } // end namespace GRPCServer
 
 } // end namespace Controller

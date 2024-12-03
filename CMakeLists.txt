@@ -65,13 +65,21 @@ include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)
 
 find_package(Protobuf REQUIRED)
+find_library (UPB_LIBRARIES NAMES upb)
+if (UPB_LIBRARIES)
+    add_library(protobuf::libupb STATIC IMPORTED)
+    add_executable(protobuf::protoc-gen-upb IMPORTED)
+    add_executable(protobuf::protoc-gen-upbdefs IMPORTED)
+    add_executable(protobuf::protoc-gen-upb_minitable IMPORTED)
+endif()
+
 find_package(gRPC REQUIRED)
-find_package(spdlog REQUIRED)
 find_package(cxxopts REQUIRED)
+find_package(spdlog REQUIRED)
+find_package(SQLite3 REQUIRED)
 
 if (ENABLE_SERVER)
     find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
-    find_package(SQLite3 REQUIRED)
 endif (ENABLE_SERVER)
 
 if (ENABLE_GUI)

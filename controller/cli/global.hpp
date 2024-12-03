@@ -25,10 +25,6 @@
 #define _CONTROLLER_CLI_GLOBAL_HPP_
 
 #include <atomic>
-#include <string>
-#include <vector>
-
-#include "cxxopts.hpp"
 
 #include "controller/cli/args.hpp"
 #include "controller/cli/config.hpp"

@@ -1,9 +1,10 @@
 set(STQ_MODEL_LIBS
     protobuf::libprotobuf
     gRPC::grpc++
+    SQLite::SQLite3
+    spdlog::spdlog
 
     grpc_common
-    spdlog::spdlog
 )
 
 set(MODEL_SRC
@@ -23,66 +24,52 @@ set(MODEL_SRC
     controller/global/defines.hpp
     controller/global/global.cpp
     controller/global/global.hpp
+
+    model/dao/dirutils.cpp
+    model/dao/dirutils.hpp
+
+    #sqlite
+    model/dao/sqliteconnect.cpp
+    model/dao/sqliteconnect.hpp
+    model/dao/sqlitequeuelist.cpp
+    model/dao/sqlitequeuelist.hpp
+    model/dao/sqlitequeue.cpp
+    model/dao/sqlitequeue.hpp
+
+    #grpc
+    model/dao/grpcconnect.cpp
+    model/dao/grpcconnect.hpp
+    model/dao/grpcqueue.cpp
+    model/dao/grpcqueue.hpp
+    model/dao/grpcqueuelist.cpp
+    model/dao/grpcqueuelist.hpp
+    model/dao/grpcutils.cpp
+    model/dao/grpcutils.hpp
+
+    # proc
+    model/proc/iproc.cpp
+    model/proc/iproc.hpp
+    model/proc/task.cpp
+    model/proc/task.hpp
 )
 
-if (ENABLE_SERVER)
+if (WIN32)
     list(APPEND MODEL_SRC
-        model/dao/dirutils.cpp
-        model/dao/dirutils.hpp
-
-        #sqlite
-        model/dao/sqliteconnect.cpp
-        model/dao/sqliteconnect.hpp
-        model/dao/sqlitequeuelist.cpp
-        model/dao/sqlitequeuelist.hpp
-        model/dao/sqlitequeue.cpp
-        model/dao/sqlitequeue.hpp
-
-        # proc
-        model/proc/iproc.cpp
-        model/proc/iproc.hpp
-        model/proc/task.cpp
-        model/proc/task.hpp
+        model/proc/winproc.cpp
+        model/proc/winproc.hpp
     )
-
-    if (WIN32)
-        list(APPEND MODEL_SRC
-            model/proc/winproc.cpp
-            model/proc/winproc.hpp
-        )
-    elseif ((NOT WIN32))
-        list(APPEND MODEL_SRC
-            model/proc/posixproc.cpp
-            model/proc/posixproc.hpp
-        )
-    endif (WIN32)
-endif(ENABLE_SERVER)
-
-if (ENABLE_CLI OR ENABLE_GUI)
+elseif ((NOT WIN32))
     list(APPEND MODEL_SRC
-        #grpc
-        model/dao/grpcconnect.cpp
-        model/dao/grpcconnect.hpp
-        model/dao/grpcqueue.cpp
-        model/dao/grpcqueue.hpp
-        model/dao/grpcqueuelist.cpp
-        model/dao/grpcqueuelist.hpp
-        model/dao/grpcutils.cpp
-        model/dao/grpcutils.hpp
+        model/proc/posixproc.cpp
+        model/proc/posixproc.hpp
     )
-endif (ENABLE_CLI OR ENABLE_GUI)
+endif (WIN32)
 
 add_library(stqmodel STATIC
     ${MODEL_SRC}
 )
 
 add_dependencies(stqmodel grpc_common)
-
-if (ENABLE_SERVER)
-    list(APPEND STQ_MODEL_LIBS
-        SQLite::SQLite3
-    )
-endif (ENABLE_SERVER)
 
 target_link_libraries(stqmodel
     PRIVATE

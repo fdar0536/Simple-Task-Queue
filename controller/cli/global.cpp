@@ -21,10 +21,6 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
-#include "model/utils.hpp"
-
 #include "global.hpp"
 
 namespace Controller

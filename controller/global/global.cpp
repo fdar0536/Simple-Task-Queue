@@ -21,9 +21,12 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
 #include <cstdio>
+
+#include "model/dao/grpcconnect.hpp"
+#include "model/dao/grpcqueuelist.hpp"
+#include "model/dao/sqliteconnect.hpp"
+#include "model/dao/sqlitequeuelist.hpp"
 
 #ifdef _WIN32
 #include "windows.h"
@@ -33,8 +36,6 @@
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/daily_file_sink.h"
-
-#include "model/utils.hpp"
 
 #include "global.hpp"
 
@@ -104,7 +105,7 @@ u8 consoleInit()
 #   pragma endregion
 #endif
 
-    std::ios::sync_with_stdio(false);
+    // std::ios::sync_with_stdio(false);
     return 0;
 }
 
@@ -164,6 +165,100 @@ u8 spdlogInit(const std::string &path)
         return 1;
     }
 
+    return 0;
+}
+
+u8 sqliteInit(std::shared_ptr<Model::DAO::IQueueList> &out, const std::string &target)
+{
+    Model::DAO::SQLiteConnect *conn(nullptr);
+    try
+    {
+        conn = new Model::DAO::SQLiteConnect();
+        if (conn == nullptr)
+        {
+            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+            return 1;
+        }
+    }
+    catch(...)
+    {
+        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (conn->startConnect(target))
+    {
+        delete conn;
+        spdlog::error("{}:{} Fail to initialize sqlite", __FILE__, __LINE__);
+        return 1;
+    }
+
+    auto connPtr = std::shared_ptr<Model::DAO::IConnect>(conn);
+    Model::DAO::SQLiteQueueList *sqlPtr;
+    try
+    {
+        sqlPtr = new Model::DAO::SQLiteQueueList;
+    }
+    catch (...)
+    {
+        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (sqlPtr->init(connPtr))
+    {
+        spdlog::error("{}:{} Fail to initialize sqlite queue list", __FILE__, __LINE__);
+        delete sqlPtr;
+        return 1;
+    }
+
+    out = std::shared_ptr<Model::DAO::IQueueList>(sqlPtr);
+    return 0;
+}
+
+u8 grpcInit(std::shared_ptr<Model::DAO::IQueueList> &out, const std::string &target, const i32 port)
+{
+    Model::DAO::GRPCConnect *conn = new (std::nothrow) Model::DAO::GRPCConnect;
+    if (!conn)
+    {
+        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (conn->init())
+    {
+        delete conn;
+        spdlog::error("{}:{} Fail to initialize conn", __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (conn->startConnect(target, port))
+    {
+        delete conn;
+        spdlog::error("{}:{} Fail to connect to server", __FILE__, __LINE__);
+        return 1;
+    }
+
+    Model::DAO::GRPCQueueList *queueList = new (std::nothrow) Model::DAO::GRPCQueueList;
+    if (!queueList)
+    {
+        delete conn;
+        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+        return 1;
+    }
+
+    std::shared_ptr<Model::DAO::IConnect> connPtr =
+        std::shared_ptr<Model::DAO::IConnect>(conn);
+    if (queueList->init(connPtr))
+    {
+        delete queueList;
+        spdlog::error("{}:{} Fail to initialize queue list", __FILE__, __LINE__);
+        return 1;
+    }
+
+    out = std::shared_ptr<Model::DAO::IQueueList>
+        (reinterpret_cast<Model::DAO::IQueueList *>(queueList));
+    
     return 0;
 }
 

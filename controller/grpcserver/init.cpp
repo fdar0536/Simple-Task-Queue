@@ -62,7 +62,7 @@ u8 init(int argc, char **argv)
         return 1;
     }
 
-    if (initSQLiteQueueList())
+    if (Controller::Global::sqliteInit(sqliteQueueList, config.dbPath))
     {
         spdlog::error("{}:{} Fail to initialize sqlite queue list", __FILE__, __LINE__);
         return 1;
@@ -91,54 +91,6 @@ u8 init(int argc, char **argv)
 void fin()
 {
     Global::consoleFin();
-}
-
-u8 initSQLiteQueueList()
-{
-    Model::DAO::SQLiteConnect *conn(nullptr);
-    try
-    {
-        conn = new Model::DAO::SQLiteConnect();
-        if (conn == nullptr)
-        {
-            spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-            return 1;
-        }
-    }
-    catch(...)
-    {
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return 1;
-    }
-
-    if (conn->startConnect(config.dbPath))
-    {
-        delete conn;
-        spdlog::error("{}:{} Fail to initialize sqlite", __FILE__, __LINE__);
-        return 1;
-    }
-
-    auto connPtr = std::shared_ptr<Model::DAO::IConnect>(conn);
-    Model::DAO::SQLiteQueueList *sqlPtr;
-    try
-    {
-        sqlPtr = new Model::DAO::SQLiteQueueList;
-    }
-    catch (...)
-    {
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
-        return 1;
-    }
-
-    if (sqlPtr->init(connPtr))
-    {
-        spdlog::error("{}:{} Fail to initialize sqlite queue list", __FILE__, __LINE__);
-        delete sqlPtr;
-        return 1;
-    }
-
-    sqliteQueueList = std::shared_ptr<Model::DAO::IQueueList>(sqlPtr);
-    return 0;
 }
 
 } // end namespace GRPCServer

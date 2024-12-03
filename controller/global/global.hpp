@@ -24,9 +24,11 @@
 #ifndef _CONTROLLER_GLOBAL_GLOBAL_HPP_
 #define _CONTROLLER_GLOBAL_GLOBAL_HPP_
 
+#include <memory>
 #include <string>
 
 #include "defines.hpp"
+#include "model/dao/iqueuelist.hpp"
 
 namespace Controller
 {
@@ -41,6 +43,10 @@ void consoleFin();
 bool isAdmin();
 
 u8 spdlogInit(const std::string &);
+
+u8 sqliteInit(std::shared_ptr<Model::DAO::IQueueList> &out, const std::string &target);
+
+u8 grpcInit(std::shared_ptr<Model::DAO::IQueueList> &out, const std::string &target, const i32 port);
 
 } // end namesapce Global
 

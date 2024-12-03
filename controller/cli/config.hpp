@@ -26,9 +26,12 @@
 
 #include <string>
 
-#include "spdlog/spdlog.h"
+#include "spdlog/common.h"
 
 #include "controller/global/defines.hpp"
+
+#define BACKEND_GRPC   0
+#define BACKEND_SQLITE 1
 
 namespace Controller
 {
@@ -40,6 +43,8 @@ class Config
 {
 public:
 
+    u8 backend = BACKEND_GRPC;
+
     std::string logFile = "";
 
     std::string address = "127.0.0.1";
@@ -48,7 +53,7 @@ public:
 
     bool autoConnect = true;
 
-    int logLevel = static_cast<int>(spdlog::level::level_enum::info);
+    i32 logLevel = static_cast<i32>(spdlog::level::level_enum::info);
 
 }; // end class Config
 

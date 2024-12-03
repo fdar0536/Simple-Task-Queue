@@ -25,6 +25,7 @@
 
 #include <csignal>
 
+#include "controller/cli/config.hpp"
 #include "spdlog/spdlog.h"
 
 
@@ -197,7 +198,7 @@ i32 Main::parseArgs(int argc, char **argv)
         cxxopts::Options options("STQCLI", "STQ CLI Client");
         options.add_options()
             ("l,log-file", "file for output log", cxxopts::value<std::string>(Global::config.logFile)->default_value(""))
-            ("L,log-level", "log level for spdlog", cxxopts::value<int>(Global::config.logLevel)->default_value("2"))
+            ("L,log-level", "log level for spdlog", cxxopts::value<i32>(Global::config.logLevel)->default_value("2"))
             ("a,address", "address to STQ server", cxxopts::value<std::string>(Global::config.address)->default_value("127.0.0.1"))
             ("A,auto-connect", "auto connect to server", cxxopts::value<bool>(Global::config.autoConnect)->default_value("true"))
             ("p,port", "which port is STQ Server listening", cxxopts::value<u16>(Global::config.port)->default_value("12345"))
@@ -246,6 +247,7 @@ u8 Main::optsInit()
 
         // modify
         modifyOpts.add_options()
+            ("b,backend", "modify backend, 0 = grpc, 1 = sqlite", cxxopts::value<u8>(Global::config.backend))
             ("a,address", "modify server address", cxxopts::value<std::string>(Global::config.address))
             ("p,port", "modify server port", cxxopts::value<u16>(Global::config.port))
             ("h,help", "print help");
@@ -309,6 +311,12 @@ i32 Main::modify()
         {
             fmt::println("{}", modifyOpts.help());
             return 0;
+        }
+
+        if (Global::config.backend > BACKEND_SQLITE)
+        {
+            spdlog::warn("{}:{} Invaild backend, set backend to \"sqlite\"", __FILE__, __LINE__);
+            Global::config.backend = BACKEND_SQLITE;
         }
 
         fmt::println("done");
