@@ -423,10 +423,16 @@ i32 Queue::add()
         }
 
         in.workDir = result["workDir"].as<std::string>();
-        in.execName = result["exec"].as<std::string>();
+        in.execName = "/usr/sbin/stdbuf";
+        in.args.push_back("-e0");
+        in.args.push_back("-o0");
+        in.args.push_back(result["exec"].as<std::string>());
         if (result.count("args"))
         {
-            in.args = result["args"].as<std::vector<std::string>>();
+            std::vector<std::string> args = result["args"].as<std::vector<std::string>>();
+            in.args.insert(in.args.end(),
+                           args.begin(),
+                           args.end());
         }
     }
     catch (const cxxopts::exceptions::exception &e)

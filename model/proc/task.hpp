@@ -48,7 +48,7 @@ public:
     i32 exitCode;
     bool isSuccess;
 
-    void print();
+    void print() const;
 }; // end class Task
 
 } // end namespace Proc

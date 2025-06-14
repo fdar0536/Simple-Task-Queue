@@ -172,6 +172,7 @@ u8 PosixProc::readCurrentOutput(std::string &out)
             }
             else if (count == 0)
             {
+                spdlog::warn("{}:{} {}", __FILE__, __LINE__, "Nothing to read");
                 break;
             }
             else
@@ -204,6 +205,7 @@ void PosixProc::startChild(const Task &task)
     while (( dup2(m_readPipe[1], STDERR_FILENO) == -1 ) && ( errno == EINTR )) {}
     while (( dup2(m_readPipe[1], STDOUT_FILENO) == -1 ) && ( errno == EINTR )) {}
     close(m_readPipe[0]);
+    close(m_readPipe[1]);
 
     if (chdir(task.workDir.c_str()) == -1)
     {

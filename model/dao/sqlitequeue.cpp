@@ -939,6 +939,8 @@ void SQLiteQueue::splitString(const std::string &in, std::vector<std::string> &o
         out.push_back(s.substr(0, pos));
         s.erase(0, pos + delimiter.length());
     }
+
+    out.push_back(s);
 }
 
 std::string SQLiteQueue::concatString(const std::vector<std::string> &in)
@@ -950,14 +952,13 @@ std::string SQLiteQueue::concatString(const std::vector<std::string> &in)
         goto exit;
     }
 
-    last = in.size() - 2;
+    last = in.size() - 1;
     for (size_t i = 0; i < last; ++i)
     {
         out += (in.at(i) + "__,__");
     }
 
     out += in.at(in.size() - 1);
-
 exit:
     return out;
 }

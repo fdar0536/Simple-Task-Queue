@@ -40,7 +40,7 @@ Task::Task() :
     isSuccess(false)
 {}
 
-void Task::print()
+void Task::print() const
 {
     fmt::println("execName: {}", execName);
     fmt::println("args: ");
