@@ -24,7 +24,7 @@
 #include <regex>
 #include <mutex>
 
-#include "fmt/base.h"
+#include "spdlog/spdlog.h"
 
 #ifdef _WIN32
 #include "windows.h"

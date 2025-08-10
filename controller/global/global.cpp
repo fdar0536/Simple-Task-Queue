@@ -27,6 +27,7 @@
 #include "model/dao/grpcqueuelist.hpp"
 #include "model/dao/sqliteconnect.hpp"
 #include "model/dao/sqlitequeuelist.hpp"
+#include "model/utils.hpp"
 
 #ifdef _WIN32
 #include "windows.h"
@@ -258,7 +259,7 @@ u8 grpcInit(std::shared_ptr<Model::DAO::IQueueList> &out, const std::string &tar
 
     out = std::shared_ptr<Model::DAO::IQueueList>
         (reinterpret_cast<Model::DAO::IQueueList *>(queueList));
-    
+
     return 0;
 }
 
