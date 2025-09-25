@@ -79,10 +79,6 @@ find_package(spdlog REQUIRED)
 find_package(SQLite3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-if (ENABLE_SERVER)
-    find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
-endif (ENABLE_SERVER)
-
 if (ENABLE_GUI)
     find_package(Qt6 6.5 COMPONENTS Widgets REQUIRED)
 endif (ENABLE_GUI)
