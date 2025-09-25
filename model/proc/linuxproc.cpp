@@ -29,7 +29,7 @@
 
 #include "spdlog/spdlog.h"
 
-#include "posixproc.hpp"
+#include "linuxproc.hpp"
 
 namespace Model
 {
@@ -37,21 +37,21 @@ namespace Model
 namespace Proc
 {
 
-PosixProc::PosixProc() :
+LinuxProc::LinuxProc() :
     m_pid(0)
 {}
 
-PosixProc::~PosixProc()
+LinuxProc::~LinuxProc()
 {}
 
-u8 PosixProc::init()
+u8 LinuxProc::init()
 {
     memset(m_readPipe, -1, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
     return 0;
 }
 
-u8 PosixProc::start(const Task &task)
+u8 LinuxProc::start(const Task &task)
 {
     if (isRunning())
     {
@@ -118,12 +118,12 @@ u8 PosixProc::start(const Task &task)
     return 0;
 }
 
-void PosixProc::stop()
+void LinuxProc::stop()
 {
     stopImpl();
 }
 
-bool PosixProc::isRunning()
+bool LinuxProc::isRunning()
 {
     int status;
     pid_t ret = waitpid(m_pid, &status, WNOHANG);
@@ -149,7 +149,7 @@ bool PosixProc::isRunning()
     }
 }
 
-u8 PosixProc::readCurrentOutput(std::string &out)
+u8 LinuxProc::readCurrentOutput(std::string &out)
 {
     ssize_t count(0);
     char buf[4096] = {};
@@ -187,7 +187,7 @@ u8 PosixProc::readCurrentOutput(std::string &out)
     return 0;
 }
 
-u8 PosixProc::exitCode(i32 &out)
+u8 LinuxProc::exitCode(i32 &out)
 {
     if (isRunning())
     {
@@ -200,7 +200,7 @@ u8 PosixProc::exitCode(i32 &out)
 }
 
 // private member functions
-void PosixProc::startChild(const Task &task)
+void LinuxProc::startChild(const Task &task)
 {
     while (( dup2(m_readPipe[1], STDERR_FILENO) == -1 ) && ( errno == EINTR )) {}
     while (( dup2(m_readPipe[1], STDOUT_FILENO) == -1 ) && ( errno == EINTR )) {}
@@ -226,7 +226,7 @@ void PosixProc::startChild(const Task &task)
     exit(1);
 }
 
-char **PosixProc::buildChildArgv(const Task &task)
+char **LinuxProc::buildChildArgv(const Task &task)
 {
     char **argv(nullptr);
     if (task.args.size())
@@ -287,7 +287,7 @@ char **PosixProc::buildChildArgv(const Task &task)
     return argv;
 }
 
-void PosixProc::stopImpl()
+void LinuxProc::stopImpl()
 {
     if (kill(m_pid * -1, SIGKILL) == -1)
     {
@@ -298,7 +298,7 @@ void PosixProc::stopImpl()
     sleep(2);
 }
 
-u8 PosixProc::epollInit()
+u8 LinuxProc::epollInit()
 {
     m_epoll_fd = epoll_create1(0);
     if (m_epoll_fd == -1)
@@ -318,7 +318,7 @@ u8 PosixProc::epollInit()
     return 0;
 }
 
-void PosixProc::closeFile(int *fd)
+void LinuxProc::closeFile(int *fd)
 {
     if (*fd != -1)
     {
@@ -327,7 +327,7 @@ void PosixProc::closeFile(int *fd)
     }
 }
 
-void PosixProc::epollFin()
+void LinuxProc::epollFin()
 {
     closeFile(&m_epoll_fd);
     closeFile(&m_readPipe[0]);

@@ -58,10 +58,10 @@ if (WIN32)
         model/proc/winproc.cpp
         model/proc/winproc.hpp
     )
-elseif ((NOT WIN32))
+elseif (LINUX)
     list(APPEND MODEL_SRC
-        model/proc/posixproc.cpp
-        model/proc/posixproc.hpp
+        model/proc/linuxproc.cpp
+        model/proc/linuxproc.hpp
     )
 endif (WIN32)
 

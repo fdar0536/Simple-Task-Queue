@@ -21,9 +21,6 @@
  * SOFTWARE.
  */
 
-#include <yaml-cpp/node/parse.h>
-#include <yaml-cpp/parser.h>
-
 #ifdef _WIN32
 #include "direct.h"
 #else
@@ -32,6 +29,7 @@
 
 #include "spdlog/spdlog.h"
 #include "cxxopts.hpp"
+#include "yaml-cpp/yaml.h"
 
 #include "model/dao/dirutils.hpp"
 #include "model/utils.hpp"
@@ -92,7 +90,7 @@ u8 Config::parse(Config *in, int argc, char **argv)
             ("c,config-file", "path to config file", cxxopts::value<std::string>(configFile)->default_value(""))
             ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value(std::string(buf)))
             ("l,log-path", "path for output log", cxxopts::value<std::string>(in->logPath)->default_value(""))
-            ("L,log-level", "log level for spdlog", cxxopts::value<int>(in->logLevel)->default_value("2"))
+            ("L,log-level", "log level for spdlog", cxxopts::value<i32>(in->logLevel)->default_value("2"))
             ("a,address", "which addess will listen", cxxopts::value<std::string>(in->listenIP)->default_value("127.0.0.1"))
             ("p,port", "which port will listen", cxxopts::value<u16>(in->listenPort)->default_value("12345"))
             ("v,version", "print version")

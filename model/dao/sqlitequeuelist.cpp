@@ -32,10 +32,10 @@
 #include "sqlitequeuelist.hpp"
 #include "dirutils.hpp"
 
-#ifdef _WIN32
+#if (defined _WIN32)
 #include "model/proc/winproc.hpp"
-#else
-#include "model/proc/posixproc.hpp"
+#elif (defined __linux__)
+#include "model/proc/linuxproc.hpp"
 #endif
 
 namespace Model
@@ -118,7 +118,7 @@ u8 SQLiteQueueList::createQueue(const std::string &name)
 #ifdef _WIN32
     Proc::WinProc *proc = new (std::nothrow) Proc::WinProc();
 #else
-    Proc::PosixProc *proc = new (std::nothrow) Proc::PosixProc();
+    Proc::LinuxProc *proc = new (std::nothrow) Proc::LinuxProc();
 #endif
     if (!proc)
     {

@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_PROC_POSIXPROC_HPP_
-#define _MODEL_PROC_POSIXPROC_HPP_
+#ifndef _MODEL_PROC_LINUXPROC_HPP_
+#define _MODEL_PROC_LINUXPROC_HPP_
 
 #include <atomic>
 
@@ -36,13 +36,13 @@ namespace Model
 namespace Proc
 {
 
-class PosixProc : public IProc
+class LinuxProc : public IProc
 {
 public:
 
-    PosixProc();
+    LinuxProc();
 
-    ~PosixProc();
+    ~LinuxProc();
 
     virtual u8 init() override;
 
@@ -87,4 +87,4 @@ private:
 
 } // end namespace Model
 
-#endif // _MODEL_PROC_POSIXPROC_HPP_
+#endif // _MODEL_PROC_LINUXPROC_HPP_
