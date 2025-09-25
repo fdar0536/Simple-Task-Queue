@@ -38,7 +38,9 @@ Task::Task() :
     ID(0),
     exitCode(0),
     isSuccess(false)
-{}
+{
+    args.clear();
+}
 
 void Task::print() const
 {

@@ -50,7 +50,7 @@ public:
 
     ~WinProc();
 
-    virtual u8 init() override;
+    virtual u8 init(const std::string &name = "") override;
 
     virtual u8 start(const Task &task) override;
 
@@ -63,6 +63,8 @@ public:
     virtual u8 exitCode(i32 &out) override;
 
 private:
+
+    std::string m_pipeName;
 
     HANDLE m_childStdoutRead;
 

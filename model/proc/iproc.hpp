@@ -38,7 +38,7 @@ public:
 
     virtual ~IProc();
 
-    virtual u8 init() = 0;
+    virtual u8 init(const std::string &name = "") = 0;
 
     virtual u8 start(const Task &task) = 0;
 

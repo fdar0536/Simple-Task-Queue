@@ -423,10 +423,15 @@ i32 Queue::add()
         }
 
         in.workDir = result["workDir"].as<std::string>();
+
+#ifndef _WIN32
         in.execName = "/usr/sbin/stdbuf";
         in.args.push_back("-e0");
         in.args.push_back("-o0");
         in.args.push_back(result["exec"].as<std::string>());
+#else
+        in.execName = result["exec"].as<std::string>();
+#endif
         if (result.count("args"))
         {
             std::vector<std::string> args = result["args"].as<std::vector<std::string>>();

@@ -45,8 +45,9 @@ LinuxProc::LinuxProc() :
 LinuxProc::~LinuxProc()
 {}
 
-u8 LinuxProc::init()
+u8 LinuxProc::init(const std::string &name)
 {
+    UNUSED(name);
     memset(m_readPipe, -1, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
     m_current_output = "";

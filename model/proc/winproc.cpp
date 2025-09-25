@@ -48,8 +48,9 @@ WinProc::~WinProc()
     stopImpl();
 }
 
-u8 WinProc::init()
+u8 WinProc::init(const std::string &name)
 {
+    m_pipeName = "\\\\.\\pipe\\STQ_" + name;
     m_procInfo.hProcess = NULL;
     m_procInfo.hThread = NULL;
     resetHandle();
@@ -73,12 +74,16 @@ u8 WinProc::start(const Task &task)
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = nullptr;
 
-    // Create a pipe for the child process's STDOUT.
-    m_childStdoutWrite = CreateNamedPipe(
-        TEXT("\\\\.\\pipe\\STQ_OutputPipe"),
-        PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+    m_childStdoutWrite = CreateNamedPipeA(
+        m_pipeName.c_str(),
+        PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
         PIPE_TYPE_BYTE | PIPE_WAIT,
-        1, 4096, 4096, 0, &saAttr);
+        1,
+        4096,
+        4096,
+        0,
+        &saAttr);
+
     if (m_childStdoutWrite == INVALID_HANDLE_VALUE)
     {
         Utils::writeLastError(__FILE__, __LINE__);
@@ -86,31 +91,43 @@ u8 WinProc::start(const Task &task)
         return 1;
     }
 
-    m_hStdOutPipeReader = CreateFile(
-        TEXT("\\\\.\\pipe\\STQ_OutputPipe"),
+    SECURITY_ATTRIBUTES saClientAttr;
+    saClientAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saClientAttr.bInheritHandle = FALSE;
+    saClientAttr.lpSecurityDescriptor = nullptr;
+
+    m_childStdoutRead = CreateFileA(
+        m_pipeName.c_str(),
         GENERIC_READ,
-        0, &saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
-    if (m_hStdOutPipeReader == INVALID_HANDLE_VALUE)
+        0,
+        &saClientAttr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
+        NULL);
+
+    if (m_childStdoutRead == INVALID_HANDLE_VALUE)
     {
         Utils::writeLastError(__FILE__, __LINE__);
         resetHandle();
         return 1;
     }
 
-    // create IOCP
-    m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
-    if (!m_hCompletionPort)
+    m_hCompletionPort = CreateIoCompletionPort(m_childStdoutRead, NULL, 1, 0);
+    if (m_hCompletionPort == NULL)
     {
         Utils::writeLastError(__FILE__, __LINE__);
         resetHandle();
         return 1;
     }
 
-    // start IOCP
-    if (CreateIoCompletionPort(m_hStdOutPipeReader, m_hCompletionPort, 1, 0)
-        != m_hCompletionPort)
+    // Create the child process.
+    if (CreateChildProcess(task))
     {
-        Utils::writeLastError(__FILE__, __LINE__);
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to start process");
+
+        // stop IOCP
+        PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
+
         resetHandle();
         return 1;
     }
@@ -121,18 +138,7 @@ u8 WinProc::start(const Task &task)
         && GetLastError() != ERROR_IO_PENDING)
     {
         Utils::writeLastError(__FILE__, __LINE__);
-
-        // stop IOCP
-        PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
-
-        resetHandle();
-        return 1;
-    }
-
-    // Create the child process.
-    if (CreateChildProcess(task))
-    {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to start process");
+        stopImpl();
 
         // stop IOCP
         PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
@@ -211,14 +217,12 @@ u8 WinProc::CreateChildProcess(const Task &task)
     if (task.args.size())
     {
         cmdLine += " ";
-        size_t lastIndex = task.args.size() - 2;
-        for (size_t i = 0; i < lastIndex; ++i)
+        size_t lastIndex = task.args.size() - 1;
+        for (size_t i = 0; i <= lastIndex; ++i)
         {
             cmdLine += task.args.at(i);
             cmdLine += " ";
         }
-
-        cmdLine += task.args.at(lastIndex + 1);
     }
 
     char *cmdPtr = new ( std::nothrow )char[cmdLine.length() + 1]();
@@ -356,6 +360,9 @@ void WinProc::stopImpl()
             CloseHandle(hProc);
         }
     }
+
+    PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
+    resetHandle();
 }
 
 void WinProc::readOutputLoop()
@@ -374,9 +381,9 @@ void WinProc::readOutputLoop()
             &lpOverlapped,
             1000); // 1 second to timeout
 
-        if (bSuccess)
+        if (bSuccess && lpOverlapped)
         {
-            if (ulCompletionKey == 1)
+            if (ulCompletionKey == 1) // read completed
             {
                 // get how much data is actually stored in buffer
                 {
@@ -384,19 +391,41 @@ void WinProc::readOutputLoop()
                     m_current_output = std::string(m_buf, dwBytesTransferred);
                 }
 
-                // send data to IOCP again
-                memset(&m_overlapped, 0, sizeof(m_overlapped));
-                ReadFile(m_hStdOutPipeReader, m_buf, 4096, NULL, &m_overlapped);
+                // check EOF
+                if (dwBytesTransferred == 0)
+                {
+                    //child process is finished and pipe is closed
+                    break;
+                }
+
+                // trigger the IOCP again
+                if (!ReadFile(m_childStdoutRead, m_buf, 4096, NULL, &m_overlapped)
+                    && GetLastError() != ERROR_IO_PENDING)
+                {
+                    // pipe is failure
+                    spdlog::error("{}:{} Fail to call ReadFile: {}",
+                                  __FILE__, __LINE__, GetLastError());
+                    break;
+                }
             }
+        }
+        else if (GetLastError() == WAIT_TIMEOUT)
+        {
+            continue;
+        }
+        else if (bSuccess == FALSE && lpOverlapped == &m_overlapped)
+        {
+            // ReadFile failed
+            Utils::writeLastError(__FILE__, __LINE__);
+            break;
         }
         else
         {
-            if (lpOverlapped == NULL)
-            {
-                Utils::writeLastError(__FILE__, __LINE__);
-            }
+            spdlog::error("{}:{} GetQueuedCompletionStatus failed",
+                          __FILE__, __LINE__);
+            break;
         }
-    }// end while(isRunning())
+    } // end while(isRunning())
 }
 
 } // end namespace Proc
