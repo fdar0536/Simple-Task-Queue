@@ -36,11 +36,11 @@ namespace Proc
 {
 
 WinProc::WinProc() :
-    m_childStdinRead(nullptr),
-    m_childStdinWrite(nullptr),
     m_childStdoutRead(nullptr),
     m_childStdoutWrite(nullptr),
-    m_procInfo(PROCESS_INFORMATION())
+    m_procInfo(PROCESS_INFORMATION()),
+    m_hCompletionPort(nullptr),
+    m_hStdOutPipeReader(nullptr)
 {}
 
 WinProc::~WinProc()
@@ -53,6 +53,8 @@ u8 WinProc::init()
     m_procInfo.hProcess = NULL;
     m_procInfo.hThread = NULL;
     resetHandle();
+    m_current_output = "";
+    m_current_output.reserve(4096);
     return 0;
 }
 
@@ -72,32 +74,57 @@ u8 WinProc::start(const Task &task)
     saAttr.lpSecurityDescriptor = nullptr;
 
     // Create a pipe for the child process's STDOUT.
-    if (!CreatePipe(&m_childStdoutRead, &m_childStdoutWrite, &saAttr, 0))
+    m_childStdoutWrite = CreateNamedPipe(
+        TEXT("\\\\.\\pipe\\STQ_OutputPipe"),
+        PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,
+        PIPE_TYPE_BYTE | PIPE_WAIT,
+        1, 4096, 4096, 0, &saAttr);
+    if (m_childStdoutWrite == INVALID_HANDLE_VALUE)
     {
         Utils::writeLastError(__FILE__, __LINE__);
         resetHandle();
         return 1;
     }
 
-    if (!SetHandleInformation(m_childStdoutRead, HANDLE_FLAG_INHERIT, 0))
+    m_hStdOutPipeReader = CreateFile(
+        TEXT("\\\\.\\pipe\\STQ_OutputPipe"),
+        GENERIC_READ,
+        0, &saAttr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
+    if (m_hStdOutPipeReader == INVALID_HANDLE_VALUE)
     {
         Utils::writeLastError(__FILE__, __LINE__);
         resetHandle();
         return 1;
     }
 
-    // Create a pipe for the child process's STDIN.
-    if (!CreatePipe(&m_childStdinRead, &m_childStdinWrite, &saAttr, 0))
+    // create IOCP
+    m_hCompletionPort = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
+    if (!m_hCompletionPort)
     {
         Utils::writeLastError(__FILE__, __LINE__);
         resetHandle();
         return 1;
     }
 
-    // Ensure the write handle to the pipe for STDIN is not inherited.
-    if (!SetHandleInformation(m_childStdinWrite, HANDLE_FLAG_INHERIT, 0))
+    // start IOCP
+    if (CreateIoCompletionPort(m_hStdOutPipeReader, m_hCompletionPort, 1, 0)
+        != m_hCompletionPort)
     {
         Utils::writeLastError(__FILE__, __LINE__);
+        resetHandle();
+        return 1;
+    }
+
+    // send data to IOCP to trigger reading
+    memset(&m_overlapped, 0, sizeof(m_overlapped));
+    if (!ReadFile(m_childStdoutRead, m_buf, 4096, NULL, &m_overlapped)
+        && GetLastError() != ERROR_IO_PENDING)
+    {
+        Utils::writeLastError(__FILE__, __LINE__);
+
+        // stop IOCP
+        PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
+
         resetHandle();
         return 1;
     }
@@ -106,9 +133,15 @@ u8 WinProc::start(const Task &task)
     if (CreateChildProcess(task))
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to start process");
+
+        // stop IOCP
+        PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
+
+        resetHandle();
         return 1;
     }
 
+    m_thread = std::jthread(&WinProc::readOutputLoop, this);
     m_exitCode.store(STILL_ACTIVE, std::memory_order_relaxed);
     return 0;
 }
@@ -138,32 +171,19 @@ bool WinProc::isRunning()
 
 u8 WinProc::readCurrentOutput(std::string &out)
 {
-    if (!isRunning())
+    if (isRunning())
     {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, "Process is not running");
-        return 1;
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            out = m_current_output;
+            m_current_output.clear();
+        }
+
+        return 0;
     }
 
-    DWORD dwRead(0);
-    CHAR chBuf[4096] = {};
-    BOOL bSuccess = FALSE;
-
-    bSuccess = ReadFile(m_childStdoutRead, chBuf, 4095, &dwRead, NULL);
-    if (!bSuccess)
-    {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to read output");
-        return 1;
-    }
-
-    if (!dwRead)
-    {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, "No output");
-        return 1;
-    }
-
-    chBuf[dwRead] = '\0';
-    out = chBuf;
-    return 0;
+    spdlog::error("{}:{} {}", __FILE__, __LINE__, "Process is not running.");
+    return 1;
 }
 
 u8 WinProc::exitCode(i32 &out)
@@ -219,7 +239,6 @@ u8 WinProc::CreateChildProcess(const Task &task)
     siStartInfo.cb = sizeof(STARTUPINFO);
     siStartInfo.hStdError = m_childStdoutWrite;
     siStartInfo.hStdOutput = m_childStdoutWrite;
-    siStartInfo.hStdInput = m_childStdinRead;
     siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
     // Create the child process.
@@ -240,7 +259,6 @@ u8 WinProc::CreateChildProcess(const Task &task)
     if (!bSuccess)
     {
         Utils::writeLastError(__FILE__, __LINE__);
-        resetHandle();
         ret = 1;
     }
     else
@@ -249,8 +267,6 @@ u8 WinProc::CreateChildProcess(const Task &task)
         // If they are not explicitly closed, there is no way to recognize that the child process has ended.
         CloseHandle(m_childStdoutWrite);
         m_childStdoutWrite = NULL;
-        CloseHandle(m_childStdinRead);
-        m_childStdinRead = NULL;
     }
 
     delete[] cmdPtr;
@@ -259,18 +275,6 @@ u8 WinProc::CreateChildProcess(const Task &task)
 
 void WinProc::resetHandle()
 {
-    if (m_childStdinRead)
-    {
-        CloseHandle(m_childStdinRead);
-        m_childStdinRead = nullptr;
-    }
-
-    if (m_childStdinWrite)
-    {
-        CloseHandle(m_childStdinWrite);
-        m_childStdinWrite = nullptr;
-    }
-
     if (m_childStdoutRead)
     {
         CloseHandle(m_childStdoutRead);
@@ -293,6 +297,18 @@ void WinProc::resetHandle()
     {
         CloseHandle(m_procInfo.hThread);
         m_procInfo.hThread = NULL;
+    }
+
+    if (m_hCompletionPort)
+    {
+        CloseHandle(m_hCompletionPort);
+        m_hCompletionPort = NULL;
+    }
+
+    if (m_hStdOutPipeReader)
+    {
+        CloseHandle(m_hStdOutPipeReader);
+        m_hStdOutPipeReader = NULL;
     }
 
     memset(&m_procInfo, 0, sizeof(PROCESS_INFORMATION));
@@ -340,6 +356,47 @@ void WinProc::stopImpl()
             CloseHandle(hProc);
         }
     }
+}
+
+void WinProc::readOutputLoop()
+{
+    DWORD dwBytesTransferred;
+    ULONG_PTR ulCompletionKey;
+    LPOVERLAPPED lpOverlapped;
+    BOOL bSuccess;
+
+    while(isRunning())
+    {
+        bSuccess = GetQueuedCompletionStatus(
+            m_hCompletionPort,
+            &dwBytesTransferred,
+            &ulCompletionKey,
+            &lpOverlapped,
+            1000); // 1 second to timeout
+
+        if (bSuccess)
+        {
+            if (ulCompletionKey == 1)
+            {
+                // get how much data is actually stored in buffer
+                {
+                    std::unique_lock<std::mutex> lock(m_mutex);
+                    m_current_output = std::string(m_buf, dwBytesTransferred);
+                }
+
+                // send data to IOCP again
+                memset(&m_overlapped, 0, sizeof(m_overlapped));
+                ReadFile(m_hStdOutPipeReader, m_buf, 4096, NULL, &m_overlapped);
+            }
+        }
+        else
+        {
+            if (lpOverlapped == NULL)
+            {
+                Utils::writeLastError(__FILE__, __LINE__);
+            }
+        }
+    }// end while(isRunning())
 }
 
 } // end namespace Proc

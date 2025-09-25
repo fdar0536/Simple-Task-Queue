@@ -160,12 +160,13 @@ u8 LinuxProc::readCurrentOutput(std::string &out)
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             out = m_current_output;
+            m_current_output.clear();
         }
 
         return 0;
     }
 
-    spdlog::error("{}:{} {}", __FILE__, __LINE__, "Proc is not running.");
+    spdlog::error("{}:{} {}", __FILE__, __LINE__, "Process is not running.");
     return 1;
 }
 
@@ -346,7 +347,7 @@ void LinuxProc::readOutputLoop()
                 {
                     {
                         std::unique_lock<std::mutex> lock(m_mutex);
-                        m_current_output = buf;
+                        m_current_output = std::string(buf, count);
                     }
 
                     break;

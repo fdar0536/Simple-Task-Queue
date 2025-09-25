@@ -25,6 +25,8 @@
 #define _MODEL_PROC_WINPROC_HPP_
 
 #include <atomic>
+#include <mutex>
+#include <thread>
 
 #include "windows.h"
 
@@ -62,10 +64,6 @@ public:
 
 private:
 
-    HANDLE m_childStdinRead;
-
-    HANDLE m_childStdinWrite;
-
     HANDLE m_childStdoutRead;
 
     HANDLE m_childStdoutWrite;
@@ -79,6 +77,23 @@ private:
     void resetHandle();
 
     void stopImpl();
+
+    // for IOCP
+    HANDLE m_hCompletionPort;
+
+    OVERLAPPED m_overlapped;
+
+    char m_buf[4096];
+
+    HANDLE m_hStdOutPipeReader;
+
+    std::jthread m_thread;
+
+    std::mutex m_mutex;
+
+    std::string m_current_output;
+
+    void readOutputLoop();
 
 };
 
