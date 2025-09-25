@@ -21,7 +21,8 @@
  * SOFTWARE.
  */
 
-#include <fstream>
+#include <yaml-cpp/node/parse.h>
+#include <yaml-cpp/parser.h>
 
 #ifdef _WIN32
 #include "direct.h"
@@ -30,7 +31,7 @@
 #endif
 
 #include "spdlog/spdlog.h"
-#include "inipp.h"
+#include "yaml-cpp/yaml.h"
 #include "cxxopts.hpp"
 
 #include "model/dao/dirutils.hpp"
@@ -164,24 +165,6 @@ u8 Config::parse(Config *in, int argc, char **argv)
     return 0;
 }
 
-template <typename CharT, typename T>
-static inline bool get_value(const std::map<std::basic_string<CharT>,
-                                            std::basic_string<CharT>> & sec,
-                             const std::basic_string<CharT> & key, T & dst)
-{
-    const auto it = sec.find(key);
-    if (it == sec.end()) return false;
-    return inipp::extract(it->second, dst);
-}
-
-template <typename CharT, typename T>
-inline bool get_value(const std::map<std::basic_string<CharT>,
-                                     std::basic_string<CharT>>& sec,
-                      const CharT* key, T& dst)
-{
-    return get_value(sec, std::basic_string<CharT>(key), dst);
-}
-
 uint_fast8_t Config::parse(Config *obj, const std::string &path)
 {
     if (!obj)
@@ -190,26 +173,12 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
         return 1;
     }
 
-    std::ifstream i(path.c_str());
     try
     {
-        if (i.fail())
-        {
-            spdlog::warn("{}:{} Fail to open file: {}", __FILE__, __LINE__, path);
-            return 1;
-        }
-
-        inipp::Ini<char> ini;
-        ini.parse(i);
-        i.close();
-
-        UNUSED(get_value(ini.sections["Settings"],
-                         "db path",
-                         obj->dbPath));
-
-        UNUSED(get_value(ini.sections["Settings"],
-                         "log path",
-                         obj->logPath));
+        YAML::Node config = YAML::LoadFile(path);
+        
+        obj->dbPath = config["db path"].as<std::string>();
+        obj->logPath = config["log path"].as<std::string>();
 
         Model::DAO::DirUtils::convertPath(obj->logPath);
         if (Model::DAO::DirUtils::verifyDir(obj->logPath))
@@ -218,19 +187,8 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
             return 1;
         }
 
-        UNUSED(get_value(ini.sections["Settings"],
-                         "port",
-                         obj->listenPort));
-
-        if (obj->listenPort > 65535)
-        {
-            spdlog::error("{}:{} Invalid port", __FILE__, __LINE__);
-            return 1;
-        }
-
-        UNUSED(get_value(ini.sections["Settings"],
-                         "ip",
-                         obj->listenIP));
+        obj->listenPort = config["port"].as<u16>();
+        obj->listenIP = config["ip"].as<std::string>();
 
         if (Model::Utils::verifyIP(obj->listenIP))
         {
@@ -238,16 +196,12 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
             return 1;
         }
 
-        uint_fast8_t level(0);
-        UNUSED(get_value(ini.sections["Settings"],
-                         "log level",
-                         level));
-
+        u8 level(0);
+        level = config["log level"].as<u8>();
         obj->logLevel = static_cast<spdlog::level::level_enum>(level);
     }
     catch (...)
     {
-        i.close();
         spdlog::error("{}:{} error caught", __FILE__, __LINE__);
         return 1;
     }

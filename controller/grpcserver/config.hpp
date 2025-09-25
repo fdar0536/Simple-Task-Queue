@@ -26,7 +26,7 @@
 
 #include <string>
 
-#include "spdlog/spdlog.h"
+#include "spdlog/common.h"
 
 #include "controller/global/defines.hpp"
 
@@ -52,7 +52,7 @@ public:
 
     std::string logPath = "";
 
-    uint_fast16_t listenPort = 12345;
+    u16 listenPort = 12345;
 
     std::string listenIP = "127.0.0.1";
 

@@ -7,6 +7,7 @@ if(ENABLE_SERVER)
         grpc_common
         spdlog::spdlog
         SQLite::SQLite3
+        yaml-cpp::yaml-cpp
     )
 
     set(SERVER_CONTROLLER_SRC
@@ -41,8 +42,6 @@ if(ENABLE_SERVER)
         ${STQ_SERVER_LIBS}
         stqmodel
     )
-
-    target_include_directories(STQSERVER PRIVATE ${INIPP_INCLUDE_DIRS})
 
     if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
         target_link_options(STQSERVER PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)

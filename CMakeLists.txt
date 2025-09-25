@@ -77,6 +77,7 @@ find_package(gRPC REQUIRED)
 find_package(cxxopts REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(SQLite3 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 if (ENABLE_SERVER)
     find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
