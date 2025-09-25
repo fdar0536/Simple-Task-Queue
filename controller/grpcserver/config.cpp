@@ -31,7 +31,6 @@
 #endif
 
 #include "spdlog/spdlog.h"
-#include "yaml-cpp/yaml.h"
 #include "cxxopts.hpp"
 
 #include "model/dao/dirutils.hpp"
