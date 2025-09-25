@@ -21,6 +21,7 @@
  * SOFTWARE.
  */
 
+#include <mutex>
 #include <string.h>
 
 #include "sys/types.h"
@@ -48,6 +49,8 @@ u8 LinuxProc::init()
 {
     memset(m_readPipe, -1, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
+    m_current_output = "";
+    m_current_output.reserve(4096);
     return 0;
 }
 
@@ -115,6 +118,7 @@ u8 LinuxProc::start(const Task &task)
 
     close(m_readPipe[1]);
     m_readPipe[1] = -1;
+    m_thread = std::jthread(&LinuxProc::readOutputLoop, this);
     return 0;
 }
 
@@ -151,40 +155,18 @@ bool LinuxProc::isRunning()
 
 u8 LinuxProc::readCurrentOutput(std::string &out)
 {
-    ssize_t count(0);
-    char buf[4096] = {};
-    out = "";
- 
-    int event_count = epoll_wait(m_epoll_fd, m_events, 10, 1000);
-    for (int i = 0; i < event_count; ++i)
+    if (isRunning())
     {
-        while (1)
         {
-            count = read(m_events[i].data.fd, buf, 4095);
-            if (count == -1)
-            {
-                if (errno == EINTR) continue;
-                else
-                {
-                    spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
-                    return 1;
-                }
-            }
-            else if (count == 0)
-            {
-                spdlog::warn("{}:{} {}", __FILE__, __LINE__, "Nothing to read");
-                break;
-            }
-            else
-            {
-                buf[count] = '\0';
-                out += std::string(buf);
-                break;
-            }
+            std::unique_lock<std::mutex> lock(m_mutex);
+            out = m_current_output;
         }
+
+        return 0;
     }
 
-    return 0;
+    spdlog::error("{}:{} {}", __FILE__, __LINE__, "Proc is not running.");
+    return 1;
 }
 
 u8 LinuxProc::exitCode(i32 &out)
@@ -332,6 +314,46 @@ void LinuxProc::epollFin()
     closeFile(&m_epoll_fd);
     closeFile(&m_readPipe[0]);
     closeFile(&m_readPipe[1]);
+}
+
+void LinuxProc::readOutputLoop()
+{
+    ssize_t count(0);
+    char buf[4096] = {};
+    while(isRunning())
+    {
+        int event_count = epoll_wait(m_epoll_fd, m_events, 10, 1000);
+        for (int i = 0; i < event_count; ++i)
+        {
+            while (1)
+            {
+                count = read(m_events[i].data.fd, buf, 4096);
+                if (count == -1)
+                {
+                    if (errno == EINTR) continue;
+                    else
+                    {
+                        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+                        break;
+                    }
+                }
+                else if (count == 0)
+                {
+                    spdlog::warn("{}:{} {}", __FILE__, __LINE__, "Nothing to read");
+                    break;
+                }
+                else // count != 0
+                {
+                    {
+                        std::unique_lock<std::mutex> lock(m_mutex);
+                        m_current_output = buf;
+                    }
+
+                    break;
+                }
+            } // end while(1)
+        } // end for (int i = 0; i < event_count; ++i)
+    } // end while(isRunning())
 }
 
 } // end namespace Proc

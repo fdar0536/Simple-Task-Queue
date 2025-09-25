@@ -25,6 +25,7 @@
 #define _MODEL_PROC_LINUXPROC_HPP_
 
 #include <atomic>
+#include <thread>
 
 #include "sys/epoll.h"
 
@@ -81,6 +82,14 @@ private:
 
     void epollFin();
 
+    // for reading current output
+    std::jthread m_thread;
+
+    std::mutex m_mutex;
+
+    std::string m_current_output;
+
+    void readOutputLoop();
 };
 
 } // end namespace Proc

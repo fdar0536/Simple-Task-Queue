@@ -42,7 +42,7 @@ class IQueue
 public:
 
     virtual ~IQueue() {}
-
+    
     virtual u8 init(std::shared_ptr<IConnect> &connect,
                     std::shared_ptr<Proc::IProc> &process,
                     const std::string &name) = 0;
