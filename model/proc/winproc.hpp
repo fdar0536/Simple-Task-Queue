@@ -50,7 +50,7 @@ public:
 
     ~WinProc();
 
-    virtual u8 init(const std::string &name = "") override;
+    virtual u8 init() override;
 
     virtual u8 start(const Task &task) override;
 
@@ -63,8 +63,6 @@ public:
     virtual u8 exitCode(i32 &out) override;
 
 private:
-
-    std::string m_pipeName;
 
     HANDLE m_childStdoutRead;
 
@@ -79,15 +77,6 @@ private:
     void resetHandle();
 
     void stopImpl();
-
-    // for IOCP
-    HANDLE m_hCompletionPort;
-
-    OVERLAPPED m_overlapped;
-
-    char m_buf[4096];
-
-    HANDLE m_hStdOutPipeReader;
 
     std::jthread m_thread;
 

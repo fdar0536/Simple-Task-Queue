@@ -38,9 +38,7 @@ namespace Proc
 WinProc::WinProc() :
     m_childStdoutRead(nullptr),
     m_childStdoutWrite(nullptr),
-    m_procInfo(PROCESS_INFORMATION()),
-    m_hCompletionPort(nullptr),
-    m_hStdOutPipeReader(nullptr)
+    m_procInfo(PROCESS_INFORMATION())
 {}
 
 WinProc::~WinProc()
@@ -48,9 +46,8 @@ WinProc::~WinProc()
     stopImpl();
 }
 
-u8 WinProc::init(const std::string &name)
+u8 WinProc::init()
 {
-    m_pipeName = "\\\\.\\pipe\\STQ_" + name;
     m_procInfo.hProcess = NULL;
     m_procInfo.hThread = NULL;
     resetHandle();
@@ -74,46 +71,13 @@ u8 WinProc::start(const Task &task)
     saAttr.bInheritHandle = TRUE;
     saAttr.lpSecurityDescriptor = nullptr;
 
-    m_childStdoutWrite = CreateNamedPipeA(
-        m_pipeName.c_str(),
-        PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
-        PIPE_TYPE_BYTE | PIPE_WAIT,
-        1,
-        4096,
-        4096,
-        0,
-        &saAttr);
-
-    if (m_childStdoutWrite == INVALID_HANDLE_VALUE)
+    if (!CreatePipe(&m_childStdoutRead, &m_childStdoutWrite, &saAttr, 0))
     {
         Utils::writeLastError(__FILE__, __LINE__);
-        resetHandle();
         return 1;
     }
 
-    SECURITY_ATTRIBUTES saClientAttr;
-    saClientAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saClientAttr.bInheritHandle = FALSE;
-    saClientAttr.lpSecurityDescriptor = nullptr;
-
-    m_childStdoutRead = CreateFileA(
-        m_pipeName.c_str(),
-        GENERIC_READ,
-        0,
-        &saClientAttr,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
-        NULL);
-
-    if (m_childStdoutRead == INVALID_HANDLE_VALUE)
-    {
-        Utils::writeLastError(__FILE__, __LINE__);
-        resetHandle();
-        return 1;
-    }
-
-    m_hCompletionPort = CreateIoCompletionPort(m_childStdoutRead, NULL, 1, 0);
-    if (m_hCompletionPort == NULL)
+    if (!SetHandleInformation(m_childStdoutRead, HANDLE_FLAG_INHERIT, 0))
     {
         Utils::writeLastError(__FILE__, __LINE__);
         resetHandle();
@@ -124,31 +88,12 @@ u8 WinProc::start(const Task &task)
     if (CreateChildProcess(task))
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, "Fail to start process");
-
-        // stop IOCP
-        PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
-
         resetHandle();
         return 1;
     }
 
-    // send data to IOCP to trigger reading
-    memset(&m_overlapped, 0, sizeof(m_overlapped));
-    if (!ReadFile(m_childStdoutRead, m_buf, 4096, NULL, &m_overlapped)
-        && GetLastError() != ERROR_IO_PENDING)
-    {
-        Utils::writeLastError(__FILE__, __LINE__);
-        stopImpl();
-
-        // stop IOCP
-        PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
-
-        resetHandle();
-        return 1;
-    }
-
-    m_thread = std::jthread(&WinProc::readOutputLoop, this);
     m_exitCode.store(STILL_ACTIVE, std::memory_order_relaxed);
+    m_thread = std::jthread(&WinProc::readOutputLoop, this);
     return 0;
 }
 
@@ -303,18 +248,6 @@ void WinProc::resetHandle()
         m_procInfo.hThread = NULL;
     }
 
-    if (m_hCompletionPort)
-    {
-        CloseHandle(m_hCompletionPort);
-        m_hCompletionPort = NULL;
-    }
-
-    if (m_hStdOutPipeReader)
-    {
-        CloseHandle(m_hStdOutPipeReader);
-        m_hStdOutPipeReader = NULL;
-    }
-
     memset(&m_procInfo, 0, sizeof(PROCESS_INFORMATION));
 }
 
@@ -366,63 +299,22 @@ void WinProc::stopImpl()
 
 void WinProc::readOutputLoop()
 {
-    DWORD dwBytesTransferred;
-    ULONG_PTR ulCompletionKey;
-    LPOVERLAPPED lpOverlapped;
+    char buf[4096];
     BOOL bSuccess;
+    DWORD dwRead;
 
     while(isRunning())
     {
-        bSuccess = GetQueuedCompletionStatus(
-            m_hCompletionPort,
-            &dwBytesTransferred,
-            &ulCompletionKey,
-            &lpOverlapped,
-            1000); // 1 second to timeout
-
-        if (bSuccess && lpOverlapped)
+        bSuccess = ReadFile(m_childStdoutRead, buf, 4096, &dwRead, NULL);
+        if (!bSuccess || dwRead == 0)
         {
-            if (ulCompletionKey == 1) // read completed
-            {
-                // get how much data is actually stored in buffer
-                {
-                    std::unique_lock<std::mutex> lock(m_mutex);
-                    m_current_output = std::string(m_buf, dwBytesTransferred);
-                }
-
-                // check EOF
-                if (dwBytesTransferred == 0)
-                {
-                    //child process is finished and pipe is closed
-                    break;
-                }
-
-                // trigger the IOCP again
-                if (!ReadFile(m_childStdoutRead, m_buf, 4096, NULL, &m_overlapped)
-                    && GetLastError() != ERROR_IO_PENDING)
-                {
-                    // pipe is failure
-                    spdlog::error("{}:{} Fail to call ReadFile: {}",
-                                  __FILE__, __LINE__, GetLastError());
-                    break;
-                }
-            }
-        }
-        else if (GetLastError() == WAIT_TIMEOUT)
-        {
-            continue;
-        }
-        else if (bSuccess == FALSE && lpOverlapped == &m_overlapped)
-        {
-            // ReadFile failed
-            Utils::writeLastError(__FILE__, __LINE__);
+            // child process is already close the pipe
             break;
         }
-        else
+
         {
-            spdlog::error("{}:{} GetQueuedCompletionStatus failed",
-                          __FILE__, __LINE__);
-            break;
+            std::unique_lock<std::mutex> lock(m_mutex);
+            m_current_output = std::string(buf, dwRead);
         }
     } // end while(isRunning())
 }

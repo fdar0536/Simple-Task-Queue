@@ -45,7 +45,7 @@ public:
 
     ~LinuxProc();
 
-    virtual u8 init(const std::string &name = "") override;
+    virtual u8 init() override;
 
     virtual u8 start(const Task &task) override;
 
