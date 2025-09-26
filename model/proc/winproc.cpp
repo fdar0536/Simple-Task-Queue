@@ -316,6 +316,8 @@ void WinProc::readOutputLoop()
             std::unique_lock<std::mutex> lock(m_mutex);
             m_current_output.append(buf, dwRead);
         }
+
+        Sleep(1000);
     } // end while(true)
 }
 
