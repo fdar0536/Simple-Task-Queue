@@ -140,19 +140,13 @@ bool WinProc::isRunning()
 
 u8 WinProc::readCurrentOutput(std::string &out)
 {
-    if (isRunning())
     {
-        {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            out = m_current_output;
-            m_current_output.clear();
-        }
-
-        return 0;
+        std::unique_lock<std::mutex> lock(m_mutex);
+        out = m_current_output;
+        m_current_output.clear();
     }
 
-    spdlog::error("{}:{} {}", __FILE__, __LINE__, "Process is not running.");
-    return 1;
+    return 0;
 }
 
 u8 WinProc::exitCode(i32 &out)
@@ -325,7 +319,7 @@ void WinProc::readOutputLoop()
 
         {
             std::unique_lock<std::mutex> lock(m_mutex);
-            m_current_output = std::string(buf, dwRead);
+            m_current_output.append(buf, dwRead);
         }
     } // end while(true)
 }
