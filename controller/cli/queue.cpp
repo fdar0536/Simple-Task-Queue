@@ -430,7 +430,8 @@ i32 Queue::add()
         in.args.push_back("-o0");
         in.args.push_back(result["exec"].as<std::string>());
 #else
-        in.execName = result["exec"].as<std::string>();
+        in.execName = "STQ_UNBUFFER.exe";
+        in.args.push_back(result["exec"].as<std::string>());
 #endif
         if (result.count("args"))
         {

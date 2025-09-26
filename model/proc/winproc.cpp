@@ -361,7 +361,6 @@ void WinProc::stopImpl()
         }
     }
 
-    PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, NULL);
     resetHandle();
 }
 

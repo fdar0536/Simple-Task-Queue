@@ -43,6 +43,14 @@ if(ENABLE_SERVER)
         stqmodel
     )
 
+    if (WIN32)
+        add_executable(STQ_UNBUFFER
+            stq_unbuffer.cpp
+        )
+
+        add_dependencies(STQ_UNBUFFER STQSERVER)
+    endif (WIN32)
+
     if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
         target_link_options(STQSERVER PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
         target_compile_options(STQSERVER PRIVATE $<$<CONFIG:Debug>:/ZI>)
