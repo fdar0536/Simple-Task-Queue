@@ -192,16 +192,10 @@ bool SQLiteQueue::isRunning() const
 
 u8 SQLiteQueue::readCurrentOutput(std::string &out)
 {
-    if (!isRunning())
-    {
-        spdlog::error("{}:{} Queue is not running.", __FILE__, __LINE__);
-        return ErrCode_INVALID_ARGUMENT;
-    }
-
     out.clear();
     if (m_process->readCurrentOutput(out))
     {
-        spdlog::error("{}:{} Failed to read current output.", __FILE__, __LINE__);
+        spdlog::debug("{}:{} Failed to read current output.", __FILE__, __LINE__);
         return ErrCode_OS_ERROR;
     }
 
