@@ -92,6 +92,9 @@ u8 WinProc::start(const Task &task)
         return 1;
     }
 
+    CloseHandle(m_childStdoutWrite);
+    m_childStdoutWrite = NULL;
+
     m_exitCode.store(STILL_ACTIVE, std::memory_order_relaxed);
     m_thread = std::jthread(&WinProc::readOutputLoop, this);
     return 0;
@@ -104,6 +107,11 @@ void WinProc::stop()
 
 bool WinProc::isRunning()
 {
+    if (m_procInfo.hProcess == NULL)
+    {
+        return false;
+    }
+
     i32 exitCode = m_exitCode.load(std::memory_order_relaxed);
     if (exitCode != STILL_ACTIVE)
     {
@@ -116,8 +124,18 @@ bool WinProc::isRunning()
         return true;
     }
 
+    if (exitCode == STILL_ACTIVE)
+    {
+        return true;
+    }
+
+    if (m_thread.joinable())
+    {
+        m_thread.join();
+    }
+
     m_exitCode.store(exitCode, std::memory_order_relaxed);
-    return ( exitCode == STILL_ACTIVE );
+    return false;
 }
 
 u8 WinProc::readCurrentOutput(std::string &out)
@@ -158,14 +176,14 @@ u8 WinProc::CreateChildProcess(const Task &task)
         return 1;
     }
 
-    std::string cmdLine = task.execName;
+    std::string cmdLine = "\"" + task.execName + "\"";
     if (task.args.size())
     {
         cmdLine += " ";
         size_t lastIndex = task.args.size() - 1;
         for (size_t i = 0; i <= lastIndex; ++i)
         {
-            cmdLine += task.args.at(i);
+            cmdLine += "\"" + task.args.at(i) + "\"";
             cmdLine += " ";
         }
     }
@@ -209,13 +227,6 @@ u8 WinProc::CreateChildProcess(const Task &task)
     {
         Utils::writeLastError(__FILE__, __LINE__);
         ret = 1;
-    }
-    else
-    {
-        // Close handles to the stdin and stdout pipes no longer needed by the child process.
-        // If they are not explicitly closed, there is no way to recognize that the child process has ended.
-        CloseHandle(m_childStdoutWrite);
-        m_childStdoutWrite = NULL;
     }
 
     delete[] cmdPtr;
@@ -303,7 +314,7 @@ void WinProc::readOutputLoop()
     BOOL bSuccess;
     DWORD dwRead;
 
-    while(isRunning())
+    while(true)
     {
         bSuccess = ReadFile(m_childStdoutRead, buf, 4096, &dwRead, NULL);
         if (!bSuccess || dwRead == 0)
@@ -316,7 +327,7 @@ void WinProc::readOutputLoop()
             std::unique_lock<std::mutex> lock(m_mutex);
             m_current_output = std::string(buf, dwRead);
         }
-    } // end while(isRunning())
+    } // end while(true)
 }
 
 } // end namespace Proc
