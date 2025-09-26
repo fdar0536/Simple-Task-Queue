@@ -112,19 +112,14 @@ bool WinProc::isRunning()
         return false;
     }
 
-    i32 exitCode = m_exitCode.load(std::memory_order_relaxed);
-    if (exitCode != STILL_ACTIVE)
-    {
-        return false;
-    }
-
-    if (GetExitCodeProcess(m_procInfo.hProcess, (LPDWORD)&exitCode) == FALSE)
+    DWORD currentExitCode = 0;
+    if (GetExitCodeProcess(m_procInfo.hProcess, &currentExitCode) == FALSE)
     {
         Utils::writeLastError(__FILE__, __LINE__);
         return true;
     }
 
-    if (exitCode == STILL_ACTIVE)
+    if (currentExitCode == STILL_ACTIVE)
     {
         return true;
     }
@@ -134,7 +129,7 @@ bool WinProc::isRunning()
         m_thread.join();
     }
 
-    m_exitCode.store(exitCode, std::memory_order_relaxed);
+    m_exitCode.store(currentExitCode, std::memory_order_relaxed);
     return false;
 }
 
@@ -189,7 +184,7 @@ u8 WinProc::CreateChildProcess(const Task &task)
         return 1;
     }
 
-    memcpy(cmdPtr, cmdLine.c_str(), cmdLine.length());
+    memcpy(cmdPtr, cmdLine.c_str(), cmdLine.length() + 1);
 
     STARTUPINFOA siStartInfo;
     BOOL bSuccess = FALSE;
