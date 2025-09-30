@@ -61,7 +61,7 @@ private:
 
     pid_t m_pid;
 
-    int m_readPipe[2] = {-1, -1};
+    int m_masterFD = -1;
 
     std::atomic<i32> m_exitCode;
 

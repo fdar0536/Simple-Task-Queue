@@ -21,12 +21,14 @@
  * SOFTWARE.
  */
 
+#include <cerrno>
 #include <mutex>
 #include <string.h>
 
 #include "sys/types.h"
 #include "sys/wait.h"
 #include "fcntl.h"
+#include "pty.h"
 
 #include "spdlog/spdlog.h"
 
@@ -47,7 +49,6 @@ LinuxProc::~LinuxProc()
 
 u8 LinuxProc::init()
 {
-    memset(m_readPipe, -1, 2 * sizeof(int));
     m_exitCode.store(0, std::memory_order_relaxed);
     m_current_output = "";
     m_current_output.reserve(4096);
@@ -62,16 +63,10 @@ u8 LinuxProc::start(const Task &task)
         return 1;
     }
 
-    memset(m_readPipe, -1, 2 * sizeof(int));
+    m_masterFD = -1;
     m_exitCode.store(0, std::memory_order_relaxed);
 
-    if (pipe(m_readPipe) == -1)
-    {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
-        return 1;
-    }
-
-    m_pid = fork();
+    m_pid = forkpty(&m_masterFD, NULL, NULL, NULL);
     if (m_pid == -1)
     {
         // parent process
@@ -85,7 +80,7 @@ u8 LinuxProc::start(const Task &task)
         startChild(task);
     }
 
-    int fileFlag(fcntl(m_readPipe[0], F_GETFL));
+    int fileFlag(fcntl(m_masterFD, F_GETFL));
     if (fileFlag == -1)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
@@ -93,7 +88,7 @@ u8 LinuxProc::start(const Task &task)
         return 1;
     }
 
-    if (fcntl(m_readPipe[0], F_SETFL, fileFlag | O_NONBLOCK) == -1)
+    if (fcntl(m_masterFD, F_SETFL, fileFlag | O_NONBLOCK) == -1)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         kill(m_pid, SIGKILL);
@@ -108,16 +103,6 @@ u8 LinuxProc::start(const Task &task)
         return 1;
     }
 
-    if (setpgid(m_pid, 0) == -1)
-    {
-        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
-        kill(m_pid, SIGKILL);
-        epollFin();
-        return 1;
-    }
-
-    close(m_readPipe[1]);
-    m_readPipe[1] = -1;
     m_thread = std::jthread(&LinuxProc::readOutputLoop, this);
     return 0;
 }
@@ -133,7 +118,7 @@ bool LinuxProc::isRunning()
     pid_t ret = waitpid(m_pid, &status, WNOHANG);
     if (ret == -1)
     {
-        spdlog::warn("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        spdlog::debug("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         epollFin();
         return false;
     }
@@ -185,11 +170,6 @@ u8 LinuxProc::exitCode(i32 &out)
 // private member functions
 void LinuxProc::startChild(const Task &task)
 {
-    while (( dup2(m_readPipe[1], STDERR_FILENO) == -1 ) && ( errno == EINTR )) {}
-    while (( dup2(m_readPipe[1], STDOUT_FILENO) == -1 ) && ( errno == EINTR )) {}
-    close(m_readPipe[0]);
-    close(m_readPipe[1]);
-
     if (chdir(task.workDir.c_str()) == -1)
     {
         perror("chdir");
@@ -272,7 +252,7 @@ char **LinuxProc::buildChildArgv(const Task &task)
 
 void LinuxProc::stopImpl()
 {
-    if (kill(m_pid * -1, SIGKILL) == -1)
+    if (kill(m_pid, SIGKILL) == -1)
     {
         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         return;
@@ -286,15 +266,15 @@ u8 LinuxProc::epollInit()
     m_epoll_fd = epoll_create1(0);
     if (m_epoll_fd == -1)
     {
-        spdlog::warn("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         return 1;
     }
 
     m_event.events = EPOLLIN;
-    m_event.data.fd = m_readPipe[0];
-    if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_readPipe[0], &m_event))
+    m_event.data.fd = m_masterFD;
+    if (epoll_ctl(m_epoll_fd, EPOLL_CTL_ADD, m_masterFD, &m_event))
     {
-        spdlog::warn("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
         return 1;
     }
 
@@ -313,8 +293,7 @@ void LinuxProc::closeFile(int *fd)
 void LinuxProc::epollFin()
 {
     closeFile(&m_epoll_fd);
-    closeFile(&m_readPipe[0]);
-    closeFile(&m_readPipe[1]);
+    closeFile(&m_masterFD);
 }
 
 void LinuxProc::readOutputLoop()
@@ -331,7 +310,11 @@ void LinuxProc::readOutputLoop()
                 count = read(m_events[i].data.fd, buf, 4096);
                 if (count == -1)
                 {
-                    if (errno == EINTR) continue;
+                    if (errno == EINTR || errno == EAGAIN || errno == EIO)
+                    {
+                        spdlog::debug("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+                        continue;
+                    }
                     else
                     {
                         spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
@@ -340,7 +323,7 @@ void LinuxProc::readOutputLoop()
                 }
                 else if (count == 0)
                 {
-                    spdlog::warn("{}:{} {}", __FILE__, __LINE__, "Nothing to read");
+                    spdlog::debug("{}:{} {}", __FILE__, __LINE__, "Nothing to read");
                     break;
                 }
                 else // count != 0
