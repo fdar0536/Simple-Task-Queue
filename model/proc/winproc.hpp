@@ -64,13 +64,22 @@ public:
 
 private:
 
-    HANDLE m_childStdoutRead;
+    HANDLE m_childStdoutRead = nullptr;
 
-    HANDLE m_childStdoutWrite;
+    HANDLE m_childStdoutWrite = nullptr;
+
+    HANDLE m_childStdinRead = nullptr;
+
+    HANDLE m_childStdinWrite = nullptr;
 
     PROCESS_INFORMATION m_procInfo;
 
     std::atomic<i32> m_exitCode;
+
+    // pseudo console
+    HPCON m_pseudoConsole = nullptr;
+
+    u8 prepareStartupInformation(STARTUPINFOEX *output);
 
     u8 CreateChildProcess(const Task &);
 

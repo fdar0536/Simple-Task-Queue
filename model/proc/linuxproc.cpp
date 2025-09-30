@@ -337,6 +337,8 @@ void LinuxProc::readOutputLoop()
                 }
             } // end while(1)
         } // end for (int i = 0; i < event_count; ++i)
+
+        sleep(1);
     } // end while(isRunning())
 }
 

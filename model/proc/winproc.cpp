@@ -26,7 +26,7 @@
 #include "spdlog/spdlog.h"
 
 #include "winproc.hpp"
-#include "tlhelp32.h"
+
 #include "model/utils.hpp"
 
 namespace Model
@@ -65,21 +65,29 @@ u8 WinProc::start(const Task &task)
     }
 
     resetHandle();
-    SECURITY_ATTRIBUTES saAttr;
 
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = nullptr;
-
-    if (!CreatePipe(&m_childStdoutRead, &m_childStdoutWrite, &saAttr, 0))
+    if (!CreatePipe(&m_childStdoutRead, &m_childStdoutWrite, NULL, 0))
     {
         Utils::writeLastError(__FILE__, __LINE__);
         return 1;
     }
 
-    if (!SetHandleInformation(m_childStdoutRead, HANDLE_FLAG_INHERIT, 0))
+    if (!CreatePipe(&m_childStdinRead, &m_childStdinWrite, NULL, 0))
     {
         Utils::writeLastError(__FILE__, __LINE__);
+        return 1;
+    }
+
+    COORD consoleSize{};
+    consoleSize.X = 80;
+    consoleSize.Y = 24;
+    HRESULT res = CreatePseudoConsole(consoleSize, m_childStdinRead,
+                                      m_childStdoutWrite, 0, &m_pseudoConsole);
+
+    if (FAILED(res))
+    {
+        spdlog::error("{}:{} CreatePseudoConsole failed: {}",
+                      __FILE__, __LINE__, res);
         resetHandle();
         return 1;
     }
@@ -157,6 +165,52 @@ u8 WinProc::exitCode(i32 &out)
 }
 
 // private member functions
+u8 WinProc::prepareStartupInformation(STARTUPINFOEXA *output)
+{
+    if (!output)
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, "invalid input");
+        return 1;
+    }
+
+    ZeroMemory(output, sizeof(STARTUPINFOEXA));
+    output->StartupInfo.cb = sizeof(STARTUPINFOEXA);
+
+    size_t bytesRequired;
+    InitializeProcThreadAttributeList(NULL, 1, 0, &bytesRequired);
+
+    output->lpAttributeList =
+        (PPROC_THREAD_ATTRIBUTE_LIST)HeapAlloc(GetProcessHeap(),0, bytesRequired);
+    if (!output->lpAttributeList)
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__, "no enough memory");
+        return 1;
+    }
+
+    if (!InitializeProcThreadAttributeList(
+            output->lpAttributeList, 1, 0, &bytesRequired))
+    {
+        HeapFree(GetProcessHeap(), 0, output->lpAttributeList);
+        Utils::writeLastError(__FILE__, __LINE__);
+        return 1;
+    }
+
+    if (!UpdateProcThreadAttribute(output->lpAttributeList,
+                                   0,
+                                   PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE,
+                                   m_pseudoConsole,
+                                   sizeof(m_pseudoConsole),
+                                   NULL,
+                                   NULL))
+    {
+        HeapFree(GetProcessHeap(), 0, output->lpAttributeList);
+        Utils::writeLastError(__FILE__, __LINE__);
+        return 1;
+    }
+
+    return 0;
+}
+
 u8 WinProc::CreateChildProcess(const Task &task)
 {
     if (task.execName.empty())
@@ -165,14 +219,24 @@ u8 WinProc::CreateChildProcess(const Task &task)
         return 1;
     }
 
-    std::string cmdLine = "\"" + task.execName + "\"";
+    STARTUPINFOEXA siStartInfoEX;
+    if (prepareStartupInformation(&siStartInfoEX))
+    {
+        spdlog::error("{}:{} {}", __FILE__, __LINE__,
+                      "prepareStartupInformation failed");
+        return 1;
+    }
+
+    BOOL bSuccess = FALSE;
+
+    std::string cmdLine = task.execName;
     if (task.args.size())
     {
         cmdLine += " ";
         size_t lastIndex = task.args.size() - 1;
         for (size_t i = 0; i <= lastIndex; ++i)
         {
-            cmdLine += "\"" + task.args.at(i) + "\"";
+            cmdLine += task.args.at(i);
             cmdLine += " ";
         }
     }
@@ -186,27 +250,16 @@ u8 WinProc::CreateChildProcess(const Task &task)
 
     memcpy(cmdPtr, cmdLine.c_str(), cmdLine.length() + 1);
 
-    STARTUPINFOA siStartInfo;
-    BOOL bSuccess = FALSE;
-
-    // Set up members of the STARTUPINFO structure.
-    // This structure specifies the STDIN and STDOUT handles for redirection.
-    ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
-    siStartInfo.cb = sizeof(STARTUPINFO);
-    siStartInfo.hStdError = m_childStdoutWrite;
-    siStartInfo.hStdOutput = m_childStdoutWrite;
-    siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
-
     // Create the child process.
     bSuccess = CreateProcessA(NULL,
         cmdPtr,        // command line
         NULL,          // process security attributes
         NULL,          // primary thread security attributes
-        TRUE,          // handles are inherited
-        0,             // creation flags
+        FALSE,         // no inherited handle
+        EXTENDED_STARTUPINFO_PRESENT, // creation flags
         NULL,          // use parent's environment
         task.workDir.c_str(),
-        &siStartInfo,  // STARTUPINFO pointer
+        &siStartInfoEX.StartupInfo,  // STARTUPINFO pointer
         &m_procInfo);  // receives PROCESS_INFORMATION
 
     u8 ret(0);
@@ -236,6 +289,18 @@ void WinProc::resetHandle()
         m_childStdoutWrite = nullptr;
     }
 
+    if (m_childStdinWrite)
+    {
+        CloseHandle(m_childStdinWrite);
+        m_childStdinWrite = nullptr;
+    }
+
+    if (m_childStdinRead)
+    {
+        CloseHandle(m_childStdinRead);
+        m_childStdinRead = nullptr;
+    }
+
     if (m_procInfo.hProcess)
     {
         CloseHandle(m_procInfo.hProcess);
@@ -248,50 +313,21 @@ void WinProc::resetHandle()
         m_procInfo.hThread = NULL;
     }
 
+    if (m_pseudoConsole)
+    {
+        ClosePseudoConsole(m_pseudoConsole);
+        m_pseudoConsole = nullptr;
+    }
+
     memset(&m_procInfo, 0, sizeof(PROCESS_INFORMATION));
 }
 
 void WinProc::stopImpl()
 {
-    PROCESSENTRY32 pe;
-
-    memset(&pe, 0, sizeof(PROCESSENTRY32));
-    pe.dwSize = sizeof(PROCESSENTRY32);
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (Process32First(hSnap, &pe))
+    if (m_pseudoConsole)
     {
-        BOOL bContinue = TRUE;
-
-        // kill child processes
-        while (bContinue)
-        {
-            // only kill child processes
-            if (pe.th32ParentProcessID == m_procInfo.dwProcessId)
-            {
-                HANDLE hChildProc = OpenProcess(PROCESS_ALL_ACCESS,
-                    FALSE,
-                    pe.th32ProcessID);
-
-                if (hChildProc)
-                {
-                    TerminateProcess(hChildProc, 1);
-                    CloseHandle(hChildProc);
-                }
-            }
-
-            bContinue = Process32Next(hSnap, &pe);
-        }
-
-        // kill the main process
-        HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS,
-            FALSE,
-            m_procInfo.dwProcessId);
-
-        if (hProc)
-        {
-            TerminateProcess(hProc, 1);
-            CloseHandle(hProc);
-        }
+        ClosePseudoConsole(m_pseudoConsole);
+        m_pseudoConsole = nullptr;
     }
 
     resetHandle();
@@ -303,18 +339,17 @@ void WinProc::readOutputLoop()
     BOOL bSuccess;
     DWORD dwRead;
 
-    while(true)
+    while(isRunning())
     {
         bSuccess = ReadFile(m_childStdoutRead, buf, 4096, &dwRead, NULL);
         if (!bSuccess || dwRead == 0)
         {
-            // child process is already close the pipe
-            break;
+            continue;
         }
 
         {
             std::unique_lock<std::mutex> lock(m_mutex);
-            m_current_output.append(buf, dwRead);
+            m_current_output = std::string(buf, dwRead);
         }
 
         Sleep(1000);
