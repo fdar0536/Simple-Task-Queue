@@ -17,7 +17,7 @@ service Queue {
   rpc AddTask(AddTaskReq) returns (ListTaskRes);
   rpc RemoveTask(TaskDetailsReq) returns (Empty);
   rpc IsRunning(QueueReq) returns (IsRunningRes);
-  rpc ReadCurrentOutput(QueueReq) returns (Msg);
+  rpc ReadCurrentOutput(QueueReq) returns (stream Msg);
   rpc Start(QueueReq) returns (Empty);
   rpc Stop(QueueReq) returns (Empty);
 }
