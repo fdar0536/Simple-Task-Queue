@@ -25,6 +25,7 @@
 #define _MODEL_PROC_LINUXPROC_HPP_
 
 #include <atomic>
+#include <deque>
 #include <thread>
 
 #include "sys/epoll.h"
@@ -53,7 +54,7 @@ public:
 
     virtual bool isRunning() override;
 
-    virtual u8 readCurrentOutput(std::string &out) override;
+    virtual void readCurrentOutput(std::vector<std::string> &out) override;
 
     virtual u8 exitCode(i32 &out) override;
 
@@ -87,7 +88,7 @@ private:
 
     std::mutex m_mutex;
 
-    std::string m_current_output;
+    std::deque<std::string> m_deque;
 
     void readOutputLoop();
 };

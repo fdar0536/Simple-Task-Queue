@@ -22,6 +22,7 @@
  */
 
 #include <cerrno>
+#include <config.h>
 #include <mutex>
 #include <string.h>
 
@@ -50,8 +51,7 @@ LinuxProc::~LinuxProc()
 u8 LinuxProc::init()
 {
     m_exitCode.store(0, std::memory_order_relaxed);
-    m_current_output = "";
-    m_current_output.reserve(4096);
+    m_deque.clear();
     return 0;
 }
 
@@ -138,21 +138,26 @@ bool LinuxProc::isRunning()
     }
 }
 
-u8 LinuxProc::readCurrentOutput(std::string &out)
+void LinuxProc::readCurrentOutput(std::vector<std::string> &out)
 {
-    if (isRunning())
+    out.clear();
+
     {
+        std::unique_lock<std::mutex> lock(m_mutex);
+
+        if (m_deque.empty())
         {
-            std::unique_lock<std::mutex> lock(m_mutex);
-            out = m_current_output;
-            m_current_output.clear();
+            spdlog::debug("{}:{} nothing to read", __FILE__, __LINE__);
+            return;
         }
 
-        return 0;
+        out.reserve(m_deque.size());
+        for (size_t index = 0; index < m_deque.size(); ++index)
+        {
+            out.push_back(std::move(m_deque.front()));
+            m_deque.pop_front();
+        }
     }
-
-    spdlog::error("{}:{} {}", __FILE__, __LINE__, "Process is not running.");
-    return 1;
 }
 
 u8 LinuxProc::exitCode(i32 &out)
@@ -299,47 +304,69 @@ void LinuxProc::epollFin()
 void LinuxProc::readOutputLoop()
 {
     ssize_t count(0);
-    char buf[4096] = {};
-    while(isRunning())
+    while(1)
     {
         int event_count = epoll_wait(m_epoll_fd, m_events, 10, 1000);
+        if (event_count == -1)
+        {
+            // epoll failed
+            spdlog::error("{}:{} epoll_wait failed: {}",
+                __FILE__, __LINE__, strerror(errno));
+            break;
+        }
+
         for (int i = 0; i < event_count; ++i)
         {
-            while (1)
+            if (m_events[i].data.fd == m_masterFD &&
+                (m_events[i].events & EPOLLIN))
             {
-                count = read(m_events[i].data.fd, buf, 4096);
-                if (count == -1)
+                std::string buf;
+                buf.resize(STQ_READ_BUFFER_SIZE);
+                while (1)
                 {
-                    if (errno == EINTR || errno == EAGAIN || errno == EIO)
+                    count = read(m_events[i].data.fd, buf.data(), buf.size());
+                    if (count == -1)
                     {
-                        spdlog::debug("{}:{} {}", __FILE__, __LINE__, strerror(errno));
-                        continue;
+                        if (errno == EINTR || errno == EAGAIN || errno == EIO)
+                        {
+                            spdlog::debug("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+                            continue;
+                        }
+                        else
+                        {
+                            spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+                            return;
+                        }
                     }
-                    else
+                    else if (count == 0)
                     {
-                        spdlog::error("{}:{} {}", __FILE__, __LINE__, strerror(errno));
+                        // pipe is closed or child process is exited
+                        spdlog::debug("{}:{} {}", __FILE__, __LINE__, "Nothing to read");
+                        return;
+                    }
+                    else // count != 0
+                    {
+                        buf.resize(count);
+
+                        {
+                            std::unique_lock<std::mutex> lock(m_mutex);
+
+                            if (m_deque.size() == STQ_MAX_READ_QUEUE_SIZE)
+                            {
+                                m_deque.pop_front();
+                            }
+
+                            m_deque.push_back(std::move(buf));
+                        }
+
                         break;
                     }
-                }
-                else if (count == 0)
-                {
-                    spdlog::debug("{}:{} {}", __FILE__, __LINE__, "Nothing to read");
-                    break;
-                }
-                else // count != 0
-                {
-                    {
-                        std::unique_lock<std::mutex> lock(m_mutex);
-                        m_current_output = std::string(buf, count);
-                    }
-
-                    break;
-                }
-            } // end while(1)
+                } // end while(1)
+            }
         } // end for (int i = 0; i < event_count; ++i)
 
         sleep(1);
-    } // end while(isRunning())
+    } // end while(1)
 }
 
 } // end namespace Proc
