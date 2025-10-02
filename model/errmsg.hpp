@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-#ifndef _MODEL_IMODEL_HPP_
-#define _MODEL_IMODEL_HPP_
+#ifndef _MODEL_ERRMSG_HPP_
+#define _MODEL_ERRMSG_HPP_
 
 
 #include <string>
@@ -54,4 +54,4 @@ grpc::Status toGRPCStatus(u8, const std::string &);
 
 } // end namespace Model
 
-#endif // _MODEL_IMODEL_HPP_
+#endif // _MODEL_ERRMSG_HPP_
