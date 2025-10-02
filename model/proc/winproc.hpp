@@ -25,6 +25,7 @@
 #define _MODEL_PROC_WINPROC_HPP_
 
 #include <atomic>
+#include <deque>
 #include <mutex>
 #include <thread>
 
@@ -91,7 +92,7 @@ private:
 
     std::mutex m_mutex;
 
-    std::string m_current_output;
+    std::deque<std::string> m_deque;
 
     void readOutputLoop();
 

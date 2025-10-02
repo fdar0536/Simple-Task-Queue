@@ -51,8 +51,7 @@ u8 WinProc::init()
     m_procInfo.hProcess = NULL;
     m_procInfo.hThread = NULL;
     resetHandle();
-    m_current_output = "";
-    m_current_output.reserve(4096);
+    m_deque.clear();
     return 0;
 }
 
@@ -145,8 +144,15 @@ u8 WinProc::readCurrentOutput(std::string &out)
 {
     {
         std::unique_lock<std::mutex> lock(m_mutex);
-        out = m_current_output;
-        m_current_output.clear();
+
+        if (m_deque.empty())
+        {
+            spdlog::debug("{}:{} nothing to read", __FILE__, __LINE__);
+            return 0;
+        }
+
+        out = std::move(m_deque.front());
+        m_deque.pop_front();
     }
 
     return 0;
@@ -335,21 +341,33 @@ void WinProc::stopImpl()
 
 void WinProc::readOutputLoop()
 {
-    char buf[4096];
     BOOL bSuccess;
     DWORD dwRead;
 
-    while(isRunning())
+    while(1)
     {
-        bSuccess = ReadFile(m_childStdoutRead, buf, 4096, &dwRead, NULL);
+        std::string buf;
+        buf.resize(STQ_READ_BUFFER_SIZE);
+        bSuccess = ReadFile(m_childStdoutRead, buf.data(),
+                            static_cast<DWORD>(buf.size()), &dwRead, NULL);
         if (!bSuccess || dwRead == 0)
         {
-            continue;
+            // because the pipe is sync, it will not return ERROR_IO_PENDING
+            // dwRead == 0 means pipe is closed, it also means child process is exited
+            break;
         }
 
+        // set correct buffer size
+        buf.resize(dwRead);
         {
             std::unique_lock<std::mutex> lock(m_mutex);
-            m_current_output = std::string(buf, dwRead);
+
+            if (m_deque.size() == STQ_MAX_READ_QUEUE_SIZE)
+            {
+                m_deque.pop_front();
+            }
+
+            m_deque.push_back(std::move(buf));
         }
 
         Sleep(1000);
