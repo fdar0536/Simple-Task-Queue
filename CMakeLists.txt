@@ -38,6 +38,16 @@ set(STQ_NAME SimpleTaskQueue)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+# options
+option(ENABLE_CLI "enable CLI" on)
+option(ENABLE_SERVER "enable server" on)
+option(ENABLE_GUI "enable GUI" on)
+
+if ((NOT ENABLE_CLI) AND (NOT ENABLE_SERVER) AND (NOT ENABLE_GUI))
+    set(ENABLE_SERVER on)
+endif ((NOT ENABLE_CLI) AND (NOT ENABLE_SERVER) AND (NOT ENABLE_GUI))
+
+# tunable variable
 if(NOT DEFINED CLIENT_TIMEOUT)
     set(CLIENT_TIMEOUT 31)
 endif(NOT DEFINED CLIENT_TIMEOUT)
@@ -46,8 +56,13 @@ if((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
     set(CLIENT_TIMEOUT 31)
 endif((CLIENT_TIMEOUT GREATER 61) OR (CLIENT_TIMEOUT LESS 1))
 
-option(ENABLE_CLI "enable CLI" on)
-option(ENABLE_SERVER "enable server" on)
+if(NOT DEFINED READ_BUFFER_SIZE)
+    set(READ_BUFFER_SIZE 4096)
+endif(NOT DEFINED READ_BUFFER_SIZE)
+
+if(NOT DEFINED MAX_READ_QUEUE_SIZE)
+    set(MAX_READ_QUEUE_SIZE 1024)
+endif(NOT DEFINED MAX_READ_QUEUE_SIZE)
 
 include(cmake/getGitInfo.cmake)
 
@@ -59,14 +74,6 @@ message(STATUS "Git hash is ${STQ_COMMIT}")
 set(STQ_BRANCH "")
 get_git_branch(STQ_BRANCH)
 message(STATUS "Git branch is ${STQ_BRANCH}")
-
-if(NOT DEFINED READ_BUFFER_SIZE)
-    set(READ_BUFFER_SIZE 4096)
-endif(NOT DEFINED READ_BUFFER_SIZE)
-
-if(NOT DEFINED MAX_READ_QUEUE_SIZE)
-    set(MAX_READ_QUEUE_SIZE 1024)
-endif(NOT DEFINED MAX_READ_QUEUE_SIZE)
 
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
@@ -88,6 +95,7 @@ find_package(SQLite3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 if (ENABLE_GUI)
+    set(ENABLE_SERVER on)
     find_package(Qt6 6.5 COMPONENTS Widgets REQUIRED)
 endif (ENABLE_GUI)
 
@@ -118,5 +126,11 @@ target_link_libraries(grpc_common
 )
 
 include(cmake/stqmodel.cmake)
+include(cmake/stqcontroller.cmake)
 include(cmake/stqserver.cmake)
 include(cmake/stqcli.cmake)
+
+target_sources(STQCLI
+  PRIVATE
+    cmake/stqgui.cmake
+)
