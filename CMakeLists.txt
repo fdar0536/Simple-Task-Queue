@@ -97,6 +97,7 @@ find_package(yaml-cpp REQUIRED)
 if (ENABLE_GUI)
     set(ENABLE_SERVER on)
     find_package(Qt6 6.9 COMPONENTS Widgets Quick REQUIRED)
+    qt_standard_project_setup(REQUIRES 6.9)
 endif (ENABLE_GUI)
 
 set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
@@ -129,8 +130,4 @@ include(cmake/stqmodel.cmake)
 include(cmake/stqcontroller.cmake)
 include(cmake/stqserver.cmake)
 include(cmake/stqcli.cmake)
-
-target_sources(STQCLI
-  PRIVATE
-    cmake/stqgui.cmake
-)
+include(cmake/stqgui.cmake)
