@@ -60,6 +60,14 @@ set(STQ_BRANCH "")
 get_git_branch(STQ_BRANCH)
 message(STATUS "Git branch is ${STQ_BRANCH}")
 
+if(NOT DEFINED READ_BUFFER_SIZE)
+    set(READ_BUFFER_SIZE 4096)
+endif(NOT DEFINED READ_BUFFER_SIZE)
+
+if(NOT DEFINED MAX_READ_QUEUE_SIZE)
+    set(MAX_READ_QUEUE_SIZE 1024)
+endif(NOT DEFINED MAX_READ_QUEUE_SIZE)
+
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
 include(GNUInstallDirs)
