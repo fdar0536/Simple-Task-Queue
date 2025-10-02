@@ -96,7 +96,7 @@ find_package(yaml-cpp REQUIRED)
 
 if (ENABLE_GUI)
     set(ENABLE_SERVER on)
-    find_package(Qt6 6.5 COMPONENTS Widgets REQUIRED)
+    find_package(Qt6 6.9 COMPONENTS Widgets Quick REQUIRED)
 endif (ENABLE_GUI)
 
 set(PROTOC_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/protos)
