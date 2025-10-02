@@ -1,6 +1,6 @@
 /*
  * Simple Task Queue
- * Copyright (c) 2024-present fdar0536
+ * Copyright (c) 2025-present fdar0536
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,10 @@
  * SOFTWARE.
  */
 
-#include "spdlog/spdlog.h"
-
-#include "controller/cli/main.hpp"
+#include "QApplication"
 
 int main(int argc, char **argv)
 {
-    Controller::CLI::Main mainObj;
-    i32 ret = mainObj.init(argc, argv);
-    if (ret)
-    {
-        if (ret == 2)
-        {
-            return 0;
-        }
-
-        spdlog::error("{}:{} Failed to initialize", __FILE__, __LINE__);
-        return ret;
-    }
-
-    return mainObj.run();
+    QAppclication
+    return 0;
 }

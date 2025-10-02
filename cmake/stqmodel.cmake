@@ -20,11 +20,6 @@ set(MODEL_SRC
     model/utils.cpp
     model/utils.hpp
 
-    # global
-    controller/global/defines.hpp
-    controller/global/global.cpp
-    controller/global/global.hpp
-
     model/dao/dirutils.cpp
     model/dao/dirutils.hpp
 
@@ -36,22 +31,26 @@ set(MODEL_SRC
     model/dao/sqlitequeue.cpp
     model/dao/sqlitequeue.hpp
 
-    #grpc
-    model/dao/grpcconnect.cpp
-    model/dao/grpcconnect.hpp
-    model/dao/grpcqueue.cpp
-    model/dao/grpcqueue.hpp
-    model/dao/grpcqueuelist.cpp
-    model/dao/grpcqueuelist.hpp
-    model/dao/grpcutils.cpp
-    model/dao/grpcutils.hpp
-
     # proc
     model/proc/iproc.cpp
     model/proc/iproc.hpp
     model/proc/task.cpp
     model/proc/task.hpp
 )
+
+if (ENABLE_CLI OR ENABLE_GUI)
+    list(APPEND MODEL_SRC
+        #grpc
+        model/dao/grpcconnect.cpp
+        model/dao/grpcconnect.hpp
+        model/dao/grpcqueue.cpp
+        model/dao/grpcqueue.hpp
+        model/dao/grpcqueuelist.cpp
+        model/dao/grpcqueuelist.hpp
+        model/dao/grpcutils.cpp
+        model/dao/grpcutils.hpp
+    )
+endif (ENABLE_CLI OR ENABLE_GUI)
 
 if (WIN32)
     list(APPEND MODEL_SRC
