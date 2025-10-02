@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     Controller::GUI::Main main;
-    if (!main.init(&app))
+    if (!main.init(app))
     {
         return 1;
     }

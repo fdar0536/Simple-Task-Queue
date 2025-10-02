@@ -19,6 +19,9 @@ if(ENABLE_GUI)
     set(GUI_SRC
         guimain.cpp
 
+        controller/gui/config.cpp
+        controller/gui/config.hpp
+        controller/gui/hostinfo.hpp
         controller/gui/main.cpp
         controller/gui/main.hpp
     )

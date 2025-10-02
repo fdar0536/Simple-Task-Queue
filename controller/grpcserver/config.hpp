@@ -44,9 +44,11 @@ public:
 
     ~Config();
 
-    static u8 parse(Config *in, int argc, char **argv);
+    static u8 parse(Config &in, int argc, char **argv);
 
-    static u8 parse(Config *, const std::string &);
+    static u8 parse(Config &, const std::string &);
+
+    static u8 save(Config &, const std::string &);
 
     std::string dbPath;
 
