@@ -46,7 +46,7 @@ public:
 
     virtual bool isRunning() = 0;
 
-    virtual u8 readCurrentOutput(std::string &out) = 0;
+    virtual void readCurrentOutput(std::vector<std::string> &out) = 0;
 
     virtual u8 exitCode(i32 &out) = 0;
 

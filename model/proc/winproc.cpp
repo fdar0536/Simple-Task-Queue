@@ -140,22 +140,22 @@ bool WinProc::isRunning()
     return false;
 }
 
-u8 WinProc::readCurrentOutput(std::string &out)
+void WinProc::readCurrentOutput(std::vector<std::string> &out)
 {
+    std::unique_lock<std::mutex> lock(m_mutex);
+
+    if (m_deque.empty())
     {
-        std::unique_lock<std::mutex> lock(m_mutex);
-
-        if (m_deque.empty())
-        {
-            spdlog::debug("{}:{} nothing to read", __FILE__, __LINE__);
-            return 0;
-        }
-
-        out = std::move(m_deque.front());
-        m_deque.pop_front();
+        spdlog::debug("{}:{} nothing to read", __FILE__, __LINE__);
+        return;
     }
 
-    return 0;
+    out.reserve(m_deque.size());
+    for (size_t index = 0; index < m_deque.size(); ++index)
+    {
+        out.push_back(std::move(m_deque.front()));
+        m_deque.pop_front();
+    }
 }
 
 u8 WinProc::exitCode(i32 &out)

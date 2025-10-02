@@ -59,7 +59,7 @@ public:
 
     virtual bool isRunning() override;
 
-    virtual u8 readCurrentOutput(std::string &out) override;
+    virtual void readCurrentOutput(std::vector<std::string> &out) override;
 
     virtual u8 exitCode(i32 &out) override;
 
