@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/STQGUI">
+        <file>main.qml</file>
+    </qresource>
+</RCC>
