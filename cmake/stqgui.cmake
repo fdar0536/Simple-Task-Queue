@@ -18,6 +18,7 @@ if(ENABLE_GUI)
 
     set(GUI_SRC
         guimain.cpp
+        view/stqgui.qrc
 
         controller/gui/config.cpp
         controller/gui/config.hpp
@@ -33,7 +34,7 @@ if(ENABLE_GUI)
     add_dependencies(STQGUI grpc_common stqmodel stqcontroller)
 
     qt_add_qml_module(STQGUI
-        URI stq
+        URI STQGUI
         QML_FILES
             view/main.qml
     )

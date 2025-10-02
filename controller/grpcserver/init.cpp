@@ -50,7 +50,7 @@ u8 init(int argc, char **argv)
         return 1;
     }
 
-    u8 ret(Config::parse(&config, argc, argv));
+    u8 ret(Config::parse(config, argc, argv));
     if (ret)
     {
         if (ret == 2)
