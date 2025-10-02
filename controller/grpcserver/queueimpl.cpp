@@ -377,10 +377,10 @@ QueueImpl::IsRunning(grpc::ServerContext *ctx,
 grpc::Status
 QueueImpl::ReadCurrentOutput(grpc::ServerContext *ctx,
                              const stq::QueueReq *req,
-                             stq::Msg *res)
+                             grpc::ServerWriter<stq::Msg> *writer)
 {
     UNUSED(ctx);
-    if (!req || !res)
+    if (!req || !writer)
     {
         spdlog::debug("{}:{} trace", __FILE__, __LINE__);
         return grpc::Status(grpc::StatusCode::INTERNAL, "Invalid input");
@@ -393,15 +393,16 @@ QueueImpl::ReadCurrentOutput(grpc::ServerContext *ctx,
         return grpc::Status(grpc::StatusCode::NOT_FOUND, "Fail to get queue");
     }
 
-    std::string output;
-    u8 code = queue->readCurrentOutput(output);
-    if (code)
+    std::vector<std::string> output;
+    queue->readCurrentOutput(output);
+
+    stq::Msg res;
+    for (auto it = output.begin(); it != output.end(); ++it)
     {
-        spdlog::debug("{}:{} trace", __FILE__, __LINE__);
-        return Model::ErrMsg::toGRPCStatus(code, "Fail to read current output");
+        res.set_msg(*it);
+        writer->Write(res);
     }
 
-    res->set_msg(output);
     return grpc::Status::OK;
 }
 

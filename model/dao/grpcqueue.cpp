@@ -315,24 +315,31 @@ bool GRPCQueue::isRunning() const
     return false;
 }
 
-u8 GRPCQueue::readCurrentOutput(std::string &out)
+void GRPCQueue::readCurrentOutput(std::vector<std::string> &out)
 {
+    out.clear();
+    out.reserve(STQ_MAX_READ_QUEUE_SIZE);
+
     stq::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
     stq::Msg res;
-
     GRPCUtils::setupCtx(ctx);
-    grpc::Status status = m_stub->ReadCurrentOutput(&ctx, req, &res);
-    if (status.ok())
+
+    auto reader = m_stub->ReadCurrentOutput(&ctx, req);
+    if (reader == nullptr)
     {
-        out = res.msg();
-        return ErrCode_OK;
+        spdlog::error("{}:{} reader is nullptr", __FILE__, __LINE__);
+        return;
     }
 
-    GRPCUtils::buildErrMsg(__FILE__, __LINE__, status);
-    return ErrCode_OS_ERROR;
+    while (reader->Read(&res))
+    {
+        out.push_back(std::move(res.msg()));
+    }
+
+    UNUSED(reader->Finish());
 }
 
 u8 GRPCQueue::start()

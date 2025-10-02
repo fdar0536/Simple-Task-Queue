@@ -89,7 +89,7 @@ public:
     grpc::Status
     ReadCurrentOutput(grpc::ServerContext *ctx,
                       const stq::QueueReq *req,
-                      stq::Msg *res) override;
+                      grpc::ServerWriter<stq::Msg> *writer) override;
 
     grpc::Status
     Start(grpc::ServerContext *ctx,

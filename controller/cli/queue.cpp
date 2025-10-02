@@ -588,31 +588,6 @@ i32 Queue::stop()
     return 0;
 }
 
-#ifndef _WIN32
-/**
- Linux (POSIX) implementation of _kbhit().
- Morgan McGuire, morgan@cs.brown.edu
- */
-static int _kbhit() {
-    static const int STDIN = 0;
-    static bool initialized = false;
-
-    if (!initialized) {
-        // Use termios to turn off line buffering
-        termios term;
-        tcgetattr(STDIN, &term);
-        term.c_lflag &= ~ICANON;
-        tcsetattr(STDIN, TCSANOW, &term);
-        setbuf(stdin, NULL);
-        initialized = true;
-    }
-
-    int bytesWaiting;
-    ioctl(STDIN, FIONREAD, &bytesWaiting);
-    return bytesWaiting;
-}
-#endif
-
 i32 Queue::output()
 {
     if (Global::args.argc() > 2)
@@ -636,23 +611,20 @@ i32 Queue::output()
         return 1;
     }
 
-    fmt::println("press any key to stop");
-    std::string out;
-    while (Global::keepRunning.load(std::memory_order_relaxed))
+    std::vector<std::string> out;
+    m_queue->readCurrentOutput(out);
+    if (!out.size())
     {
-        if (m_queue->readCurrentOutput(out))
-        {
-            fmt::println("Fail to read output");
-        }
-        else
-        {
-            fmt::print("{}", out);
-        }
+        // out.size() == 0
+        // read nothing
+        return 0;
+    }
 
-        if (_kbhit())
-        {
-            break;
-        }
+    for (auto it = out.begin();
+         it != out.end();
+         ++it)
+    {
+        fmt::println("{}", *it);
     }
 
     return 0;

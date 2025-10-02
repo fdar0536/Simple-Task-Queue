@@ -70,7 +70,7 @@ public:
 
     bool isRunning() const override;
 
-    u8 readCurrentOutput(std::string &out) override;
+    void readCurrentOutput(std::vector<std::string> &out) override;
 
     u8 start() override;
 
