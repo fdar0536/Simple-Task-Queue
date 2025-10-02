@@ -23,8 +23,17 @@
 
 #include "QApplication"
 
+#include "controller/gui/main.hpp"
+
 int main(int argc, char **argv)
 {
-    QAppclication
-    return 0;
+    QApplication app(argc, argv);
+
+    Controller::GUI::Main main;
+    if (!main.init(&app))
+    {
+        return 1;
+    }
+
+    return main.run();
 }

@@ -51,13 +51,6 @@ if (ENABLE_CLI)
     )
 endif (ENABLE_CLI)
 
-if (ENABLE_GUI)
-    list(APPEND CONTROLLER_SRC
-        controller/cli/main.cpp
-        controller/cli/main.hpp
-    )
-endif (ENABLE_GUI)
-
 add_library(stqcontroller STATIC
     ${CONTROLLER_SRC}
 )

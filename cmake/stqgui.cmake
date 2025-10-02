@@ -1,3 +1,6 @@
+# all source for gui are depend on Qt
+# so sperate controller source into gui
+
 if(ENABLE_GUI)
     set(STQ_GUI_LIBS
         protobuf::libprotobuf
@@ -13,10 +16,24 @@ if(ENABLE_GUI)
         Qt6::Quick
     )
 
-    add_executable(STQGUI
-        guimain.cpp)
+    set(GUI_SRC
+        guimain.cpp
+
+        controller/gui/main.cpp
+        controller/gui/main.hpp
+    )
+
+    qt_add_executable(STQGUI
+        ${GUI_SRC}
+    )
 
     add_dependencies(STQGUI grpc_common stqmodel stqcontroller)
+
+    qt_add_qml_module(STQGUI
+        URI stq
+        QML_FILES
+            view/main.qml
+    )
 
     target_link_libraries(STQGUI
         PRIVATE
