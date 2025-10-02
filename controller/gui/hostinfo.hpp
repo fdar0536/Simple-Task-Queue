@@ -21,10 +21,10 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_MAIN_HPP_
-#define _CONTROLLER_GUI_MAIN_HPP_
+#ifndef _CONTROLLER_GUI_HOSTINFO_HPP_
+#define _CONTROLLER_GUI_HOSTINFO_HPP_
 
-#include "QApplication"
+#include <string>
 
 #include "controller/global/defines.hpp"
 
@@ -34,26 +34,17 @@ namespace Controller
 namespace GUI
 {
 
-class Main
+typedef struct HostInfo
 {
-public:
+    std::string name = "";
 
-    Main();
+    std::string host = "127.0.0.1";
 
-    ~Main();
+    u16 port = 12345;
+} HostInfo;
 
-    u8 init(QApplication &app);
+} // namespace GUI
 
-    i32 run();
+} // namespace Controller
 
-private:
-
-    QApplication *m_app = nullptr;
-
-}; // end class Main
-
-} // end namespace GUI
-
-} // end namespace Controller
-
-#endif // _CONTROLLER_GUI_MAIN_HPP_
+#endif // _CONTROLLER_GUI_HOSTINFO_HPP_

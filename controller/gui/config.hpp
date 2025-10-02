@@ -21,12 +21,12 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_MAIN_HPP_
-#define _CONTROLLER_GUI_MAIN_HPP_
+#ifndef _CONTROLLER_GUI_CONFIG_HPP_
+#define _CONTROLLER_GUI_CONFIG_HPP_
 
-#include "QApplication"
+#include <vector>
 
-#include "controller/global/defines.hpp"
+#include "hostinfo.hpp"
 
 namespace Controller
 {
@@ -34,26 +34,27 @@ namespace Controller
 namespace GUI
 {
 
-class Main
+class Config
 {
+
 public:
 
-    Main();
+    Config();
 
-    ~Main();
+    static u8 parse(Config &, std::string &);
 
-    u8 init(QApplication &app);
+    static u8 save(Config &, std::string &);
 
-    i32 run();
+    HostInfo lastHost;
 
-private:
+    std::vector<HostInfo> hostList;
 
-    QApplication *m_app = nullptr;
+    bool isEmbedded;
 
-}; // end class Main
+}; // end class Config
 
-} // end namespace GUI
+} // namespace GUI
 
-} // end namespace Controller
+} // namespace Controller
 
-#endif // _CONTROLLER_GUI_MAIN_HPP_
+#endif // _CONTROLLER_GUI_CONFIG_HPP_

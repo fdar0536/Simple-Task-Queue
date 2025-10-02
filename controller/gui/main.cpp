@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include "controller/global/global.hpp"
+
 #include "fmt/core.h"
 
 #include "main.hpp"
@@ -37,16 +39,15 @@ Main::Main()
 Main::~Main()
 {}
 
-u8 Main::init(QApplication *app)
+u8 Main::init(QApplication &app)
 {
-    if (!app)
+    if (Controller::Global::isAdmin())
     {
-        fmt::println("{}:{} You should never this line", __FILE__, __LINE__);
+        fmt::println("{}:{} Refuse to run as admin.", __FILE__, __LINE__);
         return 1;
     }
 
-    m_app = app;
-
+    m_app = &app;
     return 0;
 }
 

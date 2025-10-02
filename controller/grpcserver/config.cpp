@@ -27,6 +27,8 @@
 #include "unistd.h"
 #endif
 
+#include <fstream>
+
 #include "spdlog/spdlog.h"
 #include "cxxopts.hpp"
 #include "yaml-cpp/yaml.h"
@@ -47,14 +49,8 @@ Config::Config()
 Config::~Config()
 {}
 
-u8 Config::parse(Config *in, int argc, char **argv)
+u8 Config::parse(Config &in, int argc, char **argv)
 {
-    if (!in)
-    {
-        spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
-        return 1;
-    }
-
     if (!argv)
     {
         spdlog::error("{}:{} you should never see this line", __FILE__, __LINE__);
@@ -76,8 +72,8 @@ u8 Config::parse(Config *in, int argc, char **argv)
     if (argc == 1 || !argv)
     {
         spdlog::warn("{}:{} use default config", __FILE__, __LINE__);
-        in->dbPath = std::string(buf);
-        in->logPath = std::string(buf);
+        in.dbPath = std::string(buf);
+        in.logPath = std::string(buf);
         return 0;
     }
 
@@ -88,11 +84,11 @@ u8 Config::parse(Config *in, int argc, char **argv)
         cxxopts::Options options("STQSERVER", "STQ Server");
         options.add_options()
             ("c,config-file", "path to config file", cxxopts::value<std::string>(configFile)->default_value(""))
-            ("d,db-path", "path to config file", cxxopts::value<std::string>(in->dbPath)->default_value(std::string(buf)))
-            ("l,log-path", "path for output log", cxxopts::value<std::string>(in->logPath)->default_value(""))
-            ("L,log-level", "log level for spdlog", cxxopts::value<i32>(in->logLevel)->default_value("2"))
-            ("a,address", "which addess will listen", cxxopts::value<std::string>(in->listenIP)->default_value("127.0.0.1"))
-            ("p,port", "which port will listen", cxxopts::value<u16>(in->listenPort)->default_value("12345"))
+            ("d,db-path", "path to config file", cxxopts::value<std::string>(in.dbPath)->default_value(std::string(buf)))
+            ("l,log-path", "path for output log", cxxopts::value<std::string>(in.logPath)->default_value(""))
+            ("L,log-level", "log level for spdlog", cxxopts::value<i32>(in.logLevel)->default_value("2"))
+            ("a,address", "which addess will listen", cxxopts::value<std::string>(in.listenIP)->default_value("127.0.0.1"))
+            ("p,port", "which port will listen", cxxopts::value<u16>(in.listenPort)->default_value("12345"))
             ("v,version", "print version")
             ("h,help", "print help")
             ;
@@ -119,23 +115,23 @@ u8 Config::parse(Config *in, int argc, char **argv)
             }
         }
 
-        if (!in->logPath.empty())
+        if (!in.logPath.empty())
         {
-            Model::DAO::DirUtils::convertPath(in->logPath);
-            if (Model::DAO::DirUtils::verifyDir(in->logPath))
+            Model::DAO::DirUtils::convertPath(in.logPath);
+            if (Model::DAO::DirUtils::verifyDir(in.logPath))
             {
                 spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
                 return 1;
             }
         }
 
-        if (in->listenPort > 65535)
+        if (in.listenPort > 65535)
         {
             spdlog::error("{}:{} Invalid port", __FILE__, __LINE__);
             return 1;
         }
 
-        if (Model::Utils::verifyIP(in->listenIP))
+        if (Model::Utils::verifyIP(in.listenIP))
         {
             spdlog::error("{}:{} Invalid ip", __FILE__, __LINE__);
             return 1;
@@ -162,32 +158,26 @@ u8 Config::parse(Config *in, int argc, char **argv)
     return 0;
 }
 
-uint_fast8_t Config::parse(Config *obj, const std::string &path)
+u8 Config::parse(Config &obj, const std::string &path)
 {
-    if (!obj)
-    {
-        spdlog::warn("{}:{} input is nullptr", __FILE__, __LINE__);
-        return 1;
-    }
-
     try
     {
         YAML::Node config = YAML::LoadFile(path);
-        
-        obj->dbPath = config["db path"].as<std::string>();
-        obj->logPath = config["log path"].as<std::string>();
 
-        Model::DAO::DirUtils::convertPath(obj->logPath);
-        if (Model::DAO::DirUtils::verifyDir(obj->logPath))
+        obj.dbPath = config["db path"].as<std::string>();
+        obj.logPath = config["log path"].as<std::string>();
+
+        Model::DAO::DirUtils::convertPath(obj.logPath);
+        if (Model::DAO::DirUtils::verifyDir(obj.logPath))
         {
             spdlog::error("{}:{} fail to verify log path", __FILE__, __LINE__);
             return 1;
         }
 
-        obj->listenPort = config["port"].as<u16>();
-        obj->listenIP = config["ip"].as<std::string>();
+        obj.listenPort = config["port"].as<u16>();
+        obj.listenIP = config["ip"].as<std::string>();
 
-        if (Model::Utils::verifyIP(obj->listenIP))
+        if (Model::Utils::verifyIP(obj.listenIP))
         {
             spdlog::error("{}:{} Invalid ip", __FILE__, __LINE__);
             return 1;
@@ -195,11 +185,37 @@ uint_fast8_t Config::parse(Config *obj, const std::string &path)
 
         u8 level(0);
         level = config["log level"].as<u8>();
-        obj->logLevel = static_cast<spdlog::level::level_enum>(level);
+        obj.logLevel = static_cast<spdlog::level::level_enum>(level);
     }
     catch (...)
     {
         spdlog::error("{}:{} error caught", __FILE__, __LINE__);
+        return 1;
+    }
+
+    return 0;
+}
+
+u8 Config::save(Config &obj, const std::string &path)
+{
+    YAML::Node config;
+    config["db path"] = obj.dbPath;
+    config["log path"] = obj.logPath;
+    config["port"] = obj.listenPort;
+    config["ip"] = obj.listenIP;
+    config["log level"] = static_cast<u8>(obj.logLevel);
+
+    YAML::Emitter emitter;
+    emitter << config;
+
+    try
+    {
+        std::ofstream fout(path);
+        fout << emitter.c_str();
+    }
+    catch (...)
+    {
+        spdlog::error("{}:{} Fail to write file", __FILE__, __LINE__);
         return 1;
     }
 
