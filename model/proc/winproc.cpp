@@ -142,19 +142,23 @@ bool WinProc::isRunning()
 
 void WinProc::readCurrentOutput(std::vector<std::string> &out)
 {
-    std::unique_lock<std::mutex> lock(m_mutex);
+    out.clear();
 
-    if (m_deque.empty())
     {
-        spdlog::debug("{}:{} nothing to read", __FILE__, __LINE__);
-        return;
-    }
+        std::unique_lock<std::mutex> lock(m_mutex);
 
-    out.reserve(m_deque.size());
-    for (size_t index = 0; index < m_deque.size(); ++index)
-    {
-        out.push_back(std::move(m_deque.front()));
-        m_deque.pop_front();
+        if (m_deque.empty())
+        {
+            spdlog::debug("{}:{} nothing to read", __FILE__, __LINE__);
+            return;
+        }
+
+        out.reserve(m_deque.size());
+        for (size_t index = 0; index < m_deque.size(); ++index)
+        {
+            out.push_back(std::move(m_deque.front()));
+            m_deque.pop_front();
+        }
     }
 }
 
@@ -359,6 +363,7 @@ void WinProc::readOutputLoop()
 
         // set correct buffer size
         buf.resize(dwRead);
+
         {
             std::unique_lock<std::mutex> lock(m_mutex);
 
@@ -369,8 +374,6 @@ void WinProc::readOutputLoop()
 
             m_deque.push_back(std::move(buf));
         }
-
-        Sleep(1000);
     } // end while(true)
 }
 

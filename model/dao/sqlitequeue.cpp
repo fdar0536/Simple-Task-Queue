@@ -190,16 +190,10 @@ bool SQLiteQueue::isRunning() const
     return m_isRunning.load(std::memory_order_relaxed);
 }
 
-u8 SQLiteQueue::readCurrentOutput(std::string &out)
+void SQLiteQueue::readCurrentOutput(std::vector<std::string> &out)
 {
     out.clear();
-    if (m_process->readCurrentOutput(out))
-    {
-        spdlog::debug("{}:{} Failed to read current output.", __FILE__, __LINE__);
-        return ErrCode_OS_ERROR;
-    }
-
-    return ErrCode_OK;
+    m_process->readCurrentOutput(out);
 }
 
 u8 SQLiteQueue::start()

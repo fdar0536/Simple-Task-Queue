@@ -42,7 +42,7 @@ class IQueue
 public:
 
     virtual ~IQueue() {}
-    
+
     virtual u8 init(std::shared_ptr<IConnect> &connect,
                     std::shared_ptr<Proc::IProc> &process,
                     const std::string &name) = 0;
@@ -69,7 +69,7 @@ public:
 
     virtual bool isRunning() const = 0;
 
-    virtual u8 readCurrentOutput(std::string &out) = 0;
+    virtual void readCurrentOutput(std::vector<std::string> &out) = 0;
 
     virtual u8 start() = 0;
 
