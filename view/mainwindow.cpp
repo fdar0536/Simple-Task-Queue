@@ -23,6 +23,7 @@
 
 #include "fmt/format.h"
 
+#include "QCloseEvent"
 #include "QDebug"
 #include "QMenu"
 #include "QMessageBox"
@@ -84,6 +85,22 @@ u8 MainWindow::init()
 
     connectHook();
     return 0;
+}
+
+// protected member functions
+bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
+{
+    if (obj == this)
+    {
+        if (ev->type() == QEvent::Close)
+        {
+            QCloseEvent *closeEvent = reinterpret_cast<QCloseEvent *>(ev);
+            closeEvent->ignore();
+            return true;
+        }
+    }
+
+    return QObject::eventFilter(obj, ev);
 }
 
 // private slots

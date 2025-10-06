@@ -55,6 +55,12 @@ public:
 
     u8 init();
 
+protected:
+
+protected:
+
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
 private slots:
 
     void exitProcess(bool);
