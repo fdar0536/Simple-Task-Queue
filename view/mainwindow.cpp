@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include "spdlog/spdlog.h"
+
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
 
@@ -39,17 +41,15 @@ MainWindow::~MainWindow()
 
 u8 MainWindow::init()
 {
+    if (!m_ui) m_ui = new (std::nothrow) Ui::MainWindow;
     if (!m_ui)
     {
-        m_ui = new (std::nothrow) Ui::MainWindow;
-    }
-
-    if (!m_ui)
-    {
+        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
         return 1;
     }
 
+    m_ui->setupUi(this);
     return 0;
 }
 
-} // end namespace View
+} // namespace View

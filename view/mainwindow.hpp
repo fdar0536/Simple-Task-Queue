@@ -40,6 +40,7 @@ namespace View
 
 class MainWindow : public QMainWindow
 {
+
     Q_OBJECT
 
 public:
@@ -54,8 +55,8 @@ private:
 
     Ui::MainWindow *m_ui;
 
-}; // end class MainWindow
+}; // class MainWindow
 
-} // end namespace View
+} // namespace View
 
 #endif // _VIEW_MAINWINDOW_HPP_
