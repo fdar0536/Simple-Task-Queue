@@ -25,6 +25,13 @@ if(ENABLE_GUI)
         controller/gui/hostinfo.hpp
         controller/gui/main.cpp
         controller/gui/main.hpp
+
+        view/configform.cpp
+        view/configform.hpp
+        view/configform.ui
+        view/mainwindow.cpp
+        view/mainwindow.hpp
+        view/mainwindow.ui
     )
 
     qt_add_executable(STQGUI
