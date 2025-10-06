@@ -25,6 +25,7 @@
 #define _VIEW_MAINWINDOW_HPP_
 
 #include "QMainWindow"
+#include "QSystemTrayIcon"
 
 #include "controller/global/defines.hpp"
 
@@ -60,6 +61,17 @@ private:
 
     // forms
     ConfigForm *m_configForm;
+
+    // tray icon
+    QSystemTrayIcon *m_trayIcon;
+
+    QMenu *m_menu;
+
+    QAction *m_showAction;
+
+    QAction *m_exitAction;
+
+    u8 setupTrayIcon();
 
     void connectHook();
 

@@ -24,6 +24,7 @@
 #include "fmt/format.h"
 
 #include "QDebug"
+#include "QMenu"
 
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
@@ -34,12 +35,27 @@ namespace View
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     m_ui(nullptr),
-    m_configForm(nullptr)
+    // forms
+    m_configForm(nullptr),
+    // tray icon
+    m_trayIcon(nullptr),
+    m_menu(nullptr),
+    m_showAction(nullptr),
+    m_exitAction(nullptr)
 {}
 
 MainWindow::~MainWindow()
 {
     if (m_ui) delete m_ui;
+
+    // forms
+    if (m_configForm) delete m_configForm;
+
+    // tray icon
+    if (m_trayIcon) delete m_trayIcon;
+    if (m_menu) delete m_menu;
+    if (m_showAction) delete m_showAction;
+    if (m_exitAction) delete m_exitAction;
 }
 
 u8 MainWindow::init()
@@ -69,6 +85,11 @@ u8 MainWindow::init()
 }
 
 // private member functions
+u8 MainWindow::setupTrayIcon()
+{
+    return 0;
+}
+
 void MainWindow::connectHook()
 {}
 
