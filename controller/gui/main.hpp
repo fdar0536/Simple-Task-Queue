@@ -52,7 +52,7 @@ private:
 
     QApplication *m_app = nullptr;
 
-    MainWindow m_w;
+    View::MainWindow m_w;
 
 }; // end class Main
 
