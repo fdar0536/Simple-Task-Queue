@@ -46,16 +46,7 @@ MainWindow::MainWindow(QWidget *parent):
 
 MainWindow::~MainWindow()
 {
-    if (m_ui) delete m_ui;
-
-    // forms
-    if (m_configForm) delete m_configForm;
-
-    // tray icon
-    if (m_trayIcon) delete m_trayIcon;
-    if (m_menu) delete m_menu;
-    if (m_showAction) delete m_showAction;
-    if (m_exitAction) delete m_exitAction;
+    cleanMemory();
 }
 
 u8 MainWindow::init()
@@ -72,11 +63,21 @@ u8 MainWindow::init()
     m_ui->setupUi(this);
 
     m_configForm = new(std::nothrow) ConfigForm(this);
-    if (!m_configForm->init())
+    if (m_configForm->init())
     {
         qCritical(
             fmt::format("{}:{} ConfigForm init failed",
                         __FILE__, __LINE__).c_str());
+        cleanMemory();
+        return 1;
+    }
+
+    if (setupTrayIcon())
+    {
+        qCritical(
+            fmt::format("{}:{} Setup tray icon failed",
+                        __FILE__, __LINE__).c_str());
+        cleanMemory();
         return 1;
     }
 
@@ -87,10 +88,70 @@ u8 MainWindow::init()
 // private member functions
 u8 MainWindow::setupTrayIcon()
 {
+    if (QSystemTrayIcon::isSystemTrayAvailable())
+    {
+        m_trayIcon = new (std::nothrow) QSystemTrayIcon(this);
+        if (!m_trayIcon)
+        {
+            qCritical(
+                fmt::format("{}:{} Fail to allocate memory",
+                            __FILE__, __LINE__).c_str());
+            return 1;
+        }
+
+        m_menu = new (std::nothrow) QMenu(this);
+        if (!m_menu)
+        {
+            qCritical(
+                fmt::format("{}:{} Fail to allocate memory",
+                            __FILE__, __LINE__).c_str());
+            return 1;
+        }
+
+        m_showAction = new (std::nothrow) QAction(this);
+        if (!m_showAction)
+        {
+            qCritical(
+                fmt::format("{}:{} Fail to allocate memory",
+                            __FILE__, __LINE__).c_str());
+            return 1;
+        }
+
+        m_exitAction = new (std::nothrow) QAction(this);
+        if (!m_exitAction)
+        {
+            qCritical(
+                fmt::format("{}:{} Fail to allocate memory",
+                            __FILE__, __LINE__).c_str());
+            return 1;
+        }
+
+        m_menu->addAction(m_showAction);
+        m_menu->addAction(m_exitAction);
+        m_trayIcon->setContextMenu(m_menu);
+    }
+
     return 0;
 }
 
 void MainWindow::connectHook()
-{}
+{
+    if (QSystemTrayIcon::isSystemTrayAvailable())
+    {}
+}
+
+void MainWindow::cleanMemory()
+{
+    if (m_ui) delete m_ui;
+
+    // forms
+    if (m_configForm) delete m_configForm;
+
+    // tray icon
+    if (m_trayIcon) delete m_trayIcon;
+    if (m_menu) delete m_menu;
+    if (m_showAction) delete m_showAction;
+    if (m_exitAction) delete m_exitAction;
+}
 
 } // namespace View

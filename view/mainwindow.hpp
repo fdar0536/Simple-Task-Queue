@@ -75,6 +75,8 @@ private:
 
     void connectHook();
 
+    void cleanMemory();
+
 }; // class MainWindow
 
 } // namespace View
