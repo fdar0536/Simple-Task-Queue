@@ -25,6 +25,7 @@
 
 #include "QDebug"
 #include "QMenu"
+#include "QMessageBox"
 
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
@@ -85,6 +86,24 @@ u8 MainWindow::init()
     return 0;
 }
 
+// private slots
+void MainWindow::exitProcess(bool)
+{
+    if (QMessageBox::question(this, tr("Exit"),
+                                    tr("Are you sure to exit?"
+                                       "All unfinished process in embadded mode"
+                                       "will be killed"),
+                                       QMessageBox::Yes |
+                                       QMessageBox::Cancel |
+                                       QMessageBox::No)
+        != QMessageBox::Yes)
+    {
+        return;
+    }
+
+    qApp->exit(0);
+}
+
 // private member functions
 u8 MainWindow::setupTrayIcon()
 {
@@ -136,8 +155,20 @@ u8 MainWindow::setupTrayIcon()
 
 void MainWindow::connectHook()
 {
+    // bar
+    connect(m_ui->actionExit,
+            &QAction::triggered,
+            this,
+            &MainWindow::exitProcess);
+
     if (QSystemTrayIcon::isSystemTrayAvailable())
-    {}
+    {
+        // tray icons
+        connect(m_exitAction,
+                &QAction::triggered,
+                this,
+                &MainWindow::exitProcess);
+    }
 }
 
 void MainWindow::cleanMemory()

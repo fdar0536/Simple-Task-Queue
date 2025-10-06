@@ -55,6 +55,10 @@ public:
 
     u8 init();
 
+private slots:
+
+    void exitProcess(bool);
+
 private:
 
     Ui::MainWindow *m_ui;
