@@ -53,6 +53,7 @@ u8 Main::init(QApplication &app)
 
 i32 Main::run()
 {
+    m_w.show();
     return m_app->exec();
 }
 

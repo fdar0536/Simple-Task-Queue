@@ -22,7 +22,6 @@
  */
 
 #include "QApplication"
-#include "QQmlApplicationEngine"
 
 #include "controller/gui/main.hpp"
 
@@ -35,11 +34,6 @@ int main(int argc, char **argv)
     {
         return 1;
     }
-
-    QQmlApplicationEngine engine;
-    engine.load(QUrl(QLatin1String("qrc:/qt/qml/STQGUI/view/main.qml")));
-    if (engine.rootObjects().isEmpty())
-        return -1;
 
     return main.run();
 }

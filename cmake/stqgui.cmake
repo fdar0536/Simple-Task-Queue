@@ -13,7 +13,6 @@ if(ENABLE_GUI)
         yaml-cpp::yaml-cpp
 
         Qt6::Widgets
-        Qt6::Quick
     )
 
     set(GUI_SRC
@@ -26,21 +25,18 @@ if(ENABLE_GUI)
         controller/gui/hostinfo.hpp
         controller/gui/main.cpp
         controller/gui/main.hpp
-    )
 
-    qt_add_resources(GUI_SRC guimain.qrc)
+        # ui
+        view/mainwindow.cpp
+        view/mainwindow.hpp
+        view/mainwindow.ui
+    )
 
     qt_add_executable(STQGUI
         ${GUI_SRC}
     )
 
     add_dependencies(STQGUI grpc_common stqmodel stqcontroller)
-
-    qt_add_qml_module(STQGUI
-        URI STQGUI
-        QML_FILES
-            view/main.qml
-    )
 
     target_link_libraries(STQGUI
         PRIVATE
