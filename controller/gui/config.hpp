@@ -41,6 +41,8 @@ public:
 
     Config();
 
+    ~Config();
+
     static u8 parse(Config &, std::string &);
 
     static u8 save(Config &, std::string &);

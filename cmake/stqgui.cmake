@@ -18,14 +18,17 @@ if(ENABLE_GUI)
 
     set(GUI_SRC
         guimain.cpp
-        view/stqgui.qrc
 
         controller/gui/config.cpp
         controller/gui/config.hpp
+        controller/gui/global.cpp
+        controller/gui/global.hpp
         controller/gui/hostinfo.hpp
         controller/gui/main.cpp
         controller/gui/main.hpp
     )
+
+    qt_add_resources(GUI_SRC guimain.qrc)
 
     qt_add_executable(STQGUI
         ${GUI_SRC}

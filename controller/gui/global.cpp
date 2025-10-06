@@ -21,42 +21,14 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_MAIN_HPP_
-#define _CONTROLLER_GUI_MAIN_HPP_
+#include "global.hpp"
 
-#include "QApplication"
-#include "QQmlApplicationEngine"
+namespace Controller {
+namespace GUI {
 
-#include "controller/global/defines.hpp"
+Global::Global(QObject *parent)
+    : QObject{parent}
+{}
 
-namespace Controller
-{
-
-namespace GUI
-{
-
-class Main
-{
-public:
-
-    Main();
-
-    ~Main();
-
-    u8 init(QApplication &app);
-
-    i32 run();
-
-private:
-
-    QApplication *m_app = nullptr;
-
-    QQmlApplicationEngine m_engine;
-
-}; // end class Main
-
-} // end namespace GUI
-
-} // end namespace Controller
-
-#endif // _CONTROLLER_GUI_MAIN_HPP_
+} // namespace GUI
+} // namespace Controller
