@@ -21,6 +21,9 @@
  * SOFTWARE.
  */
 
+#include "fmt/format.h"
+#include "QDebug"
+
 #include "configform.hpp"
 #include "ui_configform.h"
 
@@ -40,11 +43,16 @@ ConfigForm::~ConfigForm()
 u8 ConfigForm::init()
 {
     if (!m_ui) m_ui = new (std::nothrow) Ui::ConfigForm;
+
     if (!m_ui)
     {
+        qCritical(
+            fmt::format("{}:{} Fail to allocate memory",
+                        __FILE__, __LINE__).c_str());
         return 1;
     }
 
+    m_ui->setupUi(this);
     return 0;
 }
 

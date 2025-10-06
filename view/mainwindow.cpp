@@ -21,7 +21,9 @@
  * SOFTWARE.
  */
 
-#include "spdlog/spdlog.h"
+#include "fmt/format.h"
+
+#include "QDebug"
 
 #include "mainwindow.hpp"
 #include "ui_mainwindow.h"
@@ -31,7 +33,8 @@ namespace View
 
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
-    m_ui(nullptr)
+    m_ui(nullptr),
+    m_configForm(nullptr)
 {}
 
 MainWindow::~MainWindow()
@@ -44,12 +47,29 @@ u8 MainWindow::init()
     if (!m_ui) m_ui = new (std::nothrow) Ui::MainWindow;
     if (!m_ui)
     {
-        spdlog::error("{}:{} Fail to allocate memory", __FILE__, __LINE__);
+        qCritical(
+            fmt::format("{}:{} Fail to allocate memory",
+                        __FILE__, __LINE__).c_str());
         return 1;
     }
 
     m_ui->setupUi(this);
+
+    m_configForm = new(std::nothrow) ConfigForm(this);
+    if (!m_configForm->init())
+    {
+        qCritical(
+            fmt::format("{}:{} ConfigForm init failed",
+                        __FILE__, __LINE__).c_str());
+        return 1;
+    }
+
+    connectHook();
     return 0;
 }
+
+// private member functions
+void MainWindow::connectHook()
+{}
 
 } // namespace View

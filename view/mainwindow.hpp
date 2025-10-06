@@ -28,6 +28,9 @@
 
 #include "controller/global/defines.hpp"
 
+// ui
+#include "configform.hpp"
+
 namespace Ui
 {
 
@@ -54,6 +57,11 @@ public:
 private:
 
     Ui::MainWindow *m_ui;
+
+    // forms
+    ConfigForm *m_configForm;
+
+    void connectHook();
 
 }; // class MainWindow
 
