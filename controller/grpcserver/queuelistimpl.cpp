@@ -37,8 +37,8 @@ namespace GRPCServer
 
 grpc::Status
 QueueListImpl::Create(grpc::ServerContext *ctx,
-                      const stq::QueueReq *req,
-                      stq::Empty *res)
+                      const ff::QueueReq *req,
+                      ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);
@@ -69,8 +69,8 @@ QueueListImpl::Create(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueListImpl::Rename(grpc::ServerContext *ctx,
-                      const stq::RenameQueueReq *req,
-                      stq::Empty *res)
+                      const ff::RenameQueueReq *req,
+                      ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);
@@ -101,8 +101,8 @@ QueueListImpl::Rename(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueListImpl::Delete(grpc::ServerContext *ctx,
-                      const stq::QueueReq *req,
-                      stq::Empty *res)
+                      const ff::QueueReq *req,
+                      ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);
@@ -133,8 +133,8 @@ QueueListImpl::Delete(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueListImpl::List(grpc::ServerContext *ctx,
-                    const stq::Empty *req,
-                    grpc::ServerWriter<::stq::ListQueueRes> *writer)
+                    const ff::Empty *req,
+                    grpc::ServerWriter<::ff::ListQueueRes> *writer)
 {
     UNUSED(ctx);
     UNUSED(req);
@@ -154,7 +154,7 @@ QueueListImpl::List(grpc::ServerContext *ctx,
         return Model::ErrMsg::toGRPCStatus(code, "Fail to list queue");
     }
 
-    stq::ListQueueRes toWrite;
+    ff::ListQueueRes toWrite;
     for (size_t i = 0; i < out.size(); ++i)
     {
         toWrite.set_name(out.at(i));
@@ -166,8 +166,8 @@ QueueListImpl::List(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueListImpl::GetQueue(grpc::ServerContext *ctx,
-                        const stq::QueueReq *req,
-                        stq::Empty *res)
+                        const ff::QueueReq *req,
+                        ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);

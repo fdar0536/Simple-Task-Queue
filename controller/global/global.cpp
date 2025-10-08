@@ -142,6 +142,12 @@ bool isAdmin()
     FreeSid(sid);
     return res;
 #else
+    if (!system("sudo -v -n &>/dev/null"))
+    {
+        // system("sudo -v -n &>/dev/null") == 0
+        return true;
+    }
+
     return (geteuid() == 0);
 #endif
 }

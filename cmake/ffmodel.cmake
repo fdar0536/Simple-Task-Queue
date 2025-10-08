@@ -1,4 +1,4 @@
-set(STQ_MODEL_LIBS
+set(FF_MODEL_LIBS
     protobuf::libprotobuf
     gRPC::grpc++
     SQLite::SQLite3
@@ -64,14 +64,14 @@ elseif (LINUX)
     )
 endif (WIN32)
 
-add_library(stqmodel STATIC
+add_library(ffmodel STATIC
     ${MODEL_SRC}
 )
 
-add_dependencies(stqmodel grpc_common)
+add_dependencies(ffmodel grpc_common)
 
-target_link_libraries(stqmodel
+target_link_libraries(ffmodel
     PRIVATE
 
-    ${STQ_MODEL_LIBS}
+    ${FF_MODEL_LIBS}
 )

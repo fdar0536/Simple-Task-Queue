@@ -60,7 +60,7 @@ u8 GRPCQueueList::init(std::shared_ptr<IConnect> &connect)
     GRPCToken *token = reinterpret_cast<GRPCToken *>(connect->connectToken());
     try
     {
-        m_stub = stq::QueueList::NewStub(token->channel);
+        m_stub = ff::QueueList::NewStub(token->channel);
         if (m_stub == nullptr)
         {
             spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
@@ -79,10 +79,10 @@ u8 GRPCQueueList::init(std::shared_ptr<IConnect> &connect)
 
 u8 GRPCQueueList::createQueue(const std::string &name)
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(name);
 
-    stq::Empty res;
+    ff::Empty res;
     grpc::ClientContext ctx;
 
     GRPCUtils::setupCtx(ctx);
@@ -101,8 +101,8 @@ u8 GRPCQueueList::listQueue(std::vector<std::string> &out)
     out.clear();
     out.reserve(100);
 
-    stq::Empty req;
-    stq::ListQueueRes res;
+    ff::Empty req;
+    ff::ListQueueRes res;
     grpc::ClientContext ctx;
 
     GRPCUtils::setupCtx(ctx);
@@ -130,10 +130,10 @@ u8 GRPCQueueList::listQueue(std::vector<std::string> &out)
 
 u8 GRPCQueueList::deleteQueue(const std::string &name)
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(name);
 
-    stq::Empty res;
+    ff::Empty res;
     grpc::ClientContext ctx;
 
     GRPCUtils::setupCtx(ctx);
@@ -150,11 +150,11 @@ u8 GRPCQueueList::deleteQueue(const std::string &name)
 u8 GRPCQueueList::renameQueue(const std::string &oldName,
                               const std::string &newName)
 {
-    stq::RenameQueueReq req;
+    ff::RenameQueueReq req;
     req.set_oldname(oldName);
     req.set_newname(newName);
 
-    stq::Empty res;
+    ff::Empty res;
     grpc::ClientContext ctx;
 
     GRPCUtils::setupCtx(ctx);
@@ -170,10 +170,10 @@ u8 GRPCQueueList::renameQueue(const std::string &oldName,
 
 std::shared_ptr<IQueue> GRPCQueueList::getQueue(const std::string &name)
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(name);
 
-    stq::Empty res;
+    ff::Empty res;
     grpc::ClientContext ctx;
 
     GRPCUtils::setupCtx(ctx);

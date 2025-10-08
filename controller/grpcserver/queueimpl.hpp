@@ -32,74 +32,74 @@ namespace Controller
 namespace GRPCServer
 {
 
-class QueueImpl : public stq::Queue::Service
+class QueueImpl : public ff::Queue::Service
 {
 public:
 
     grpc::Status
     ListPending(grpc::ServerContext *ctx,
-                const stq::QueueReq *req,
-                grpc::ServerWriter<stq::ListTaskRes> *writer) override;
+                const ff::QueueReq *req,
+                grpc::ServerWriter<ff::ListTaskRes> *writer) override;
 
     grpc::Status
     ListFinished(grpc::ServerContext *ctx,
-                 const stq::QueueReq *req,
-                 grpc::ServerWriter<stq::ListTaskRes> *writer) override;
+                 const ff::QueueReq *req,
+                 grpc::ServerWriter<ff::ListTaskRes> *writer) override;
 
     grpc::Status
     PendingDetails(grpc::ServerContext *ctx,
-                   const stq::TaskDetailsReq *req,
-                   stq::TaskDetailsRes *res) override;
+                   const ff::TaskDetailsReq *req,
+                   ff::TaskDetailsRes *res) override;
 
     grpc::Status
     FinishedDetails(grpc::ServerContext *ctx,
-                    const stq::TaskDetailsReq *req,
-                    stq::TaskDetailsRes *res) override;
+                    const ff::TaskDetailsReq *req,
+                    ff::TaskDetailsRes *res) override;
 
     grpc::Status
     ClearPending(grpc::ServerContext *ctx,
-                 const stq::QueueReq *req,
-                 stq::Empty *res) override;
+                 const ff::QueueReq *req,
+                 ff::Empty *res) override;
 
     grpc::Status
     ClearFinished(grpc::ServerContext *ctx,
-                  const stq::QueueReq *req,
-                  stq::Empty *res) override;
+                  const ff::QueueReq *req,
+                  ff::Empty *res) override;
 
     grpc::Status
     CurrentTask(grpc::ServerContext *ctx,
-                const stq::QueueReq *req,
-                stq::TaskDetailsRes *res) override;
+                const ff::QueueReq *req,
+                ff::TaskDetailsRes *res) override;
 
     grpc::Status
     AddTask(grpc::ServerContext *ctx,
-            const stq::AddTaskReq *req,
-            stq::ListTaskRes *res) override;
+            const ff::AddTaskReq *req,
+            ff::ListTaskRes *res) override;
 
     grpc::Status
     RemoveTask(grpc::ServerContext *ctx,
-               const stq::TaskDetailsReq *req,
-               stq::Empty *res) override;
+               const ff::TaskDetailsReq *req,
+               ff::Empty *res) override;
 
     grpc::Status
     IsRunning(grpc::ServerContext *ctx,
-              const stq::QueueReq *req,
-              stq::IsRunningRes *res) override;
+              const ff::QueueReq *req,
+              ff::IsRunningRes *res) override;
 
     grpc::Status
     ReadCurrentOutput(grpc::ServerContext *ctx,
-                      const stq::QueueReq *req,
-                      grpc::ServerWriter<stq::Msg> *writer) override;
+                      const ff::QueueReq *req,
+                      grpc::ServerWriter<ff::Msg> *writer) override;
 
     grpc::Status
     Start(grpc::ServerContext *ctx,
-          const stq::QueueReq *req,
-          stq::Empty *res) override;
+          const ff::QueueReq *req,
+          ff::Empty *res) override;
 
     grpc::Status
     Stop(grpc::ServerContext *ctx,
-         const stq::QueueReq *req,
-         stq::Empty *res) override;
+         const ff::QueueReq *req,
+         ff::Empty *res) override;
 };
 
 } // end namespace GRPCServer

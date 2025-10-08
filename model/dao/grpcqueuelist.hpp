@@ -58,7 +58,7 @@ public:
 
 private:
 
-    std::unique_ptr<stq::QueueList::Stub> m_stub;
+    std::unique_ptr<ff::QueueList::Stub> m_stub;
 
 }; // end class GRPCQueueList
 

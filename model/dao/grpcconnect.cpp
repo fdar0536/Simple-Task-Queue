@@ -69,7 +69,7 @@ u8 GRPCConnect::startConnect(const std::string &target,
     std::string ip = target;
     ip += ":";
     ip += std::to_string(port);
-    std::unique_ptr<stq::Access::Stub> stub;
+    std::unique_ptr<ff::Access::Stub> stub;
 
     try
     {
@@ -83,7 +83,7 @@ u8 GRPCConnect::startConnect(const std::string &target,
             return ErrCode_OS_ERROR;
         }
 
-        stub = stq::Access::NewStub(token->channel);
+        stub = ff::Access::NewStub(token->channel);
         if (stub == nullptr)
         {
             spdlog::error("{}:{} Fail to create access' stub", __FILE__, __LINE__);
@@ -98,8 +98,8 @@ u8 GRPCConnect::startConnect(const std::string &target,
         return ErrCode_OS_ERROR;
     }
 
-    stq::Empty req;
-    stq::EchoRes res;
+    ff::Empty req;
+    ff::EchoRes res;
     grpc::ClientContext ctx;
 
     GRPCUtils::setupCtx(ctx);

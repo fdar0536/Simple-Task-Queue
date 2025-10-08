@@ -81,7 +81,7 @@ u8 Config::parse(Config &in, int argc, char **argv)
 
     try
     {
-        cxxopts::Options options("STQSERVER", "STQ Server");
+        cxxopts::Options options("FFSERVER", "FF Server");
         options.add_options()
             ("c,config-file", "path to config file", cxxopts::value<std::string>(configFile)->default_value(""))
             ("d,db-path", "path to config file", cxxopts::value<std::string>(in.dbPath)->default_value(std::string(buf)))
@@ -225,10 +225,10 @@ u8 Config::save(Config &obj, const std::string &path)
 // private member functions
 void Config::printVersion()
 {
-    fmt::println("STQSERVER version info:");
-    fmt::println("branch:  " STQ_BRANCH);
-    fmt::println("commit:  " STQ_COMMIT);
-    fmt::println("version: " STQ_VERSION);
+    fmt::println("FFSERVER version info:");
+    fmt::println("branch:  " FF_BRANCH);
+    fmt::println("commit:  " FF_COMMIT);
+    fmt::println("version: " FF_VERSION);
 }
 
 } // end namespace GRPCServer

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(SimpleTaskQueue LANGUAGES C CXX)
+project(FlexFlow LANGUAGES C CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -33,8 +33,8 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(STQ_VERSION r12)
-set(STQ_NAME SimpleTaskQueue)
+set(FF_VERSION r12)
+set(FF_NAME FlexFlow)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -66,14 +66,14 @@ endif(NOT DEFINED MAX_READ_QUEUE_SIZE)
 
 include(cmake/getGitInfo.cmake)
 
-set(STQ_COMMIT "")
-get_git_hash(STQ_COMMIT)
-message(STATUS "Git hash is ${STQ_COMMIT}")
+set(FF_COMMIT "")
+get_git_hash(FF_COMMIT)
+message(STATUS "Git hash is ${FF_COMMIT}")
 
 # git_BRANCh
-set(STQ_BRANCH "")
-get_git_branch(STQ_BRANCH)
-message(STATUS "Git branch is ${STQ_BRANCH}")
+set(FF_BRANCH "")
+get_git_branch(FF_BRANCH)
+message(STATUS "Git branch is ${FF_BRANCH}")
 
 configure_file(config.h.in config.h @ONLY)
 include_directories(After SYSTEM ${CMAKE_CURRENT_BINARY_DIR})
@@ -126,8 +126,8 @@ target_link_libraries(grpc_common
     gRPC::grpc++
 )
 
-include(cmake/stqmodel.cmake)
-include(cmake/stqcontroller.cmake)
-include(cmake/stqserver.cmake)
-include(cmake/stqcli.cmake)
-include(cmake/stqgui.cmake)
+include(cmake/ffmodel.cmake)
+include(cmake/ffcontroller.cmake)
+include(cmake/flexflowserver.cmake)
+include(cmake/flexflowcli.cmake)
+include(cmake/flexflowgui.cmake)

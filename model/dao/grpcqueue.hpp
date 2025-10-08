@@ -78,11 +78,11 @@ public:
 
 private:
 
-    std::unique_ptr<stq::Queue::Stub> m_stub;
+    std::unique_ptr<ff::Queue::Stub> m_stub;
 
     std::string m_queueName;
 
-    static void buildTask(stq::TaskDetailsRes &res, Proc::Task &task);
+    static void buildTask(ff::TaskDetailsRes &res, Proc::Task &task);
 
 }; // end class GRPCQueue
 
