@@ -37,6 +37,7 @@ namespace View
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     m_ui(nullptr),
+    m_icon(QIcon("://original-icon.jpg")),
     // forms
     m_configForm(nullptr),
     // tray icon
@@ -87,6 +88,7 @@ u8 MainWindow::init()
 
     connectHook();
     installEventFilter(this);
+    setWindowIcon(m_icon);
     return 0;
 }
 
@@ -195,7 +197,7 @@ u8 MainWindow::setupTrayIcon()
         m_menu->addAction(m_showAction);
         m_menu->addAction(m_exitAction);
         m_trayIcon->setContextMenu(m_menu);
-        m_trayIcon->setIcon(QIcon("://original-icon.jpg"));
+        m_trayIcon->setIcon(m_icon);
         m_trayIcon->show();
     }
 

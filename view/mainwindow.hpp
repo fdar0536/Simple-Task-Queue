@@ -24,6 +24,7 @@
 #ifndef _VIEW_MAINWINDOW_HPP_
 #define _VIEW_MAINWINDOW_HPP_
 
+#include "QIcon"
 #include "QMainWindow"
 #include "QSystemTrayIcon"
 
@@ -75,6 +76,9 @@ private slots:
 private:
 
     Ui::MainWindow *m_ui;
+
+    // icon
+    QIcon m_icon;
 
     // forms
     ConfigForm *m_configForm;
