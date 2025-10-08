@@ -1,8 +1,8 @@
-# FlexFlow
+# Flex Flow
 
 ## Introduction
 
-This is a simple tool that allow you can manage the task queue by remote or in local.  
+This is a simple tool that allow you can manage the task flow by remote or in local.  
 ***Warning: DO NOT RUN THIS PROGRAM AS SUPER USER AND ADMINISTRATOR, OR IT WILL CAUSE CRITICAL SECURITY ISSUES.***
 
 ## Dependency
