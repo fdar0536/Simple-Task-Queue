@@ -27,6 +27,9 @@ if(ENABLE_GUI)
         controller/gui/main.cpp
         controller/gui/main.hpp
 
+        view/aboutdialog.cpp
+        view/aboutdialog.hpp
+        view/aboutdialog.ui
         view/configform.cpp
         view/configform.hpp
         view/configform.ui
