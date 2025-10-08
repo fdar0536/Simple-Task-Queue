@@ -111,6 +111,18 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>list</tabstop>
+  <tabstop>connectBtn</tabstop>
+  <tabstop>clearBtn</tabstop>
+  <tabstop>saveBtn</tabstop>
+  <tabstop>loadBtn</tabstop>
+  <tabstop>deleteBtnon_5</tabstop>
+  <tabstop>name</tabstop>
+  <tabstop>host</tabstop>
+  <tabstop>port</tabstop>
+  <tabstop>useEmbadded</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
