@@ -23,24 +23,24 @@ if(ENABLE_CLI)
         controller/cli/queuelist.hpp
     )
 
-    add_executable(FFCLI
+    add_executable(FlexFlowCLI
         ${CLI_CONTROLLER_SRC}
 
         climain.cpp)
 
-    add_dependencies(FFCLI grpc_common ffmodel)
+    add_dependencies(FlexFlowCLI grpc_common ffmodel)
 
-    target_link_libraries(FFCLI
+    target_link_libraries(FlexFlowCLI
         PRIVATE
 
         ${FF_CLI_LIBS}
         ffmodel
     )
 
-    target_include_directories(FFCLI PRIVATE ${INIPP_INCLUDE_DIRS})
+    target_include_directories(FlexFlowCLI PRIVATE ${INIPP_INCLUDE_DIRS})
 
     if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-        target_link_options(FFCLI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-        target_compile_options(FFCLI PRIVATE $<$<CONFIG:Debug>:/ZI>)
+        target_link_options(FlexFlowCLI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+        target_compile_options(FlexFlowCLI PRIVATE $<$<CONFIG:Debug>:/ZI>)
     endif()
 endif(ENABLE_SERVER)
