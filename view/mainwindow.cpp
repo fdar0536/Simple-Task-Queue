@@ -115,7 +115,15 @@ void MainWindow::onActionConfigTriggered(bool)
 }
 
 // tray icon
-void MainWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason)
+void MainWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::DoubleClick)
+    {
+        show();
+    }
+}
+
+void MainWindow::onShowActionTriggered(bool)
 {
     show();
 }
@@ -205,6 +213,16 @@ void MainWindow::connectHook()
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
         // tray icons
+        connect(m_trayIcon,
+                &QSystemTrayIcon::activated,
+                this,
+                &MainWindow::onTrayIconActivated);
+
+        connect(m_showAction,
+                &QAction::triggered,
+                this,
+                &MainWindow::onShowActionTriggered);
+
         connect(m_exitAction,
                 &QAction::triggered,
                 this,

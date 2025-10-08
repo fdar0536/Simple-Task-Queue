@@ -67,6 +67,8 @@ private slots:
     // tray icon
     void onTrayIconActivated(QSystemTrayIcon::ActivationReason);
 
+    void onShowActionTriggered(bool);
+
     // others
     void exitProcess(bool);
 
