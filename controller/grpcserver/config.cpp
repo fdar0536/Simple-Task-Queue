@@ -225,7 +225,7 @@ u8 Config::save(Config &obj, const std::string &path)
 // private member functions
 void Config::printVersion()
 {
-    fmt::println("FFSERVER version info:");
+    fmt::println("Flex Flow Server version info:");
     fmt::println("branch:  " FF_BRANCH);
     fmt::println("commit:  " FF_COMMIT);
     fmt::println("version: " FF_VERSION);

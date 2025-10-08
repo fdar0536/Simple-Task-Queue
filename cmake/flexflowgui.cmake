@@ -2,7 +2,7 @@
 # so sperate controller source into gui
 
 if(ENABLE_GUI)
-    set(STQ_GUI_LIBS
+    set(FF_GUI_LIBS
         protobuf::libprotobuf
         gRPC::grpc++
         cxxopts::cxxopts
@@ -34,22 +34,22 @@ if(ENABLE_GUI)
         view/mainwindow.ui
     )
 
-    qt_add_executable(STQGUI
+    qt_add_executable(FlexFlowGUI
         ${GUI_SRC}
     )
 
-    add_dependencies(STQGUI grpc_common stqmodel stqcontroller)
+    add_dependencies(FlexFlowGUI grpc_common ffmodel ffcontroller)
 
-    target_link_libraries(STQGUI
+    target_link_libraries(FlexFlowGUI
         PRIVATE
 
-        ${STQ_GUI_LIBS}
-        stqmodel
-        stqcontroller
+        ${FF_GUI_LIBS}
+        ffmodel
+        ffcontroller
     )
 
     if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-        target_link_options(STQGUI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-        target_compile_options(STQGUI PRIVATE $<$<CONFIG:Debug>:/ZI>)
+        target_link_options(FlexFlowGUI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+        target_compile_options(FlexFlowGUI PRIVATE $<$<CONFIG:Debug>:/ZI>)
     endif (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
 endif (ENABLE_GUI)

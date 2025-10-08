@@ -230,7 +230,7 @@ i32 Main::parseArgs(int argc, char **argv)
 
 void Main::printVersion()
 {
-    fmt::println("FFCLI version info:");
+    fmt::println("Flex Flow CLI version info:");
     fmt::println("branch: " FF_BRANCH);
     fmt::println("commit: " FF_COMMIT);
     fmt::println("version: " FF_VERSION);

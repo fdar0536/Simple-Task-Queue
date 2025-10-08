@@ -1,11 +1,11 @@
-set(STQ_CONTROLLER_LIBS
+set(FF_CONTROLLER_LIBS
     protobuf::libprotobuf
     gRPC::grpc++
     SQLite::SQLite3
     spdlog::spdlog
 
     grpc_common
-    stqmodel
+    ffmodel
 )
 
 set(CONTROLLER_SRC
@@ -51,15 +51,15 @@ if (ENABLE_CLI)
     )
 endif (ENABLE_CLI)
 
-add_library(stqcontroller STATIC
+add_library(ffcontroller STATIC
     ${CONTROLLER_SRC}
 )
 
-add_dependencies(stqcontroller stqmodel grpc_common)
+add_dependencies(ffcontroller ffmodel grpc_common)
 
-target_link_libraries(stqcontroller
+target_link_libraries(ffcontroller
     PRIVATE
 
-    ${STQ_CONTROLLER_LIBS}
+    ${FF_CONTROLLER_LIBS}
 )
 

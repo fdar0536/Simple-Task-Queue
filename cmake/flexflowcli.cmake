@@ -9,32 +9,17 @@ if(ENABLE_CLI)
         spdlog::spdlog
     )
 
-    set(CLI_CONTROLLER_SRC
-        controller/cli/args.cpp
-        controller/cli/args.hpp
-        controller/cli/config.hpp
-        controller/cli/global.cpp
-        controller/cli/global.hpp
-        controller/cli/main.cpp
-        controller/cli/main.hpp
-        controller/cli/queue.cpp
-        controller/cli/queue.hpp
-        controller/cli/queuelist.cpp
-        controller/cli/queuelist.hpp
-    )
-
     add_executable(FlexFlowCLI
-        ${CLI_CONTROLLER_SRC}
-
         climain.cpp)
 
-    add_dependencies(FlexFlowCLI grpc_common ffmodel)
+    add_dependencies(FlexFlowCLI grpc_common ffmodel ffcontroller)
 
     target_link_libraries(FlexFlowCLI
         PRIVATE
 
         ${FF_CLI_LIBS}
         ffmodel
+        ffcontroller
     )
 
     target_include_directories(FlexFlowCLI PRIVATE ${INIPP_INCLUDE_DIRS})
