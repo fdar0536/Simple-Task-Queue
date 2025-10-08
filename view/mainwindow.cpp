@@ -89,6 +89,7 @@ u8 MainWindow::init()
     connectHook();
     installEventFilter(this);
     setWindowIcon(m_icon);
+    setWindowTitle("Flex Flow GUI");
     return 0;
 }
 
