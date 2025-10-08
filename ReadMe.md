@@ -1,6 +1,8 @@
 # Flex Flow
 
-![original-icon.jpg]()
+<p align="center">
+  <img src="original-icon.jpg" alt="" width="200" height=200/>
+</p>
 
 ## Introduction
 
