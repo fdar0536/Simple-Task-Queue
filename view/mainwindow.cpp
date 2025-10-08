@@ -86,6 +86,7 @@ u8 MainWindow::init()
     }
 
     connectHook();
+    installEventFilter(this);
     return 0;
 }
 
