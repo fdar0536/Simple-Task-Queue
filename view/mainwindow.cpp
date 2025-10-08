@@ -165,7 +165,7 @@ u8 MainWindow::setupTrayIcon()
             return 1;
         }
 
-        m_showAction = new (std::nothrow) QAction(this);
+        m_showAction = new (std::nothrow) QAction(tr("Show"), this);
         if (!m_showAction)
         {
             qCritical(
@@ -174,7 +174,7 @@ u8 MainWindow::setupTrayIcon()
             return 1;
         }
 
-        m_exitAction = new (std::nothrow) QAction(this);
+        m_exitAction = new (std::nothrow) QAction(tr("Exit"), this);
         if (!m_exitAction)
         {
             qCritical(
@@ -186,6 +186,7 @@ u8 MainWindow::setupTrayIcon()
         m_menu->addAction(m_showAction);
         m_menu->addAction(m_exitAction);
         m_trayIcon->setContextMenu(m_menu);
+        m_trayIcon->setIcon(QIcon("://original-icon.jpg"));
         m_trayIcon->show();
     }
 

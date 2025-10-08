@@ -17,6 +17,7 @@ if(ENABLE_GUI)
 
     set(GUI_SRC
         guimain.cpp
+        guimain.qrc
 
         controller/gui/config.cpp
         controller/gui/config.hpp
