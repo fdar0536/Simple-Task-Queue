@@ -32,13 +32,13 @@ namespace Controller
 namespace GRPCServer
 {
 
-class AccessImpl : public stq::Access::Service
+class AccessImpl : public ff::Access::Service
 {
 public:
 
     grpc::Status Echo(grpc::ServerContext *context,
-                      const stq::Empty *request,
-                      stq::EchoRes *response) override;
+                      const ff::Empty *request,
+                      ff::EchoRes *response) override;
 };
 
 } // end namespace GRPCServer

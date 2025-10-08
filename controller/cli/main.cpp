@@ -195,13 +195,13 @@ i32 Main::parseArgs(int argc, char **argv)
 
     try
     {
-        cxxopts::Options options("STQCLI", "STQ CLI Client");
+        cxxopts::Options options("FFCLI", "FF CLI Client");
         options.add_options()
             ("l,log-file", "file for output log", cxxopts::value<std::string>(Global::config.logFile)->default_value(""))
             ("L,log-level", "log level for spdlog", cxxopts::value<i32>(Global::config.logLevel)->default_value("2"))
-            ("a,address", "address to STQ server", cxxopts::value<std::string>(Global::config.address)->default_value("127.0.0.1"))
+            ("a,address", "address to FF server", cxxopts::value<std::string>(Global::config.address)->default_value("127.0.0.1"))
             ("A,auto-connect", "auto connect to server", cxxopts::value<bool>(Global::config.autoConnect)->default_value("true"))
-            ("p,port", "which port is STQ Server listening", cxxopts::value<u16>(Global::config.port)->default_value("12345"))
+            ("p,port", "which port is FF Server listening", cxxopts::value<u16>(Global::config.port)->default_value("12345"))
             ("v,version", "print version")
             ("h,help", "print help")
             ;
@@ -230,10 +230,10 @@ i32 Main::parseArgs(int argc, char **argv)
 
 void Main::printVersion()
 {
-    fmt::println("STQCLI version info:");
-    fmt::println("branch: " STQ_BRANCH);
-    fmt::println("commit: " STQ_COMMIT);
-    fmt::println("version: " STQ_VERSION);
+    fmt::println("FFCLI version info:");
+    fmt::println("branch: " FF_BRANCH);
+    fmt::println("commit: " FF_COMMIT);
+    fmt::println("version: " FF_VERSION);
 }
 
 u8 Main::optsInit()

@@ -32,29 +32,29 @@ namespace Controller
 namespace GRPCServer
 {
 
-class QueueListImpl : public stq::QueueList::Service
+class QueueListImpl : public ff::QueueList::Service
 {
 public:
 
     grpc::Status Create(grpc::ServerContext *ctx,
-                        const stq::QueueReq *req,
-                        stq::Empty *res) override;
+                        const ff::QueueReq *req,
+                        ff::Empty *res) override;
 
     grpc::Status Rename(grpc::ServerContext *ctx,
-                        const stq::RenameQueueReq *req,
-                        stq::Empty *res) override;
+                        const ff::RenameQueueReq *req,
+                        ff::Empty *res) override;
 
     grpc::Status Delete(grpc::ServerContext *ctx,
-                        const stq::QueueReq *req,
-                        stq::Empty *res) override;
+                        const ff::QueueReq *req,
+                        ff::Empty *res) override;
 
     grpc::Status List(grpc::ServerContext *ctx,
-                      const stq::Empty *req,
-                      grpc::ServerWriter<::stq::ListQueueRes> *writer) override;
+                      const ff::Empty *req,
+                      grpc::ServerWriter<::ff::ListQueueRes> *writer) override;
 
     grpc::Status GetQueue(grpc::ServerContext *ctx,
-                          const stq::QueueReq *req,
-                          stq::Empty *res) override;
+                          const ff::QueueReq *req,
+                          ff::Empty *res) override;
 
 }; // end class QueueListImpl
 

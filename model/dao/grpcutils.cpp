@@ -39,7 +39,7 @@ namespace GRPCUtils
 void setupCtx(grpc::ClientContext &ctx)
 {
     ctx.set_deadline(std::chrono::system_clock::now() +
-                     std::chrono::milliseconds(STQ_CLIENT_TIMEOUT * 1000));
+                     std::chrono::milliseconds(FF_CLIENT_TIMEOUT * 1000));
 }
 
 void buildErrMsg(const char *file, i32 line, grpc::Status &status)

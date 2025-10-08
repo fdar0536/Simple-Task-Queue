@@ -37,8 +37,8 @@ namespace GRPCServer
 
 grpc::Status
 QueueImpl::ListPending(grpc::ServerContext *ctx,
-                       const stq::QueueReq *req,
-                       grpc::ServerWriter<stq::ListTaskRes> *writer)
+                       const ff::QueueReq *req,
+                       grpc::ServerWriter<ff::ListTaskRes> *writer)
 {
     UNUSED(ctx);
     if (!req || !writer)
@@ -62,7 +62,7 @@ QueueImpl::ListPending(grpc::ServerContext *ctx,
         return Model::ErrMsg::toGRPCStatus(code, "Fail to list pending");
     }
 
-    stq::ListTaskRes res;
+    ff::ListTaskRes res;
     for (auto it = out.begin(); it != out.end(); ++it)
     {
         res.set_id(*it);
@@ -74,8 +74,8 @@ QueueImpl::ListPending(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::ListFinished(grpc::ServerContext *ctx,
-                        const stq::QueueReq *req,
-                        grpc::ServerWriter<stq::ListTaskRes> *writer)
+                        const ff::QueueReq *req,
+                        grpc::ServerWriter<ff::ListTaskRes> *writer)
 {
     UNUSED(ctx);
     if (!req || !writer)
@@ -99,7 +99,7 @@ QueueImpl::ListFinished(grpc::ServerContext *ctx,
         return Model::ErrMsg::toGRPCStatus(code, "Fail to list finished");
     }
 
-    stq::ListTaskRes res;
+    ff::ListTaskRes res;
     for (auto it = out.begin(); it != out.end(); ++it)
     {
         res.set_id(*it);
@@ -110,7 +110,7 @@ QueueImpl::ListFinished(grpc::ServerContext *ctx,
 }
 
 static void
-buildTaskDetailsRes(Model::Proc::Task &task, stq::TaskDetailsRes *res)
+buildTaskDetailsRes(Model::Proc::Task &task, ff::TaskDetailsRes *res)
 {
     if (!res)
     {
@@ -131,8 +131,8 @@ buildTaskDetailsRes(Model::Proc::Task &task, stq::TaskDetailsRes *res)
 
 grpc::Status
 QueueImpl::PendingDetails(grpc::ServerContext *ctx,
-                          const stq::TaskDetailsReq *req,
-                          stq::TaskDetailsRes *res)
+                          const ff::TaskDetailsReq *req,
+                          ff::TaskDetailsRes *res)
 {
     UNUSED(ctx);
     if (!req || !res)
@@ -162,8 +162,8 @@ QueueImpl::PendingDetails(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::FinishedDetails(grpc::ServerContext *ctx,
-                           const stq::TaskDetailsReq *req,
-                           stq::TaskDetailsRes *res)
+                           const ff::TaskDetailsReq *req,
+                           ff::TaskDetailsRes *res)
 {
     UNUSED(ctx);
     if (!req || !res)
@@ -193,8 +193,8 @@ QueueImpl::FinishedDetails(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::ClearPending(grpc::ServerContext *ctx,
-                        const stq::QueueReq *req,
-                        stq::Empty *res)
+                        const ff::QueueReq *req,
+                        ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);
@@ -223,8 +223,8 @@ QueueImpl::ClearPending(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::ClearFinished(grpc::ServerContext *ctx,
-                         const stq::QueueReq *req,
-                         stq::Empty *res)
+                         const ff::QueueReq *req,
+                         ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);
@@ -253,8 +253,8 @@ QueueImpl::ClearFinished(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::CurrentTask(grpc::ServerContext *ctx,
-                       const stq::QueueReq *req,
-                       stq::TaskDetailsRes *res)
+                       const ff::QueueReq *req,
+                       ff::TaskDetailsRes *res)
 {
     UNUSED(ctx);
     if (!req || !res)
@@ -284,8 +284,8 @@ QueueImpl::CurrentTask(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::AddTask(grpc::ServerContext *ctx,
-                   const stq::AddTaskReq *req,
-                   stq::ListTaskRes *res)
+                   const ff::AddTaskReq *req,
+                   ff::ListTaskRes *res)
 {
     UNUSED(ctx);
     if (!req || !res)
@@ -323,8 +323,8 @@ QueueImpl::AddTask(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::RemoveTask(grpc::ServerContext *ctx,
-                      const stq::TaskDetailsReq *req,
-                      stq::Empty *res)
+                      const ff::TaskDetailsReq *req,
+                      ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);
@@ -353,8 +353,8 @@ QueueImpl::RemoveTask(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::IsRunning(grpc::ServerContext *ctx,
-                     const stq::QueueReq *req,
-                     stq::IsRunningRes *res)
+                     const ff::QueueReq *req,
+                     ff::IsRunningRes *res)
 {
     UNUSED(ctx);
     if (!req || !res)
@@ -376,8 +376,8 @@ QueueImpl::IsRunning(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::ReadCurrentOutput(grpc::ServerContext *ctx,
-                             const stq::QueueReq *req,
-                             grpc::ServerWriter<stq::Msg> *writer)
+                             const ff::QueueReq *req,
+                             grpc::ServerWriter<ff::Msg> *writer)
 {
     UNUSED(ctx);
     if (!req || !writer)
@@ -396,7 +396,7 @@ QueueImpl::ReadCurrentOutput(grpc::ServerContext *ctx,
     std::vector<std::string> output;
     queue->readCurrentOutput(output);
 
-    stq::Msg res;
+    ff::Msg res;
     for (auto it = output.begin(); it != output.end(); ++it)
     {
         res.set_msg(*it);
@@ -408,8 +408,8 @@ QueueImpl::ReadCurrentOutput(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::Start(grpc::ServerContext *ctx,
-                const stq::QueueReq *req,
-                stq::Empty *res)
+                const ff::QueueReq *req,
+                ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);
@@ -438,8 +438,8 @@ QueueImpl::Start(grpc::ServerContext *ctx,
 
 grpc::Status
 QueueImpl::Stop(grpc::ServerContext *ctx,
-                const stq::QueueReq *req,
-                stq::Empty *res)
+                const ff::QueueReq *req,
+                ff::Empty *res)
 {
     UNUSED(ctx);
     UNUSED(res);

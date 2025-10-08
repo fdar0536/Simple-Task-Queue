@@ -1,5 +1,5 @@
 if(ENABLE_SERVER)
-    set(STQ_SERVER_LIBS
+    set(FF_SERVER_LIBS
         protobuf::libprotobuf
         gRPC::grpc++
         cxxopts::cxxopts
@@ -29,22 +29,22 @@ if(ENABLE_SERVER)
         controller/grpcserver/server.hpp
     )
 
-    add_executable(STQSERVER
+    add_executable(FFSERVER
         ${SERVER_CONTROLLER_SRC}
 
         servermain.cpp)
 
-    add_dependencies(STQSERVER grpc_common stqmodel)
+    add_dependencies(FFSERVER grpc_common ffmodel)
 
-    target_link_libraries(STQSERVER
+    target_link_libraries(FFSERVER
         PRIVATE
 
-        ${STQ_SERVER_LIBS}
-        stqmodel
+        ${FF_SERVER_LIBS}
+        ffmodel
     )
 
     if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-        target_link_options(STQSERVER PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-        target_compile_options(STQSERVER PRIVATE $<$<CONFIG:Debug>:/ZI>)
+        target_link_options(FFSERVER PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+        target_compile_options(FFSERVER PRIVATE $<$<CONFIG:Debug>:/ZI>)
     endif()
 endif(ENABLE_SERVER)

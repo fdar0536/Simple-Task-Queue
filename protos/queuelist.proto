@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option go_package = "STQ/protos";
+option go_package = "FF/protos";
 
-package stq;
+package ff;
 
 import "types.proto";
 

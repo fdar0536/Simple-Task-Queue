@@ -71,7 +71,7 @@ GRPCQueue::init(std::shared_ptr<IConnect> &connect,
 
     try
     {
-        m_stub = stq::Queue::NewStub(token->channel);
+        m_stub = ff::Queue::NewStub(token->channel);
         if (m_stub == nullptr)
         {
             spdlog::error("{}:{} Fail to get stub", __FILE__, __LINE__);
@@ -93,11 +93,11 @@ u8 GRPCQueue::listPending(std::vector<int> &out)
     out.clear();
     out.reserve(128);
 
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::ListTaskRes res;
+    ff::ListTaskRes res;
 
     GRPCUtils::setupCtx(ctx);
     auto reader = m_stub->ListPending(&ctx, req);
@@ -121,11 +121,11 @@ u8 GRPCQueue::listFinished(std::vector<int> &out)
     out.clear();
     out.reserve(128);
 
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::ListTaskRes res;
+    ff::ListTaskRes res;
 
     GRPCUtils::setupCtx(ctx);
     auto reader = m_stub->ListFinished(&ctx, req);
@@ -147,12 +147,12 @@ u8 GRPCQueue::listFinished(std::vector<int> &out)
 u8 GRPCQueue::pendingDetails(const int id,
                              Proc::Task &out)
 {
-    stq::TaskDetailsReq req;
+    ff::TaskDetailsReq req;
     req.set_name(m_queueName);
     req.set_id(id);
 
     grpc::ClientContext ctx;
-    stq::TaskDetailsRes res;
+    ff::TaskDetailsRes res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->PendingDetails(&ctx, req, &res);
@@ -169,12 +169,12 @@ u8 GRPCQueue::pendingDetails(const int id,
 u8 GRPCQueue::finishedDetails(const int id,
                               Proc::Task &out)
 {
-    stq::TaskDetailsReq req;
+    ff::TaskDetailsReq req;
     req.set_name(m_queueName);
     req.set_id(id);
 
     grpc::ClientContext ctx;
-    stq::TaskDetailsRes res;
+    ff::TaskDetailsRes res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->FinishedDetails(&ctx, req, &res);
@@ -190,11 +190,11 @@ u8 GRPCQueue::finishedDetails(const int id,
 
 u8 GRPCQueue::clearPending()
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::Empty res;
+    ff::Empty res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->ClearPending(&ctx, req, &res);
@@ -209,11 +209,11 @@ u8 GRPCQueue::clearPending()
 
 u8 GRPCQueue::clearFinished()
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::Empty res;
+    ff::Empty res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->ClearFinished(&ctx, req, &res);
@@ -228,11 +228,11 @@ u8 GRPCQueue::clearFinished()
 
 u8 GRPCQueue::currentTask(Proc::Task &out)
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::TaskDetailsRes res;
+    ff::TaskDetailsRes res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->CurrentTask(&ctx, req, &res);
@@ -248,7 +248,7 @@ u8 GRPCQueue::currentTask(Proc::Task &out)
 
 u8 GRPCQueue::addTask(Proc::Task &in)
 {
-    stq::AddTaskReq req;
+    ff::AddTaskReq req;
     req.set_name(m_queueName);
     req.set_workdir(in.workDir);
     req.set_execname(in.execName);
@@ -260,7 +260,7 @@ u8 GRPCQueue::addTask(Proc::Task &in)
     }
 
     grpc::ClientContext ctx;
-    stq::ListTaskRes res;
+    ff::ListTaskRes res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->AddTask(&ctx, req, &res);
@@ -276,12 +276,12 @@ u8 GRPCQueue::addTask(Proc::Task &in)
 
 u8 GRPCQueue::removeTask(const i32 in)
 {
-    stq::TaskDetailsReq req;
+    ff::TaskDetailsReq req;
     req.set_name(m_queueName);
     req.set_id(in);
 
     grpc::ClientContext ctx;
-    stq::Empty res;
+    ff::Empty res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status;
@@ -298,11 +298,11 @@ u8 GRPCQueue::removeTask(const i32 in)
 
 bool GRPCQueue::isRunning() const
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::IsRunningRes res;
+    ff::IsRunningRes res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->IsRunning(&ctx, req, &res);
@@ -318,13 +318,13 @@ bool GRPCQueue::isRunning() const
 void GRPCQueue::readCurrentOutput(std::vector<std::string> &out)
 {
     out.clear();
-    out.reserve(STQ_MAX_READ_QUEUE_SIZE);
+    out.reserve(FF_MAX_READ_QUEUE_SIZE);
 
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::Msg res;
+    ff::Msg res;
     GRPCUtils::setupCtx(ctx);
 
     auto reader = m_stub->ReadCurrentOutput(&ctx, req);
@@ -344,11 +344,11 @@ void GRPCQueue::readCurrentOutput(std::vector<std::string> &out)
 
 u8 GRPCQueue::start()
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::Empty res;
+    ff::Empty res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->Start(&ctx, req, &res);
@@ -363,11 +363,11 @@ u8 GRPCQueue::start()
 
 void GRPCQueue::stop()
 {
-    stq::QueueReq req;
+    ff::QueueReq req;
     req.set_name(m_queueName);
 
     grpc::ClientContext ctx;
-    stq::Empty res;
+    ff::Empty res;
 
     GRPCUtils::setupCtx(ctx);
     grpc::Status status = m_stub->Stop(&ctx, req, &res);
@@ -380,7 +380,7 @@ void GRPCQueue::stop()
 }
 
 // private member functions
-void GRPCQueue::buildTask(stq::TaskDetailsRes &res, Proc::Task &task)
+void GRPCQueue::buildTask(ff::TaskDetailsRes &res, Proc::Task &task)
 {
     task.workDir = res.workdir();
     task.execName = res.execname();

@@ -351,7 +351,7 @@ void WinProc::readOutputLoop()
     while(1)
     {
         std::string buf;
-        buf.resize(STQ_READ_BUFFER_SIZE);
+        buf.resize(FF_READ_BUFFER_SIZE);
         bSuccess = ReadFile(m_childStdoutRead, buf.data(),
                             static_cast<DWORD>(buf.size()), &dwRead, NULL);
         if (!bSuccess || dwRead == 0)
@@ -367,7 +367,7 @@ void WinProc::readOutputLoop()
         {
             std::unique_lock<std::mutex> lock(m_mutex);
 
-            if (m_deque.size() == STQ_MAX_READ_QUEUE_SIZE)
+            if (m_deque.size() == FF_MAX_READ_QUEUE_SIZE)
             {
                 m_deque.pop_front();
             }

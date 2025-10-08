@@ -32,8 +32,8 @@ namespace GRPCServer
 {
 
 grpc::Status AccessImpl::Echo(grpc::ServerContext* context,
-                              const stq::Empty* request,
-                              stq::EchoRes* response)
+                              const ff::Empty* request,
+                              ff::EchoRes* response)
 {
     UNUSED(context);
     UNUSED(request);

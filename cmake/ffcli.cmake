@@ -1,5 +1,5 @@
 if(ENABLE_CLI)
-    set(STQ_CLI_LIBS
+    set(FF_CLI_LIBS
         protobuf::libprotobuf
         gRPC::grpc++
         cxxopts::cxxopts
@@ -23,24 +23,24 @@ if(ENABLE_CLI)
         controller/cli/queuelist.hpp
     )
 
-    add_executable(STQCLI
+    add_executable(FFCLI
         ${CLI_CONTROLLER_SRC}
 
         climain.cpp)
 
-    add_dependencies(STQCLI grpc_common stqmodel)
+    add_dependencies(FFCLI grpc_common ffmodel)
 
-    target_link_libraries(STQCLI
+    target_link_libraries(FFCLI
         PRIVATE
 
-        ${STQ_CLI_LIBS}
-        stqmodel
+        ${FF_CLI_LIBS}
+        ffmodel
     )
 
-    target_include_directories(STQCLI PRIVATE ${INIPP_INCLUDE_DIRS})
+    target_include_directories(FFCLI PRIVATE ${INIPP_INCLUDE_DIRS})
 
     if (MSVC AND WIN32 AND NOT MSVC_VERSION VERSION_LESS 142)
-        target_link_options(STQCLI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
-        target_compile_options(STQCLI PRIVATE $<$<CONFIG:Debug>:/ZI>)
+        target_link_options(FFCLI PRIVATE $<$<CONFIG:Debug>:/INCREMENTAL>)
+        target_compile_options(FFCLI PRIVATE $<$<CONFIG:Debug>:/ZI>)
     endif()
 endif(ENABLE_SERVER)
