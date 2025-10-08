@@ -57,12 +57,17 @@ public:
 
 protected:
 
-protected:
-
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
 
+    // tool bar
+    void onActionConfigTriggered(bool);
+
+    // tray icon
+    void onTrayIconActivated(QSystemTrayIcon::ActivationReason);
+
+    // others
     void exitProcess(bool);
 
 private:

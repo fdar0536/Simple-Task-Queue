@@ -47,6 +47,12 @@ u8 Main::init(QApplication &app)
         return 1;
     }
 
+    if (m_w.init())
+    {
+        fmt::println("{}:{} Main window init failed", __FILE__, __LINE__);
+        return 1;
+    }
+
     m_app = &app;
     return 0;
 }

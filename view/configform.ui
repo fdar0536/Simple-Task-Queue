@@ -6,42 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>375</width>
-    <height>135</height>
+    <width>434</width>
+    <height>303</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="1" colspan="4">
-    <widget class="QLineEdit" name="host">
-     <property name="text">
-      <string>127.0.0.1</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Port:</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="5" rowspan="7">
+   <item row="0" column="0" colspan="5">
     <widget class="QListWidget" name="list"/>
    </item>
-   <item row="6" column="3">
-    <widget class="QPushButton" name="loadBtn">
-     <property name="text">
-      <string>Load</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1" colspan="4">
+   <item row="5" column="1" colspan="4">
     <widget class="QSpinBox" name="port">
      <property name="maximum">
       <number>65535</number>
@@ -51,14 +27,31 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
-    <widget class="QPushButton" name="saveBtn">
+   <item row="6" column="1" colspan="2">
+    <widget class="QCheckBox" name="useEmbadded">
      <property name="text">
-      <string>Save</string>
+      <string>Use Embadded</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="4" column="1" colspan="4">
+    <widget class="QLineEdit" name="host">
+     <property name="text">
+      <string>127.0.0.1</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Port:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>Name:</string>
@@ -68,14 +61,10 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="4">
-    <widget class="QPushButton" name="deleteBtnon_5">
-     <property name="text">
-      <string>Delete</string>
-     </property>
-    </widget>
+   <item row="3" column="1" colspan="4">
+    <widget class="QLineEdit" name="name"/>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Host:</string>
@@ -85,27 +74,38 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="2" column="0">
     <widget class="QPushButton" name="connectBtn">
      <property name="text">
       <string>Connect</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="2" column="1">
     <widget class="QPushButton" name="clearBtn">
      <property name="text">
       <string>Clear</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="4">
-    <widget class="QLineEdit" name="name"/>
-   </item>
-   <item row="5" column="1" colspan="2">
-    <widget class="QCheckBox" name="useEmbadded">
+   <item row="2" column="2">
+    <widget class="QPushButton" name="saveBtn">
      <property name="text">
-      <string>Use Embadded</string>
+      <string>Save</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="3">
+    <widget class="QPushButton" name="loadBtn">
+     <property name="text">
+      <string>Load</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="4">
+    <widget class="QPushButton" name="deleteBtnon_5">
+     <property name="text">
+      <string>Delete</string>
      </property>
     </widget>
    </item>

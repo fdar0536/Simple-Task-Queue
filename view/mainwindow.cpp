@@ -74,6 +74,8 @@ u8 MainWindow::init()
         return 1;
     }
 
+    setCentralWidget(m_configForm);
+
     if (setupTrayIcon())
     {
         qCritical(
@@ -96,6 +98,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
         {
             QCloseEvent *closeEvent = reinterpret_cast<QCloseEvent *>(ev);
             closeEvent->ignore();
+            hide();
             return true;
         }
     }
@@ -104,6 +107,18 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *ev)
 }
 
 // private slots
+// tool bar
+void MainWindow::onActionConfigTriggered(bool)
+{
+    setCentralWidget(m_configForm);
+}
+
+// tray icon
+void MainWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason)
+{
+    show();
+}
+
 void MainWindow::exitProcess(bool)
 {
     if (QMessageBox::question(this, tr("Exit"),
@@ -124,6 +139,12 @@ void MainWindow::exitProcess(bool)
 // private member functions
 u8 MainWindow::setupTrayIcon()
 {
+    // tool bar
+    connect(m_ui->actionConfig,
+            &QAction::triggered,
+            this,
+            &MainWindow::onActionConfigTriggered);
+
     if (QSystemTrayIcon::isSystemTrayAvailable())
     {
         m_trayIcon = new (std::nothrow) QSystemTrayIcon(this);
@@ -165,6 +186,7 @@ u8 MainWindow::setupTrayIcon()
         m_menu->addAction(m_showAction);
         m_menu->addAction(m_exitAction);
         m_trayIcon->setContextMenu(m_menu);
+        m_trayIcon->show();
     }
 
     return 0;
