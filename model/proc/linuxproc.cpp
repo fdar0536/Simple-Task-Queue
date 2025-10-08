@@ -33,6 +33,8 @@
 
 #include "spdlog/spdlog.h"
 
+#include "controller/global/global.hpp"
+
 #include "linuxproc.hpp"
 
 namespace Model
@@ -60,6 +62,12 @@ u8 LinuxProc::start(const Task &task)
     if (isRunning())
     {
         spdlog::error("{}:{} Process is running", __FILE__, __LINE__);
+        return 1;
+    }
+
+    if (Controller::Global::isAdmin())
+    {
+        spdlog::error("{}:{} Refuse to run as super user", __FILE__, __LINE__);
         return 1;
     }
 
