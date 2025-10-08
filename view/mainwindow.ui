@@ -35,6 +35,7 @@
    <addaction name="actionQueue"/>
    <addaction name="actionOutput"/>
    <addaction name="actionLog"/>
+   <addaction name="actionAbout"/>
    <addaction name="actionExit"/>
   </widget>
   <action name="actionConfig">
@@ -83,6 +84,14 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>
