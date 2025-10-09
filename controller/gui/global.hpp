@@ -32,10 +32,6 @@ namespace Controller
 namespace GUI
 {
 
-class Global;
-
-extern Global *global;
-
 class Global : public QObject
 {
 
@@ -44,6 +40,8 @@ class Global : public QObject
 public:
 
     explicit Global(QObject *parent = nullptr);
+
+    static Global *instance();
 
 signals:
 

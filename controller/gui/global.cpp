@@ -23,12 +23,31 @@
 
 #include "global.hpp"
 
-namespace Controller {
-namespace GUI {
+namespace Controller
+{
 
-Global::Global(QObject *parent)
-    : QObject{parent}
+namespace GUI
+{
+
+static Global *global = nullptr;
+
+Global::Global(QObject *parent):
+    QObject{parent}
 {}
 
+Global *Global::instance()
+{
+    if (global)
+    {
+        return global;
+    }
+
+    global = new (std::nothrow) Global;
+    if (!global) return nullptr;
+
+    return global;
+}
+
 } // namespace GUI
+
 } // namespace Controller

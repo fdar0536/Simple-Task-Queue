@@ -23,15 +23,9 @@ if(ENABLE_GUI)
 
         controller/gui/config.cpp
         controller/gui/config.hpp
-        controller/gui/global.cpp
-        controller/gui/global.hpp
         controller/gui/hostinfo.hpp
         controller/gui/main.cpp
         controller/gui/main.hpp
-
-        view/aboutdialog.cpp
-        view/aboutdialog.hpp
-        view/aboutdialog.ui
     )
 
     qt_add_executable(FlexFlowGUI
@@ -43,6 +37,8 @@ if(ENABLE_GUI)
         QML_FILES
             view/main.qml
         SOURCES
+            controller/gui/global.cpp
+            controller/gui/global.hpp
             view/main.cpp
             view/main.hpp
         RESOURCES

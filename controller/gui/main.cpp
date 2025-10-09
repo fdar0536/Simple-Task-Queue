@@ -27,6 +27,7 @@
 #include "QQuickWindow"
 
 #include "controller/global/global.hpp"
+#include "controller/gui/global.hpp"
 #include "view/main.hpp"
 
 #include "fmt/core.h"
@@ -38,6 +39,13 @@ namespace Controller
 
 namespace GUI
 {
+
+static QObject *globalProvider(QQmlEngine *engine, QJSEngine *scriptEngine)
+{
+    Q_UNUSED(engine)
+    Q_UNUSED(scriptEngine)
+    return Controller::GUI::Global::instance();
+}
 
 Main::Main()
 {}
@@ -56,6 +64,9 @@ u8 Main::init(QApplication &app)
 #ifdef _WIN32
     QQuickStyle::setStyle("FluentWinUI3");
 #endif
+
+    qmlRegisterSingletonType<Controller::GUI::Global>
+        ("ff.backend.global", 1, 0, "Global", globalProvider);
 
     qmlRegisterType<View::Main>("ff.backend.main", 1, 0, "Main");
     app.setWindowIcon(QIcon("://original-icon.jpg"));
