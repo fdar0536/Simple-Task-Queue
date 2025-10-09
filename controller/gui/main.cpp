@@ -21,7 +21,13 @@
  * SOFTWARE.
  */
 
+#include "QDebug"
+#include "QIcon"
+#include "QQuickStyle"
+#include "QQuickWindow"
+
 #include "controller/global/global.hpp"
+#include "view/main.hpp"
 
 #include "fmt/core.h"
 
@@ -47,10 +53,26 @@ u8 Main::init(QApplication &app)
         return 1;
     }
 
-    if (m_w.init())
+#ifdef _WIN32
+    QQuickStyle::setStyle("FluentWinUI3");
+#endif
+
+    qmlRegisterType<View::Main>("ff.backend.main", 1, 0, "Main");
+    m_engine.load(QUrl("qrc:/qt/qml/FF/view/main.qml"));
+    if (!m_engine.rootContext())
     {
-        fmt::println("{}:{} Main window init failed", __FILE__, __LINE__);
+        qCritical("Fail to load qml");
         return 1;
+    }
+
+    if (!m_engine.rootObjects().isEmpty())
+    {
+        QQuickWindow *window = qobject_cast<QQuickWindow*>
+            (m_engine.rootObjects().constFirst());
+        if (window)
+        {
+            window->setIcon(QIcon("qrc:/qt/qml/FF/original-icon.jpg"));
+        }
     }
 
     m_app = &app;
@@ -59,7 +81,6 @@ u8 Main::init(QApplication &app)
 
 i32 Main::run()
 {
-    m_w.show();
     return m_app->exec();
 }
 

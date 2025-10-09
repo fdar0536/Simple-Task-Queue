@@ -21,42 +21,45 @@
  * SOFTWARE.
  */
 
-#ifndef _VIEW_CONFIGFORM_HPP_
-#define _VIEW_CONFIGFORM_HPP_
+#include "QApplication"
+#include "QMessageBox"
 
-#include "QWidget"
-
-#include "controller/global/defines.hpp"
-
-namespace Ui
-{
-
-class ConfigForm;
-
-}
+#include "main.hpp"
 
 namespace View
 {
 
-class ConfigForm : public QWidget
+// public member functions
+Main::Main(QObject *parent):
+    QObject{parent}
+{}
+
+bool Main::init()
 {
+    return 0;
+}
 
-    Q_OBJECT
+void Main::exit()
+{
+    qApp->exit(0);
+}
 
-public:
+// public slots
+void Main::exitProcess(bool)
+{
+    if (QMessageBox::question(nullptr, tr("Exit"),
+                              tr("Are you sure to exit?\n"
+                                 "All unfinished process in embadded mode "
+                                 "will be killed"),
+                              QMessageBox::Yes |
+                                  QMessageBox::Cancel |
+                                  QMessageBox::No)
+        != QMessageBox::Yes)
+    {
+        return;
+    }
 
-    explicit ConfigForm(QWidget *parent = nullptr);
+    exit();
+}
 
-    ~ConfigForm();
-
-    u8 init();
-
-private:
-
-    Ui::ConfigForm *m_ui;
-
-}; // class ConfigForm
-
-} // namespace view
-
-#endif // _VIEW_CONFIGFORM_HPP_
+} // namespace View

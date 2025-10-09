@@ -13,11 +13,12 @@ if(ENABLE_GUI)
         yaml-cpp::yaml-cpp
 
         Qt6::Widgets
+        Qt6::Quick
+        Qt6::QuickControls2
     )
 
     set(GUI_SRC
         guimain.cpp
-        guimain.qrc
 
         controller/gui/config.cpp
         controller/gui/config.hpp
@@ -30,16 +31,21 @@ if(ENABLE_GUI)
         view/aboutdialog.cpp
         view/aboutdialog.hpp
         view/aboutdialog.ui
-        view/configform.cpp
-        view/configform.hpp
-        view/configform.ui
-        view/mainwindow.cpp
-        view/mainwindow.hpp
-        view/mainwindow.ui
     )
 
     qt_add_executable(FlexFlowGUI
         ${GUI_SRC}
+    )
+
+    qt_add_qml_module(FlexFlowGUI
+        URI FF
+        QML_FILES
+            view/main.qml
+        SOURCES
+            view/main.cpp
+            view/main.hpp
+        RESOURCES
+            original-icon.jpg
     )
 
     add_dependencies(FlexFlowGUI grpc_common ffmodel ffcontroller)

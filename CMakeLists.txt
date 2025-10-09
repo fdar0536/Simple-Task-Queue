@@ -96,7 +96,7 @@ find_package(yaml-cpp REQUIRED)
 
 if (ENABLE_GUI)
     set(ENABLE_SERVER on)
-    find_package(Qt6 6.9 COMPONENTS Widgets REQUIRED)
+    find_package(Qt6 6.9 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
     qt_standard_project_setup(REQUIRES 6.9)
 endif (ENABLE_GUI)
 

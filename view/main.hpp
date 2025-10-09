@@ -21,39 +21,37 @@
  * SOFTWARE.
  */
 
-#include "fmt/format.h"
-#include "QDebug"
+#ifndef _VIEW_MAIN_HPP_
+#define _VIEW_MAIN_HPP_
 
-#include "configform.hpp"
-#include "ui_configform.h"
+#include "QObject"
 
 namespace View
 {
 
-ConfigForm::ConfigForm(QWidget *parent):
-    QWidget(parent),
-    m_ui(nullptr)
-{}
-
-ConfigForm::~ConfigForm()
+class Main : public QObject
 {
-    if (m_ui) delete m_ui;
-}
 
-u8 ConfigForm::init()
-{
-    if (!m_ui) m_ui = new (std::nothrow) Ui::ConfigForm;
+    Q_OBJECT
 
-    if (!m_ui)
-    {
-        qCritical(
-            fmt::format("{}:{} Fail to allocate memory",
-                        __FILE__, __LINE__).c_str());
-        return 1;
-    }
+public:
 
-    m_ui->setupUi(this);
-    return 0;
-}
+    explicit Main(QObject *parent = nullptr);
+
+    Q_INVOKABLE bool init();
+
+    Q_INVOKABLE void exit();
+
+signals:
+
+    void Show();
+
+public slots:
+
+    void exitProcess(bool);
+
+}; // class main
 
 } // namespace View
+
+#endif // _VIEW_MAIN_HPP_
