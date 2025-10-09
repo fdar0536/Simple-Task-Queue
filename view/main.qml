@@ -1,5 +1,8 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+
+import "components"
+
 import ff.backend.main 1.0
 
 ApplicationWindow
@@ -35,37 +38,32 @@ ApplicationWindow
 
     header: TabBar
     {
-        TabButton
+        MyTabButton
         {
             text: qsTr("Settings")
         }
 
-        TabButton
+        MyTabButton
         {
             text: qsTr("Queue list")
         }
 
-        TabButton
+        MyTabButton
         {
             text: qsTr("Queue")
         }
 
-        TabButton
+        MyTabButton
         {
             text: qsTr("Output")
         }
 
-        TabButton
-        {
-            text: qsTr("Log")
-        }
-
-        TabButton
+        MyTabButton
         {
             text: qsTr("About")
         }
 
-        TabButton
+        MyTabButton
         {
             text: qsTr("Exit")
             onClicked:
@@ -73,5 +71,12 @@ ApplicationWindow
                 main.exitProcess(true);
             }
         }
+    } // header: TabBar
+
+    Loader
+    {
+        id: loader
+        anchors.fill: parent
+        source: "qrc:/qt/qml/FF/view/about.qml"
     }
-}
+} // ApplicationWindow

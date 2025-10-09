@@ -21,39 +21,35 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_GLOBAL_HPP_
-#define _CONTROLLER_GUI_GLOBAL_HPP_
+#include "QMessageBox"
 
-#include <unordered_map>
+#include "about.hpp"
 
-#include "QObject"
-#include "QVariant"
-
-namespace Controller
+namespace View
 {
 
-namespace GUI
+About::About(QObject *parent):
+    QObject{parent}
+{}
+
+QString About::getVersion() const
 {
+    return m_version;
+}
 
-class Global : public QObject
+QString About::getBranch() const
 {
+    return m_branch;
+}
 
-    Q_OBJECT
+QString About::getCommit() const
+{
+    return m_commit;
+}
 
-public:
+void About::aboutQt()
+{
+    QMessageBox::aboutQt(nullptr, tr("About Qt"));
+}
 
-    explicit Global(QObject *parent = nullptr);
-
-    static Global *instance();
-
-private:
-
-    std::unordered_map<QString, QVariant> m_state;
-
-}; // class global
-
-} // namespace GUI
-
-} // namespace Controller
-
-#endif // _CONTROLLER_GUI_GLOBAL_HPP_
+} // namespace View

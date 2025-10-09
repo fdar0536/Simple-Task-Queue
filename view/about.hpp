@@ -21,39 +21,49 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_GLOBAL_HPP_
-#define _CONTROLLER_GUI_GLOBAL_HPP_
-
-#include <unordered_map>
+#ifndef _VIEW_ABOUT_HPP_
+#define _VIEW_ABOUT_HPP_
 
 #include "QObject"
-#include "QVariant"
 
-namespace Controller
+#include "config.h"
+
+namespace View
 {
 
-namespace GUI
+class About : public QObject
 {
-
-class Global : public QObject
-{
-
     Q_OBJECT
+
+    Q_PROPERTY(QString version READ getVersion CONSTANT FINAL)
+
+    Q_PROPERTY(QString branch READ getBranch CONSTANT FINAL)
+
+    Q_PROPERTY(QString commit READ getCommit CONSTANT FINAL)
 
 public:
 
-    explicit Global(QObject *parent = nullptr);
+    explicit About(QObject *parent = nullptr);
 
-    static Global *instance();
+    QString getVersion() const;
+
+    QString getBranch() const;
+
+    QString getCommit() const;
+
+    Q_INVOKABLE void aboutQt();
 
 private:
 
-    std::unordered_map<QString, QVariant> m_state;
+    QString m_version = FF_VERSION;
 
-}; // class global
+    QString m_branch = FF_BRANCH;
 
-} // namespace GUI
+    QString m_commit = FF_COMMIT;
 
-} // namespace Controller
+signals:
+};
 
-#endif // _CONTROLLER_GUI_GLOBAL_HPP_
+} // namespace View
+
+#endif // _VIEW_ABOUT_HPP_

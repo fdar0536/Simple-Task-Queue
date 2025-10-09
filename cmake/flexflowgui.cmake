@@ -35,10 +35,17 @@ if(ENABLE_GUI)
     qt_add_qml_module(FlexFlowGUI
         URI FF
         QML_FILES
+            view/components/MyTabButton.qml
+            view/components/MyText.qml
+
+            view/about.qml
             view/main.qml
         SOURCES
             controller/gui/global.cpp
             controller/gui/global.hpp
+
+            view/about.cpp
+            view/about.hpp
             view/main.cpp
             view/main.hpp
         RESOURCES

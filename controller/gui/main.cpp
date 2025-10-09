@@ -28,6 +28,8 @@
 
 #include "controller/global/global.hpp"
 #include "controller/gui/global.hpp"
+
+#include "view/about.hpp"
 #include "view/main.hpp"
 
 #include "fmt/core.h"
@@ -47,6 +49,7 @@ static QObject *globalProvider(QQmlEngine *engine, QJSEngine *scriptEngine)
     return Controller::GUI::Global::instance();
 }
 
+// public member functions
 Main::Main()
 {}
 
@@ -65,10 +68,8 @@ u8 Main::init(QApplication &app)
     QQuickStyle::setStyle("FluentWinUI3");
 #endif
 
-    qmlRegisterSingletonType<Controller::GUI::Global>
-        ("ff.backend.global", 1, 0, "Global", globalProvider);
+    registQmlTypes();
 
-    qmlRegisterType<View::Main>("ff.backend.main", 1, 0, "Main");
     app.setWindowIcon(QIcon("://original-icon.jpg"));
     m_engine.load(QUrl("qrc:/qt/qml/FF/view/main.qml"));
     if (!m_engine.rootContext())
@@ -94,6 +95,16 @@ u8 Main::init(QApplication &app)
 i32 Main::run()
 {
     return m_app->exec();
+}
+
+// private member functions
+void Main::registQmlTypes()
+{
+    qmlRegisterSingletonType<Controller::GUI::Global>
+        ("ff.backend.global", 1, 0, "Global", globalProvider);
+
+    qmlRegisterType<View::Main>("ff.backend.main", 1, 0, "Main");
+    qmlRegisterType<View::About>("ff.backend.about", 1, 0, "About");
 }
 
 } // end namespace GUI

@@ -53,6 +53,8 @@ private:
 
     QQmlApplicationEngine m_engine;
 
+    void registQmlTypes();
+
 }; // end class Main
 
 } // end namespace GUI
