@@ -64,9 +64,7 @@ u8 Main::init(QApplication &app)
         return 1;
     }
 
-#ifdef _WIN32
-    QQuickStyle::setStyle("FluentWinUI3");
-#endif
+    QQuickStyle::setStyle("Material");
 
     registQmlTypes();
 
