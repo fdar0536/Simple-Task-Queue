@@ -61,6 +61,10 @@ ApplicationWindow
         MyTabButton
         {
             text: qsTr("About")
+            onClicked:
+            {
+                loader.source = "qrc:/qt/qml/FF/view/about.qml";
+            }
         }
 
         MyTabButton

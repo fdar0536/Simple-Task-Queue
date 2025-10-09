@@ -16,8 +16,22 @@ Item
         id: about
     }
 
+    Image
+    {
+        source: "qrc:/qt/qml/FF/original-icon.jpg"
+        width: layout.width
+        height: layout.width
+
+        anchors.bottomMargin: 5
+        anchors.bottom: layout.top
+        anchors.left: layout.left
+        anchors.right: layout.right
+    }
+
     ColumnLayout
     {
+        id: layout
+
         anchors.centerIn: parent
 
         MyText
@@ -43,15 +57,22 @@ Item
                 return "Commit: " + about.commit;
             }
         }
+    } // ColumnLayout
 
-        Button
+    Button
+    {
+        font.pointSize: 16
+        text: qsTr("About Qt")
+        width: layout.width
+
+        anchors.topMargin: 5
+        anchors.top: layout.bottom
+        anchors.left: layout.left
+        anchors.right: layout.right
+
+        onClicked:
         {
-            font.pointSize: 16
-            text: qsTr("About Qt")
-            onClicked:
-            {
-                about.aboutQt();
-            }
+            about.aboutQt();
         }
     }
 }
