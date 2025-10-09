@@ -58,6 +58,7 @@ u8 Main::init(QApplication &app)
 #endif
 
     qmlRegisterType<View::Main>("ff.backend.main", 1, 0, "Main");
+    app.setWindowIcon(QIcon("://original-icon.jpg"));
     m_engine.load(QUrl("qrc:/qt/qml/FF/view/main.qml"));
     if (!m_engine.rootContext())
     {
@@ -71,7 +72,7 @@ u8 Main::init(QApplication &app)
             (m_engine.rootObjects().constFirst());
         if (window)
         {
-            window->setIcon(QIcon("qrc:/qt/qml/FF/original-icon.jpg"));
+            window->setIcon(app.windowIcon());
         }
     }
 

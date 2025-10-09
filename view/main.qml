@@ -8,6 +8,7 @@ ApplicationWindow
     width: 1280
     height: 720
     visible: true
+    title: "Flex Flow GUI"
 
     Main
     {
