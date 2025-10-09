@@ -24,7 +24,11 @@
 #ifndef _VIEW_MAIN_HPP_
 #define _VIEW_MAIN_HPP_
 
+#include "QAction"
+#include "QSystemTrayIcon"
 #include "QObject"
+
+#include "controller/global/defines.hpp"
 
 namespace View
 {
@@ -38,17 +42,40 @@ public:
 
     explicit Main(QObject *parent = nullptr);
 
+    ~Main();
+
     Q_INVOKABLE bool init();
 
     Q_INVOKABLE void exit();
 
 signals:
 
-    void Show();
+    void show();
 
 public slots:
 
     void exitProcess(bool);
+
+private slots:
+
+    void onTrayIconActivated(QSystemTrayIcon::ActivationReason);
+
+private:
+
+    // tray icon
+    QSystemTrayIcon *m_trayIcon;
+
+    QMenu *m_menu;
+
+    QAction *m_showAction;
+
+    QAction *m_exitAction;
+
+    u8 setupTrayIcon();
+
+    void connectHook();
+
+    void cleanMemory();
 
 }; // class main
 

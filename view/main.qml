@@ -13,6 +13,10 @@ ApplicationWindow
     Main
     {
         id: main
+        onShow:
+        {
+            app.visible = true;
+        }
     }
 
     Component.onCompleted:
@@ -26,7 +30,7 @@ ApplicationWindow
     onClosing: (close) =>
     {
         close.accepted = false;
-        main.exitProcess(true);
+        app.visible = false;
     }
 
     header: TabBar
