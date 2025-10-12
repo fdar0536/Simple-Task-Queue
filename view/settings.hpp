@@ -21,10 +21,27 @@
  * SOFTWARE.
  */
 
-import QtQuick
-import QtQuick.Controls
+#ifndef _VIEW_SETTINGS_HPP_
+#define _VIEW_SETTINGS_HPP_
 
-TabButton
+#include <QObject>
+
+namespace View
 {
-    font.pointSize: 16
-}
+
+class Settings : public QObject
+{
+
+    Q_OBJECT
+
+public:
+
+    explicit Settings(QObject *parent = nullptr);
+
+signals:
+
+}; // class Settings
+
+} // namespace View
+
+#endif // _VIEW_SETTINGS_HPP_

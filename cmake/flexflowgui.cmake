@@ -23,7 +23,6 @@ if(ENABLE_GUI)
 
         controller/gui/config.cpp
         controller/gui/config.hpp
-        controller/gui/hostinfo.hpp
         controller/gui/main.cpp
         controller/gui/main.hpp
     )
@@ -35,11 +34,14 @@ if(ENABLE_GUI)
     qt_add_qml_module(FlexFlowGUI
         URI FF
         QML_FILES
+            view/components/MyButton.qml
             view/components/MyTabButton.qml
             view/components/MyText.qml
+            view/components/MyTextField.qml
 
             view/about.qml
             view/main.qml
+            view/settings.qml
         SOURCES
             controller/gui/global.cpp
             controller/gui/global.hpp
@@ -48,6 +50,8 @@ if(ENABLE_GUI)
             view/about.hpp
             view/main.cpp
             view/main.hpp
+            view/settings.cpp
+            view/settings.hpp
         RESOURCES
             original-icon.jpg
     )

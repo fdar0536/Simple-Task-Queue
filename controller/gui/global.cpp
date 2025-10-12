@@ -31,10 +31,6 @@ namespace GUI
 
 static Global *global = nullptr;
 
-Global::Global(QObject *parent):
-    QObject{parent}
-{}
-
 Global *Global::instance()
 {
     if (global)
@@ -47,6 +43,16 @@ Global *Global::instance()
 
     return global;
 }
+
+QQmlApplicationEngine *Global::engine()
+{
+    return &m_engine;
+}
+
+// private member functions
+Global::Global(QObject *parent):
+    QObject{parent}
+{}
 
 } // namespace GUI
 

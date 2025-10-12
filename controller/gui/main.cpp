@@ -29,8 +29,10 @@
 #include "controller/global/global.hpp"
 #include "controller/gui/global.hpp"
 
+// gui
 #include "view/about.hpp"
 #include "view/main.hpp"
+#include "view/settings.hpp"
 
 #include "fmt/core.h"
 
@@ -69,15 +71,23 @@ u8 Main::init(QApplication &app)
     registQmlTypes();
 
     app.setWindowIcon(QIcon("://original-icon.jpg"));
-    m_engine.load(QUrl("qrc:/qt/qml/FF/view/main.qml"));
-    if (m_engine.rootObjects().isEmpty())
+    auto global = Controller::GUI::Global::instance();
+    if (!global)
+    {
+        fmt::println("{}:{} Fail to initialize global", __FILE__, __LINE__);
+        return 1;
+    }
+
+    auto engine = global->engine();
+    engine->load(QUrl("qrc:/qt/qml/FF/view/main.qml"));
+    if (engine->rootObjects().isEmpty())
     {
         qCritical("Fail to load qml");
         return 1;
     }
 
     QQuickWindow *window = qobject_cast<QQuickWindow*>
-        (m_engine.rootObjects().constFirst());
+        (engine->rootObjects().constFirst());
     if (window)
     {
         window->setIcon(app.windowIcon());
@@ -99,6 +109,8 @@ void Main::registQmlTypes()
         ("ff.backend.global", 1, 0, "Global", globalProvider);
 
     qmlRegisterType<View::Main>("ff.backend.main", 1, 0, "Main");
+
+    qmlRegisterType<View::Settings>("ff.backend.settings", 1, 0, "Settings");
     qmlRegisterType<View::About>("ff.backend.about", 1, 0, "About");
 }
 

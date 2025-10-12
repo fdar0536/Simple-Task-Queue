@@ -25,7 +25,6 @@
 #define _CONTROLLER_GUI_MAIN_HPP_
 
 #include "QApplication"
-#include "QQmlApplicationEngine"
 
 #include "controller/global/defines.hpp"
 
@@ -51,7 +50,7 @@ private:
 
     QApplication *m_app = nullptr;
 
-    QQmlApplicationEngine m_engine;
+
 
     void registQmlTypes();
 

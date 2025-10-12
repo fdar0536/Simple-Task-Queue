@@ -24,9 +24,8 @@
 #ifndef _CONTROLLER_GUI_GLOBAL_HPP_
 #define _CONTROLLER_GUI_GLOBAL_HPP_
 
-#include <unordered_map>
-
 #include "QObject"
+#include "QQmlApplicationEngine"
 #include "QVariant"
 
 namespace Controller
@@ -40,15 +39,25 @@ class Global : public QObject
 
     Q_OBJECT
 
-public:
+    Q_DISABLE_COPY(Global)
 
-    explicit Global(QObject *parent = nullptr);
+public:
 
     static Global *instance();
 
+    QQmlApplicationEngine *engine();
+
 private:
 
-    std::unordered_map<QString, QVariant> m_state;
+    u8 init();
+
+    explicit Global(QObject *parent = nullptr);
+
+    QQmlApplicationEngine m_engine;
+
+    QList<QSharedPointer<QJSValue>> m_hostList;
+
+    QSharedPointer<QJSValue> m_lastHost;
 
 }; // class global
 

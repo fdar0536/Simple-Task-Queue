@@ -24,7 +24,7 @@
 import QtQuick
 import QtQuick.Controls
 
-TabButton
+TextField
 {
     font.pointSize: 16
 }

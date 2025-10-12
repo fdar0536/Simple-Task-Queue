@@ -23,91 +23,89 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 import "components"
 
-import ff.backend.main 1.0
-
-ApplicationWindow
+Item
 {
-    id: app
-    width: 1280
-    height: 720
-    visible: true
-    title: "Flex Flow GUI"
-
-    Main
+    Tumbler
     {
-        id: main
-        onShow:
+        id: tumbler
+        anchors.horizontalCenter: rowLayout.horizontalCenter
+        anchors.bottomMargin: 5
+        anchors.bottom: rowLayout.top
+    } // Tumbler
+
+    RowLayout
+    {
+        id: rowLayout
+        anchors.centerIn: parent
+
+        MyButton
         {
-            app.visible = true;
+            text: qsTr("Connect")
         }
-    }
 
-    Component.onCompleted:
-    {
-        if (main.init())
+        MyButton
         {
-            main.exit();
+            text: qsTr("Clear")
         }
-    }
 
-    onClosing: (close) =>
-    {
-        close.accepted = false;
-        app.visible = false;
-    }
-
-    header: TabBar
-    {
-        MyTabButton
+        MyButton
         {
-            text: qsTr("Settings")
-            onClicked:
+            text: qsTr("Load")
+        }
+
+        MyButton
+        {
+            text: qsTr("Save")
+        }
+    } // RowLayout
+
+    ColumnLayout
+    {
+        anchors.topMargin: 10
+        anchors.top: rowLayout.bottom
+        anchors.horizontalCenter: rowLayout.horizontalCenter
+        width: rowLayout.width
+        spacing: 10
+
+        MyTextField
+        {
+            placeholderText: qsTr("Name")
+            Layout.fillWidth: true
+        }
+
+        MyTextField
+        {
+            placeholderText: qsTr("Host")
+            Layout.fillWidth: true
+        }
+
+        RowLayout
+        {
+            Layout.fillWidth: true
+            Label
             {
-                loader.source = "qrc:/qt/qml/FF/view/settings.qml";
+                font.pointSize: 16
+                text: qsTr("Port: ")
+            }
+
+            SpinBox
+            {
+                font.pointSize: 16
+                from: 0
+                to: 65535
+                editable: true
+                value: 12345
             }
         }
 
-        MyTabButton
+        Switch
         {
-            text: qsTr("Queue list")
+            font.pointSize: 16
+            text: qsTr("Use embedded")
         }
-
-        MyTabButton
-        {
-            text: qsTr("Queue")
-        }
-
-        MyTabButton
-        {
-            text: qsTr("Output")
-        }
-
-        MyTabButton
-        {
-            text: qsTr("About")
-            onClicked:
-            {
-                loader.source = "qrc:/qt/qml/FF/view/about.qml";
-            }
-        }
-
-        MyTabButton
-        {
-            text: qsTr("Exit")
-            onClicked:
-            {
-                main.exitProcess(true);
-            }
-        }
-    } // header: TabBar
-
-    Loader
-    {
-        id: loader
-        anchors.fill: parent
-        source: "qrc:/qt/qml/FF/view/settings.qml"
-    }
-} // ApplicationWindow
+    } // ColumnLayout
+} // Item

@@ -27,10 +27,6 @@ endif (UNIX) # end if (UNIX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(FF_VERSION r12)
@@ -97,6 +93,10 @@ find_package(yaml-cpp REQUIRED)
 if (ENABLE_GUI)
     set(ENABLE_SERVER on)
     find_package(Qt6 6.9 COMPONENTS Widgets Quick QuickControls2 REQUIRED)
+    set(QT_QML_GENERATE_QMLLS_INI on)
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTORCC ON)
     qt_standard_project_setup(REQUIRES 6.9)
 endif (ENABLE_GUI)
 

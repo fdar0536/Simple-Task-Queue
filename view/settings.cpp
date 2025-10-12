@@ -21,30 +21,13 @@
  * SOFTWARE.
  */
 
-#ifndef _CONTROLLER_GUI_HOSTINFO_HPP_
-#define _CONTROLLER_GUI_HOSTINFO_HPP_
+#include "settings.hpp"
 
-#include <string>
-
-#include "controller/global/defines.hpp"
-
-namespace Controller
+namespace View
 {
 
-namespace GUI
-{
+Settings::Settings(QObject *parent):
+    QObject{parent}
+{}
 
-typedef struct HostInfo
-{
-    std::string name = "";
-
-    std::string host = "127.0.0.1";
-
-    u16 port = 12345;
-} HostInfo;
-
-} // namespace GUI
-
-} // namespace Controller
-
-#endif // _CONTROLLER_GUI_HOSTINFO_HPP_
+} // namespace View
