@@ -23,10 +23,12 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 
 import "components"
 
 import ff.backend.main 1.0
+import ff.backend.global 1.0
 
 ApplicationWindow
 {
@@ -59,50 +61,63 @@ ApplicationWindow
         app.visible = false;
     }
 
-    header: TabBar
+    header: ColumnLayout
     {
-        MyTabButton
+        TabBar
         {
-            text: qsTr("Settings")
-            onClicked:
+            Layout.fillWidth: true
+
+            MyTabButton
             {
-                loader.source = "qrc:/qt/qml/FF/view/settings.qml";
+                text: qsTr("Settings")
+                onClicked:
+                {
+                    loader.source = "qrc:/qt/qml/FF/view/settings.qml";
+                }
             }
-        }
 
-        MyTabButton
-        {
-            text: qsTr("Queue list")
-        }
-
-        MyTabButton
-        {
-            text: qsTr("Queue")
-        }
-
-        MyTabButton
-        {
-            text: qsTr("Output")
-        }
-
-        MyTabButton
-        {
-            text: qsTr("About")
-            onClicked:
+            MyTabButton
             {
-                loader.source = "qrc:/qt/qml/FF/view/about.qml";
+                text: qsTr("Queue list")
             }
-        }
 
-        MyTabButton
-        {
-            text: qsTr("Exit")
-            onClicked:
+            MyTabButton
             {
-                main.exitProcess(true);
+                text: qsTr("Queue")
             }
+
+            MyTabButton
+            {
+                text: qsTr("Output")
+            }
+
+            MyTabButton
+            {
+                text: qsTr("About")
+                onClicked:
+                {
+                    loader.source = "qrc:/qt/qml/FF/view/about.qml";
+                }
+            }
+
+            MyTabButton
+            {
+                text: qsTr("Exit")
+                onClicked:
+                {
+                    main.exitProcess(true);
+                }
+            }
+        } // TabBar
+
+        Label
+        {
+            id: status
+            text: qsTr("Test")
         }
-    } // header: TabBar
+    } // header: ColumnLayout
+
+
 
     Loader
     {

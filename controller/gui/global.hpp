@@ -28,6 +28,8 @@
 #include "QQmlApplicationEngine"
 #include "QVariant"
 
+#include "controller/global/defines.hpp"
+
 namespace Controller
 {
 
@@ -58,6 +60,8 @@ private:
     QList<QSharedPointer<QJSValue>> m_hostList;
 
     QSharedPointer<QJSValue> m_lastHost;
+
+    bool m_isEmbedded;
 
 }; // class global
 

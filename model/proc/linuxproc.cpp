@@ -329,7 +329,7 @@ void LinuxProc::readOutputLoop()
                 (m_events[i].events & EPOLLIN))
             {
                 std::string buf;
-                buf.resize(STQ_READ_BUFFER_SIZE);
+                buf.resize(FF_READ_BUFFER_SIZE);
                 while (1)
                 {
                     count = read(m_events[i].data.fd, buf.data(), buf.size());
@@ -359,7 +359,7 @@ void LinuxProc::readOutputLoop()
                         {
                             std::unique_lock<std::mutex> lock(m_mutex);
 
-                            if (m_deque.size() == STQ_MAX_READ_QUEUE_SIZE)
+                            if (m_deque.size() == FF_MAX_READ_QUEUE_SIZE)
                             {
                                 m_deque.pop_front();
                             }

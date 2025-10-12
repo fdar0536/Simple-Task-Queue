@@ -24,9 +24,8 @@
 #ifndef _CONTROLLER_GUI_CONFIG_HPP_
 #define _CONTROLLER_GUI_CONFIG_HPP_
 
-#include <vector>
-
-#include "hostinfo.hpp"
+#include "controller/global/defines.hpp"
+#include "global.hpp"
 
 namespace Controller
 {
@@ -34,26 +33,14 @@ namespace Controller
 namespace GUI
 {
 
-class Config
+namespace Config
 {
 
-public:
+u8 parse(Global *, std::string &);
 
-    Config();
+u8 save(Global *, std::string &);
 
-    ~Config();
-
-    static u8 parse(Config &, std::string &);
-
-    static u8 save(Config &, std::string &);
-
-    HostInfo lastHost;
-
-    std::vector<HostInfo> hostList;
-
-    bool isEmbedded;
-
-}; // end class Config
+} // namespace Config
 
 } // namespace GUI
 
