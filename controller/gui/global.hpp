@@ -70,7 +70,9 @@ private:
 
     void saveConfig();
 
-    void defaultConfig();
+    void getDefaultConfig();
+
+    void getConfigPath(QString &);
 
 }; // class global
 

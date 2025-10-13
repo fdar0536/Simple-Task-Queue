@@ -67,9 +67,10 @@ Global::Global(QObject *parent):
 void Global::parseConfig()
 {
     hostList.reserve(16);
-    defaultConfig();
+    getDefaultConfig();
 
-    QString path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QString path;
+    getConfigPath(path);
     if (path.isEmpty())
     {
         qWarning(fmt::format("{}:{} Fail to get path to store config",
@@ -131,7 +132,7 @@ void Global::parseConfig()
     {
         qWarning(fmt::format("{}:{} Fail to parse config, fallback to default",
                              __FILE__, __LINE__).c_str());
-        defaultConfig();
+        getDefaultConfig();
     }
 }
 
@@ -140,13 +141,26 @@ void Global::saveConfig()
     return;
 }
 
-void Global::defaultConfig()
+void Global::getDefaultConfig()
 {
     hostList.clear();
     QJSValue obj = m_engine.newObject();
     obj.setProperty("embedded", true);
     lastHost = QSharedPointer<QJSValue>::create(obj);
     hostList.push_back(lastHost);
+}
+
+void Global::getConfigPath(QString &path)
+{
+    path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    if (path.isEmpty())
+    {
+        qWarning(fmt::format("{}:{} Fail to get path to store config",
+                             __FILE__, __LINE__).c_str());
+        return;
+    }
+
+    path += "/config.yaml";
 }
 
 } // namespace GUI
