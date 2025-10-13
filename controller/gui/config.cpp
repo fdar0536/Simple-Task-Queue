@@ -32,12 +32,12 @@ namespace GUI
 namespace Config
 {
 
-u8 parse(Global *, std::string &)
+u8 parse(Global *)
 {
     return 0;
 }
 
-u8 save(Global *, std::string &)
+u8 save(Global *)
 {
     return 0;
 }

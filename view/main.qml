@@ -110,10 +110,11 @@ ApplicationWindow
             }
         } // TabBar
 
-        Label
+        MyText
         {
             id: status
-            text: qsTr("Test")
+            Layout.alignment: Qt.AlignHCenter
+            text: qsTr("Not connected")
         }
     } // header: ColumnLayout
 

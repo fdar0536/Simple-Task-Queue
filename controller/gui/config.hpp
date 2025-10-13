@@ -36,9 +36,9 @@ namespace GUI
 namespace Config
 {
 
-u8 parse(Global *, std::string &);
+u8 parse(Global *);
 
-u8 save(Global *, std::string &);
+u8 save(Global *);
 
 } // namespace Config
 

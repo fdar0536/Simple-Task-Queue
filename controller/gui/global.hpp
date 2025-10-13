@@ -45,9 +45,19 @@ class Global : public QObject
 
 public:
 
+    ~Global();
+
     static Global *instance();
 
     QQmlApplicationEngine *engine();
+
+    QList<QSharedPointer<QJSValue>> hostList;
+
+    QSharedPointer<QJSValue> lastHost;
+
+    bool isEmbedded;
+
+    i32 lastIndex;
 
 private:
 
@@ -56,12 +66,6 @@ private:
     explicit Global(QObject *parent = nullptr);
 
     QQmlApplicationEngine m_engine;
-
-    QList<QSharedPointer<QJSValue>> m_hostList;
-
-    QSharedPointer<QJSValue> m_lastHost;
-
-    bool m_isEmbedded;
 
 }; // class global
 

@@ -101,11 +101,5 @@ Item
                 value: 12345
             }
         }
-
-        Switch
-        {
-            font.pointSize: 16
-            text: qsTr("Use embedded")
-        }
     } // ColumnLayout
 } // Item
