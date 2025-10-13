@@ -61,11 +61,15 @@ public:
 
 private:
 
-    u8 init();
-
     explicit Global(QObject *parent = nullptr);
 
     QQmlApplicationEngine m_engine;
+
+    u8 init();
+
+    u8 parseConfig();
+
+    u8 saveConfig();
 
 }; // class global
 

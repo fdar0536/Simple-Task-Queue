@@ -21,8 +21,6 @@ if(ENABLE_GUI)
         guimain.cpp
         guimain.qrc
 
-        controller/gui/config.cpp
-        controller/gui/config.hpp
         controller/gui/main.cpp
         controller/gui/main.hpp
     )
