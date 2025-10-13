@@ -39,11 +39,6 @@ namespace GUI
 static Global *global = nullptr;
 
 // public member functions
-Global::~Global()
-{
-    saveConfig();
-}
-
 Global *Global::instance()
 {
     if (global)
@@ -63,6 +58,15 @@ Global *Global::instance()
     return global;
 }
 
+void Global::destroy()
+{
+    if (global)
+    {
+        delete global;
+        global = nullptr;
+    }
+}
+
 QQmlApplicationEngine *Global::engine()
 {
     return &m_engine;
@@ -72,6 +76,11 @@ QQmlApplicationEngine *Global::engine()
 Global::Global(QObject *parent):
     QObject{parent}
 {}
+
+Global::~Global()
+{
+    saveConfig();
+}
 
 void Global::parseConfig()
 {

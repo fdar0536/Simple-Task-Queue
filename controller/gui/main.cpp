@@ -56,7 +56,9 @@ Main::Main()
 {}
 
 Main::~Main()
-{}
+{
+    Controller::GUI::Global::destroy();
+}
 
 u8 Main::init(QApplication &app)
 {

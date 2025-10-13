@@ -45,9 +45,9 @@ class Global : public QObject
 
 public:
 
-    ~Global();
-
     static Global *instance();
+
+    static void destroy();
 
     QQmlApplicationEngine *engine();
 
@@ -63,6 +63,8 @@ public:
 private:
 
     explicit Global(QObject *parent = nullptr);
+
+    ~Global();
 
     QQmlApplicationEngine m_engine;
 
