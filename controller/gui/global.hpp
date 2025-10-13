@@ -72,7 +72,7 @@ private:
 
     void getDefaultConfig();
 
-    void getConfigPath(QString &);
+    u8 getConfigPath(QString &);
 
 }; // class global
 

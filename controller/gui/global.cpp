@@ -21,6 +21,8 @@
  * SOFTWARE.
  */
 
+#include <fstream>
+
 #include "fmt/format.h"
 #include "QDebug"
 #include "QStandardPaths"
@@ -38,7 +40,9 @@ static Global *global = nullptr;
 
 // public member functions
 Global::~Global()
-{}
+{
+    saveConfig();
+}
 
 Global *Global::instance()
 {
@@ -48,7 +52,12 @@ Global *Global::instance()
     }
 
     global = new (std::nothrow) Global;
-    if (!global) return nullptr;
+    if (!global)
+    {
+        qCritical(fmt::format("{}:{} Fail to allocate memory",
+                              __FILE__, __LINE__).c_str());
+        return nullptr;
+    }
 
     global->parseConfig();
     return global;
@@ -70,15 +79,13 @@ void Global::parseConfig()
     getDefaultConfig();
 
     QString path;
-    getConfigPath(path);
-    if (path.isEmpty())
+    if (getConfigPath(path))
     {
-        qWarning(fmt::format("{}:{} Fail to get path to store config",
+        qWarning(fmt::format("{}:{} getConfigPath failed",
                              __FILE__, __LINE__).c_str());
         return;
     }
 
-    path += "/config.yaml";
     QJSValue obj;
     try
     {
@@ -138,7 +145,54 @@ void Global::parseConfig()
 
 void Global::saveConfig()
 {
-    return;
+    QString path;
+    if (getConfigPath(path))
+    {
+        qWarning(fmt::format("{}:{} getConfigPath failed",
+                             __FILE__, __LINE__).c_str());
+        return;
+    }
+
+    YAML::Node config;
+
+    // last host
+    YAML::Node lastHostNode;
+    lastHostNode["name"] = lastHost->property("name")
+                               .toString().toUtf8().toStdString();
+    lastHostNode["host"] = lastHost->property("host")
+                               .toString().toUtf8().toStdString();
+    lastHostNode["port"] = lastHost->property("port").toUInt();
+    lastHostNode["embedded"] = lastHost->property("embedded").toBool();
+    config["last host"] = lastHostNode;
+
+    YAML::Node hostListNodes;
+    for (qsizetype i = 0; i < hostList.size(); ++i)
+    {
+        YAML::Node node;
+        node["name"] = hostList.at(i)->property("name")
+                                   .toString().toUtf8().toStdString();
+        node["host"] = hostList.at(i)->property("host")
+                                   .toString().toUtf8().toStdString();
+        node["port"] = hostList.at(i)->property("port").toUInt();
+        node["embedded"] = hostList.at(i)->property("embedded").toBool();
+        hostListNodes.push_back(node);
+    }
+
+    config["host list"] = hostListNodes;
+
+    YAML::Emitter emitter;
+    emitter << config;
+
+    try
+    {
+        std::ofstream fout(path.toUtf8().toStdString());
+        fout << emitter.c_str();
+    }
+    catch (...)
+    {
+        qCritical(fmt::format("{}:{} Fail to write file",
+                              __FILE__, __LINE__).c_str());
+    }
 }
 
 void Global::getDefaultConfig()
@@ -150,17 +204,18 @@ void Global::getDefaultConfig()
     hostList.push_back(lastHost);
 }
 
-void Global::getConfigPath(QString &path)
+u8 Global::getConfigPath(QString &path)
 {
     path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
     if (path.isEmpty())
     {
         qWarning(fmt::format("{}:{} Fail to get path to store config",
                              __FILE__, __LINE__).c_str());
-        return;
+        return 1;
     }
 
     path += "/config.yaml";
+    return 0;
 }
 
 } // namespace GUI
