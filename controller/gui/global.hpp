@@ -51,13 +51,14 @@ public:
 
     QQmlApplicationEngine *engine();
 
+    // note that the host info has following field:
+    // 1. name
+    // 2. target
+    // 3. port
+    // 4. it is an embedded one or not
     QList<QSharedPointer<QJSValue>> hostList;
 
     QSharedPointer<QJSValue> lastHost;
-
-    bool isEmbedded;
-
-    i32 lastIndex;
 
 private:
 
@@ -65,11 +66,11 @@ private:
 
     QQmlApplicationEngine m_engine;
 
-    u8 init();
+    void parseConfig();
 
-    u8 parseConfig();
+    void saveConfig();
 
-    u8 saveConfig();
+    void defaultConfig();
 
 }; // class global
 

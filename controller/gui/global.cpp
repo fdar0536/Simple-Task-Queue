@@ -21,6 +21,11 @@
  * SOFTWARE.
  */
 
+#include "fmt/format.h"
+#include "QDebug"
+#include "QStandardPaths"
+#include "yaml-cpp/yaml.h"
+
 #include "global.hpp"
 
 namespace Controller
@@ -30,6 +35,10 @@ namespace GUI
 {
 
 static Global *global = nullptr;
+
+// public member functions
+Global::~Global()
+{}
 
 Global *Global::instance()
 {
@@ -41,6 +50,7 @@ Global *Global::instance()
     global = new (std::nothrow) Global;
     if (!global) return nullptr;
 
+    global->parseConfig();
     return global;
 }
 
@@ -53,6 +63,91 @@ QQmlApplicationEngine *Global::engine()
 Global::Global(QObject *parent):
     QObject{parent}
 {}
+
+void Global::parseConfig()
+{
+    hostList.reserve(16);
+    defaultConfig();
+
+    QString path = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    if (path.isEmpty())
+    {
+        qWarning(fmt::format("{}:{} Fail to get path to store config",
+                             __FILE__, __LINE__).c_str());
+        return;
+    }
+
+    path += "/config.yaml";
+    QJSValue obj;
+    try
+    {
+        YAML::Node config = YAML::LoadFile(path.toUtf8().toStdString());
+
+        // last host
+        obj = m_engine.newObject();
+        auto lastHostConfig = config["last host"];
+        obj.setProperty("name",
+                        QString::fromStdString(
+                            lastHostConfig["name"].as<std::string>()));
+
+        obj.setProperty("host",
+                        QString::fromStdString(
+                            lastHostConfig["host"].as<std::string>()));
+
+        obj.setProperty("port",
+                        lastHostConfig["port"].as<u16>());
+
+        obj.setProperty("embedded",
+                        lastHostConfig["embedded"].as<bool>());
+
+        lastHost = QSharedPointer<QJSValue>::create(obj);
+        hostList.push_back(lastHost);
+
+        auto hostListNodes = config["host list"];
+        hostList.reserve(hostListNodes.size() + 2);
+        for (size_t i = 0; i < hostListNodes.size(); ++i)
+        {
+            obj = m_engine.newObject();
+            auto node = hostListNodes[i];
+
+            obj.setProperty("name",
+                            QString::fromStdString(
+                                node["name"].as<std::string>()));
+
+            obj.setProperty("host",
+                            QString::fromStdString(
+                                node["host"].as<std::string>()));
+
+            obj.setProperty("port",
+                            node["port"].as<u16>());
+
+            obj.setProperty("embedded",
+                            node["embedded"].as<bool>());
+
+            hostList.push_back(QSharedPointer<QJSValue>::create(obj));
+        }
+    }
+    catch (...)
+    {
+        qWarning(fmt::format("{}:{} Fail to parse config, fallback to default",
+                             __FILE__, __LINE__).c_str());
+        defaultConfig();
+    }
+}
+
+void Global::saveConfig()
+{
+    return;
+}
+
+void Global::defaultConfig()
+{
+    hostList.clear();
+    QJSValue obj = m_engine.newObject();
+    obj.setProperty("embedded", true);
+    lastHost = QSharedPointer<QJSValue>::create(obj);
+    hostList.push_back(lastHost);
+}
 
 } // namespace GUI
 
