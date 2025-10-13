@@ -60,8 +60,6 @@ private:
     QString m_branch = FF_BRANCH;
 
     QString m_commit = FF_COMMIT;
-
-signals:
 };
 
 } // namespace View
