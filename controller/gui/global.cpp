@@ -56,6 +56,7 @@ Global *Global::instance()
     }
 
     global->parseConfig();
+    global->m_engine.setObjectOwnership(global, QQmlEngine::CppOwnership);
     return global;
 }
 

@@ -50,6 +50,7 @@ public:
 
     static Global *instance();
 
+    // this singleton will be destroyed in destructor Controller::GUI::Main
     static void destroy();
 
     QQmlApplicationEngine *engine();
@@ -70,6 +71,10 @@ public:
 signals:
 
     void statusChanged(const QString &);
+
+    void lockUI();
+
+    void unlockUI();
 
 private:
 

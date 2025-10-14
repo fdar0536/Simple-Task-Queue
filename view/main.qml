@@ -47,6 +47,22 @@ ApplicationWindow
         }
     }
 
+    Connections
+    {
+        target: Global
+        function onLockUI()
+        {
+            tabBar.enabled = false;
+            loader.enabled = false;
+        }
+
+        function onUnlockUI()
+        {
+            tabBar.enabled = true;
+            loader.enabled = true;
+        }
+    }
+
     Component.onCompleted:
     {
         if (main.init())
@@ -66,6 +82,7 @@ ApplicationWindow
         TabBar
         {
             Layout.fillWidth: true
+            id: tabBar
 
             MyTabButton
             {
@@ -114,7 +131,7 @@ ApplicationWindow
         {
             id: status
             Layout.alignment: Qt.AlignHCenter
-            text: qsTr("Not connected")
+            text: Global.status
         }
     } // header: ColumnLayout
 

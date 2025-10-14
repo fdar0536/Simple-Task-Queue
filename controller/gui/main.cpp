@@ -70,8 +70,6 @@ u8 Main::init(QApplication &app)
 
     QQuickStyle::setStyle("Material");
 
-    registQmlTypes();
-
     app.setWindowIcon(QIcon("://original-icon.jpg"));
     auto global = Controller::GUI::Global::instance();
     if (!global)
@@ -79,6 +77,8 @@ u8 Main::init(QApplication &app)
         fmt::println("{}:{} Fail to initialize global", __FILE__, __LINE__);
         return 1;
     }
+
+    registQmlTypes();
 
     auto engine = global->engine();
     engine->load(QUrl("qrc:/qt/qml/FF/view/main.qml"));
