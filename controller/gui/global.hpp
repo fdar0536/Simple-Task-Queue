@@ -24,6 +24,7 @@
 #ifndef _CONTROLLER_GUI_GLOBAL_HPP_
 #define _CONTROLLER_GUI_GLOBAL_HPP_
 
+#include "QMutex"
 #include "QObject"
 #include "QQmlApplicationEngine"
 #include "QVariant"
@@ -43,6 +44,8 @@ class Global : public QObject
 
     Q_DISABLE_COPY(Global)
 
+    Q_PROPERTY(QString status READ getStatus NOTIFY statusChanged CONSTANT FINAL)
+
 public:
 
     static Global *instance();
@@ -50,6 +53,10 @@ public:
     static void destroy();
 
     QQmlApplicationEngine *engine();
+
+    QString getStatus();
+
+    void setStatus(const QString &);
 
     // note that the host info has following field:
     // 1. name
@@ -60,6 +67,10 @@ public:
 
     QSharedPointer<QJSValue> lastHost;
 
+signals:
+
+    void statusChanged(const QString &);
+
 private:
 
     explicit Global(QObject *parent = nullptr);
@@ -67,6 +78,10 @@ private:
     ~Global();
 
     QQmlApplicationEngine m_engine;
+
+    QMutex m_mutex;
+
+    QString m_status = "Using embedded";
 
     void parseConfig();
 

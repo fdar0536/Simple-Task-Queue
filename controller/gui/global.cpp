@@ -25,6 +25,7 @@
 
 #include "fmt/format.h"
 #include "QDebug"
+#include "QMutexLocker"
 #include "QStandardPaths"
 #include "yaml-cpp/yaml.h"
 
@@ -70,6 +71,22 @@ void Global::destroy()
 QQmlApplicationEngine *Global::engine()
 {
     return &m_engine;
+}
+
+QString Global::getStatus()
+{
+    QMutexLocker lock(&m_mutex);
+    return m_status;
+}
+
+void Global::setStatus(const QString &in)
+{
+    {
+        QMutexLocker lock(&m_mutex);
+        m_status = in;
+    }
+
+    emit statusChanged(in);
 }
 
 // private member functions
