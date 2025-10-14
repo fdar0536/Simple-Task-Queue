@@ -44,7 +44,7 @@ class Global : public QObject
 
     Q_DISABLE_COPY(Global)
 
-    Q_PROPERTY(QString status READ getStatus NOTIFY statusChanged CONSTANT FINAL)
+    Q_PROPERTY(QString status READ getStatus NOTIFY statusChanged FINAL)
 
 public:
 

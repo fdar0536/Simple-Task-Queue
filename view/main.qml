@@ -135,8 +135,6 @@ ApplicationWindow
         }
     } // header: ColumnLayout
 
-
-
     Loader
     {
         id: loader
